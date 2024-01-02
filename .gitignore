@@ -1,0 +1,11 @@
+/vendor/
+/var/
+/composer.lock
+/symfony.lock
+
+/node_modules
+/yarn.lock
+
+/.phpunit.result.cache
+/phpunit.xml.dist
+

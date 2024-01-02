@@ -1,0 +1,32 @@
+{
+    "name": "sensiolabs/storybook-bundle",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nicolas Rigaud",
+            "email": "squrious@protonmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Storybook\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Storybook\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=8.1",
+        "symfony/console": "^7.0",
+        "symfony/filesystem": "^7.0"
+    },
+    "require-dev": {
+        "symfony/framework-bundle": "^7.0",
+        "symfony/twig-bundle": "^7.0",
+        "symfony/phpunit-bridge": "^7.0",
+        "symfony/ux-twig-component": "^2.13"
+    }
+}
