@@ -44,10 +44,9 @@ final class Kernel extends BaseKernel
             'secrets' => false,
             'http_method_override' => false,
             'php_errors' => ['log' => true],
+            'handle_all_throwables' => true,
         ];
-        if (self::VERSION_ID >= 60200) {
-            $frameworkConfig['handle_all_throwables'] = true;
-        }
+
         $container->extension('framework', $frameworkConfig);
 
         $container->extension('twig', [

@@ -2,6 +2,7 @@
     "name": "sensiolabs/storybook-bundle",
     "type": "library",
     "license": "MIT",
+    "description": "Symfony bundle to generate a static storybook",
     "authors": [
         {
             "name": "Nicolas Rigaud",
@@ -27,6 +28,7 @@
         "symfony/framework-bundle": "^7.0",
         "symfony/twig-bundle": "^7.0",
         "symfony/phpunit-bridge": "^7.0",
-        "symfony/ux-twig-component": "^2.13"
+        "symfony/ux-twig-component": "^2.13",
+        "phpstan/phpstan": "^1.10"
     }
 }

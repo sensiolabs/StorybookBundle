@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 class StorybookBundle extends Bundle implements ConfigurationInterface
 {
@@ -40,7 +41,10 @@ class StorybookBundle extends Bundle implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('storybook');
-        $treeBuilder->getRootNode()
+        $rootNode = $treeBuilder->getRootNode();
+        assert($rootNode instanceof ArrayNodeDefinition);
+
+        $rootNode
             ->children()
                 ->scalarNode('server')
                     ->info('The URL of the Storybook server. Pass null to disable the CORS headers.')

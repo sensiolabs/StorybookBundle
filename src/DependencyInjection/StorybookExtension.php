@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Twig\Loader\FilesystemLoader;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 class StorybookExtension extends Extension implements ConfigurationInterface
 {
@@ -45,7 +46,10 @@ class StorybookExtension extends Extension implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('storybook');
-        $treeBuilder->getRootNode()
+        $rootNode = $treeBuilder->getRootNode();
+        assert($rootNode instanceof ArrayNodeDefinition);
+
+        $rootNode
             ->children()
                 ->scalarNode('server')
                     ->info('The URL of the Storybook server. Pass null to disable the CORS headers.')

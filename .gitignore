@@ -9,3 +9,5 @@
 /.phpunit.result.cache
 /phpunit.xml.dist
 
+.php-cs-fixer.cache
+
