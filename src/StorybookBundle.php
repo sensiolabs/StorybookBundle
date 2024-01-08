@@ -5,6 +5,7 @@ namespace Storybook;
 use Storybook\Attributes\AsStorybookLoader;
 use Storybook\DependencyInjection\Compiler\RegisterLoaderPass;
 use Storybook\DependencyInjection\StorybookExtension;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -24,7 +25,6 @@ class StorybookBundle extends Bundle implements ConfigurationInterface
         );
 
         $container->addCompilerPass(new RegisterLoaderPass());
-
     }
 
     public function getContainerExtension(): ?ExtensionInterface
@@ -40,13 +40,17 @@ class StorybookBundle extends Bundle implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('storybook');
-        $treeBuilder->getRootNode()
+        $rootNode = $treeBuilder->getRootNode();
+        \assert($rootNode instanceof ArrayNodeDefinition);
+
+        $rootNode
             ->children()
                 ->scalarNode('server')
                     ->info('The URL of the Storybook server. Pass null to disable the CORS headers.')
                     ->defaultValue('http://localhost:6006')
                 ->end()
             ->end();
+
         return $treeBuilder;
     }
 }

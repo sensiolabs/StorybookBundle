@@ -2,6 +2,7 @@
 
 namespace Storybook\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
@@ -17,7 +18,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
     {
         $loader = new PhpFileLoader(
             $container,
-            new FileLocator(__DIR__ . '/../../config')
+            new FileLocator(__DIR__.'/../../config')
         );
 
         $loader->load('services.php');
@@ -31,7 +32,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
             $container->removeDefinition('storybook.listener.cors');
         }
 
-        $storiesPath = \sprintf('%s/stories', $config['runtime_dir']);
+        $storiesPath = sprintf('%s/stories', $config['runtime_dir']);
         $container->register('storybook.twig.loader', FilesystemLoader::class)
             ->addTag('twig.loader')
             ->addMethodCall('addPath', [$storiesPath, 'Stories']);
@@ -45,7 +46,10 @@ class StorybookExtension extends Extension implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('storybook');
-        $treeBuilder->getRootNode()
+        $rootNode = $treeBuilder->getRootNode();
+        \assert($rootNode instanceof ArrayNodeDefinition);
+
+        $rootNode
             ->children()
                 ->scalarNode('server')
                     ->info('The URL of the Storybook server. Pass null to disable the CORS headers.')
@@ -61,6 +65,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
                     ->defaultValue('@Storybook/preview.html.twig')
                 ->end()
             ->end();
+
         return $treeBuilder;
     }
 }

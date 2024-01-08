@@ -33,7 +33,7 @@ class StorybookLoader
                 throw new \LogicException('Loader must be callable');
             }
 
-            $data = \array_merge($data, $loader());
+            $data = array_merge($data, $loader());
         }
 
         return $data;
