@@ -3,9 +3,11 @@ import { BuilderOptions, StorybookConfigWebpack, TypescriptOptions } from '@stor
 
 declare class TwigTemplate {
     private readonly source;
-    constructor(source: string);
+    private readonly components;
+    constructor(source: string, components: string[]);
     getSource(): string;
     toString(): string;
+    getComponents(): string[];
 }
 declare function twig(source: TemplateStringsArray, ...values: any[]): TwigTemplate;
 

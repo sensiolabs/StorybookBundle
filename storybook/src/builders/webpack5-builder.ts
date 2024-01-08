@@ -1,8 +1,8 @@
 import { SymfonyOptions } from '../types';
+import { start as baseStart } from "@storybook/builder-webpack5";
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 export { build, bail, getConfig, corePresets, overridePresets } from "@storybook/builder-webpack5";
-import { start as baseStart } from "@storybook/builder-webpack5";
-import {createProxyMiddleware} from 'http-proxy-middleware';
 
 export const start: typeof baseStart = async (options) => {
   const isProd = options.options.configType === 'PRODUCTION';

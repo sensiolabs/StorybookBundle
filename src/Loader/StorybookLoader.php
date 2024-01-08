@@ -4,8 +4,14 @@ namespace Storybook\Loader;
 
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * @author Nicolas Rigaud <squrious@protonmail.com>
+ */
 class StorybookLoader
 {
+    /**
+     * @var callable[]
+     */
     private array $loaders = [];
 
     public function addLoader(string $name, callable $loader): void
@@ -19,7 +25,7 @@ class StorybookLoader
 
     public function load(string $name, Request $request): array
     {
-        $data = $request->query->all();
+        $originalRequestData = $data = $request->query->all();
 
         foreach ($data as $key => $value) {
             $decoded = json_decode($value, associative: true);
@@ -33,7 +39,7 @@ class StorybookLoader
                 throw new \LogicException('Loader must be callable');
             }
 
-            $data = array_merge($data, $loader());
+            $data = array_merge($data, $loader($originalRequestData));
         }
 
         return $data;

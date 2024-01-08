@@ -14,15 +14,13 @@ function getFrameworkOptions() {
  */
 export const decorators = [
     (StoryFn: StoryFunction<Renderer>, context: StoryContext<Renderer>) => {
-
-      const serverUrl = `${getFrameworkOptions().symfony.server}/_storybook/render`;
-
       const { server = {} } = context.parameters;
 
       if (server.url === undefined) {
-          server.url = serverUrl;
-          context.parameters.server = server;
+          server.url = `${getFrameworkOptions().symfony.server}/_storybook/render`;
       }
+
+      context.parameters.server = server;
 
       return StoryFn();
     }

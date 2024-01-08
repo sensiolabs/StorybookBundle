@@ -6,12 +6,11 @@ function getFrameworkOptions() {
 }
 var decorators = [
   (StoryFn, context) => {
-    const serverUrl = `${getFrameworkOptions().symfony.server}/_storybook/render`;
     const { server = {} } = context.parameters;
     if (server.url === void 0) {
-      server.url = serverUrl;
-      context.parameters.server = server;
+      server.url = `${getFrameworkOptions().symfony.server}/_storybook/render`;
     }
+    context.parameters.server = server;
     return StoryFn();
   }
 ];

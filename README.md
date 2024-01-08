@@ -24,6 +24,8 @@ yarn add link:vendor/sensiolabs/storybook-bundle/storybook
 Remove the auto generated `src/stories` directory, and replace the content of `.storybook/main.js|ts` with: 
 
 ```ts
+// .storybook/main.ts
+
 import type { StorybookConfig } from "@storybook/symfony-webpack5";
 
 const config: StorybookConfig = {
@@ -54,12 +56,6 @@ const config: StorybookConfig = {
     },
 };
 export default config;
-```
-
-Initialize Storybook bundle with:
-
-```shell
-bin/console storybook:init
 ```
 
 Run Storybook with:
@@ -100,52 +96,53 @@ nelmio_cors:
       allow_methods: ['GET']
 ```
 
-### Global assets
+## AssetMapper integration
 
-To import global assets in the Storybook's preview iframe, you have to declare a custom template that acts like your usual `base.html.twig`, but for Storybook. First create the template:
+To use Storybook with a project that uses the [AssetMapper component](https://symfony.com/doc/current/frontend/asset_mapper.html), you have to enable the integration in your `main.js|ts` file: 
 
-```twig
-{# templates/storybook/preview.html.twig #}
+```ts
+// .storybook/main.ts
 
-{% extends '@Storybook/preview.html.twig' %}
-
-{% block stylesheets %}
-  <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
-{% endblock %}
-
-{% block javascripts %}
-  {{ importmap() }}
-{% endblock %}
+const config: StorybookConfig = {
+    framework: {
+        name: "@storybook/symfony-webpack5",
+        options: {
+            symfony: {
+                // 👇 Here enable AssetMapper integration
+                useAssetMapper: true
+            }
+        },
+    },
+};
+export default config;
 ```
 
-Then tell the bundle it should use this file to render the preview:
-```yaml
-# config/storybook.yaml
-storybook:
-   preview_template: storybook/preview.html.twig 
-```
+Now, before your stories are compiled by Storybook, a virtual `importmap` JS module is generated to import all assets declared in your `importmap.php` file. 
 
-And generate the preview:
-```shell
-bin/console storybook:init
-```
+To actually load this module in the Storybook preview, you have to import it in your `preview.js|ts` file:
 
-> Important:
-> 
-> For the moment, you have to run `bin/console storybook:init` each time you update those global assets.  
+```ts
+// .storybook/preview.ts
+
+import '../importmap';
+
+// ...
+```
 
 ## Writing stories
 
 Example: 
 
 ```js
+// stories/Button.stories.js
+
 import { twig } from '@storybook/symfony-webpack5';
 
-const Button = twig`<twig:Button>{{ args.label }}</twig:Button>`;
+const Button = twig`<twig:Button btnType="{{ args.primary ? 'primary' : 'secondary' }}">{{ args.label }}</twig:Button>`;
 
 export default {
-    title: 'Bar',
-    component: Button
+    title: 'Button',
+    template: Button
 };
 
 export const Primary = {
@@ -160,10 +157,11 @@ export const Secondary = {
         ...Primary.args,
         primary: false
     },
-    component: Button, // You can pass a specific component for a story
+    template: Button, // You can pass a specific template for a story
 };
 
 ```
+
 # License
 
 MIT License (MIT): see [LICENSE](./LICENSE).

@@ -6,6 +6,9 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
+/**
+ * @author Nicolas Rigaud <squrious@protonmail.com>
+ */
 class RegisterLoaderPass implements CompilerPassInterface
 {
     private const TAG_NAME = 'storybook.loader';

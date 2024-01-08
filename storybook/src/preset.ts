@@ -1,12 +1,10 @@
-import { webpack as TwigIndexerPlugin } from './plugins/twig-template-indexer';
-import { webpack as TwigTemplateResolver } from './plugins/twig-component-resolver';
 import { FrameworkOptions, SymfonyOptions } from './types';
-import { StorybookConfig } from '@storybook/server-webpack5';
+import { StorybookConfig } from '@storybook/preset-server-webpack';
 import { Options, PresetProperty, Entry, Indexer } from '@storybook/types';
-import { join } from 'path';
-import { access } from 'fs-extra';
-import dedent from 'ts-dedent';
 import { twigCsfIndexer } from './indexer';
+import { getKernelProjectDir, getTwigComponentConfiguration } from './utils/symfony';
+import * as path from 'path';
+import { FinalSymfonyOptions, SymfonyPlugin } from './plugins/symfony-plugin';
 
 export const core: PresetProperty<'core'> = async (config, options) => {
     const framework = await options.presets.apply('framework');
@@ -26,7 +24,7 @@ export const frameworkOptions = async (frameworkOptions: FrameworkOptions, optio
 
     const symfonyOptions: SymfonyOptions = {
         ...frameworkOptions.symfony,
-        runtimePath: join(configDir, frameworkOptions.symfony.runtimePath ?? '../var/storybook'),
+        runtimePath: path.join(configDir, frameworkOptions.symfony.runtimePath ?? '../var/storybook'),
     };
 
     return {
@@ -35,22 +33,42 @@ export const frameworkOptions = async (frameworkOptions: FrameworkOptions, optio
     };
 };
 
+async function resolveFinalSymfonyOptions(symfonyOptions: SymfonyOptions) {
+    const projectDir = await getKernelProjectDir();
+    const twigComponentsConfig = await getTwigComponentConfiguration();
+
+    let componentNamespaces: {[p: string]: string} = {};
+
+    for (let { name_prefix: namePrefix, template_directory: templateDirectory } of Object.values(twigComponentsConfig.defaults)) {
+        componentNamespaces[namePrefix] = path.join(projectDir, 'templates', templateDirectory);
+    }
+
+    return {
+        ...symfonyOptions,
+        projectDir: projectDir,
+        twigComponent: {
+            anonymousTemplateDirectory: path.join(projectDir, 'templates', twigComponentsConfig['anonymous_template_directory']),
+            namespaces: componentNamespaces,
+        },
+    } as FinalSymfonyOptions;
+}
+
 export const webpack: StorybookConfig['webpack'] = async (config, options) => {
     const frameworkOptions = await options.presets.apply<{ symfony: SymfonyOptions }>('frameworkOptions');
+
+    // This options resolution should be done right before creating the build configuration (i.e. not in options presets).
+    // TODO: Maybe find a better place for this?
+    const symfonyOptions = await resolveFinalSymfonyOptions(frameworkOptions.symfony);
+
     return {
         ...config,
         plugins: [
             ...(config.plugins || []),
-            TwigIndexerPlugin(frameworkOptions.symfony),
-            TwigTemplateResolver(frameworkOptions.symfony),
+            SymfonyPlugin.webpack(symfonyOptions),
         ],
         module: {
             ...config.module,
             rules: [
-                {
-                    test: /\.html\.twig$/,
-                    loader: require.resolve('./loaders/twig-loader'),
-                },
                 ...(config.module.rules || []),
             ],
         },
@@ -60,23 +78,6 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
 export const experimental_indexers: PresetProperty<'experimental_indexers'> = (existingIndexers: Indexer[]) =>
     [twigCsfIndexer].concat(existingIndexers || []);
 
-export const previewMainTemplate = async (path: string, options: Options) => {
-    const { symfony } = await options.presets.apply<{ symfony: SymfonyOptions }>('frameworkOptions');
-
-    const previewPath = join(symfony.runtimePath, 'preview/preview.ejs');
-    try {
-        await access(previewPath);
-        return require.resolve(previewPath);
-
-    } catch (err) {
-        throw new Error(dedent`
-      Unable to find preview template "${previewPath}". Did you forget to run "bin/console storybook:init"?
-    `);
-    }
-};
-
 export const previewAnnotations = (entry: Entry[] = []) => {
-
     return [require.resolve('./preview'), ...entry];
 };
-
