@@ -2,6 +2,7 @@
 
 namespace Storybook\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
@@ -10,7 +11,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Twig\Loader\FilesystemLoader;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 class StorybookExtension extends Extension implements ConfigurationInterface
 {
@@ -18,7 +18,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
     {
         $loader = new PhpFileLoader(
             $container,
-            new FileLocator(__DIR__ . '/../../config')
+            new FileLocator(__DIR__.'/../../config')
         );
 
         $loader->load('services.php');
@@ -32,7 +32,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
             $container->removeDefinition('storybook.listener.cors');
         }
 
-        $storiesPath = \sprintf('%s/stories', $config['runtime_dir']);
+        $storiesPath = sprintf('%s/stories', $config['runtime_dir']);
         $container->register('storybook.twig.loader', FilesystemLoader::class)
             ->addTag('twig.loader')
             ->addMethodCall('addPath', [$storiesPath, 'Stories']);
@@ -47,7 +47,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('storybook');
         $rootNode = $treeBuilder->getRootNode();
-        assert($rootNode instanceof ArrayNodeDefinition);
+        \assert($rootNode instanceof ArrayNodeDefinition);
 
         $rootNode
             ->children()
@@ -65,6 +65,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
                     ->defaultValue('@Storybook/preview.html.twig')
                 ->end()
             ->end();
+
         return $treeBuilder;
     }
 }

@@ -14,7 +14,7 @@ return static function (ContainerConfigurator $container) {
           ->args([
               service('twig'),
               service('storybook.loader'),
-              service('storybook.twig.template_locator')
+              service('storybook.twig.template_locator'),
           ])
           ->tag('controller.service_arguments')
       ->set('storybook.listener.cors', CorsListener::class)
@@ -26,7 +26,7 @@ return static function (ContainerConfigurator $container) {
       ->set('storybook.loader', StorybookLoader::class)
       ->set('storybook.twig.template_locator', TemplateLocator::class)
         ->args([
-          param('kernel.project_dir')
+          param('kernel.project_dir'),
         ])
       ->set('storybook.init_command', InitCommand::class)
         ->args([

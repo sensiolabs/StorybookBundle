@@ -5,13 +5,13 @@ namespace Storybook;
 use Storybook\Attributes\AsStorybookLoader;
 use Storybook\DependencyInjection\Compiler\RegisterLoaderPass;
 use Storybook\DependencyInjection\StorybookExtension;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 class StorybookBundle extends Bundle implements ConfigurationInterface
 {
@@ -25,7 +25,6 @@ class StorybookBundle extends Bundle implements ConfigurationInterface
         );
 
         $container->addCompilerPass(new RegisterLoaderPass());
-
     }
 
     public function getContainerExtension(): ?ExtensionInterface
@@ -42,7 +41,7 @@ class StorybookBundle extends Bundle implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('storybook');
         $rootNode = $treeBuilder->getRootNode();
-        assert($rootNode instanceof ArrayNodeDefinition);
+        \assert($rootNode instanceof ArrayNodeDefinition);
 
         $rootNode
             ->children()
@@ -51,6 +50,7 @@ class StorybookBundle extends Bundle implements ConfigurationInterface
                     ->defaultValue('http://localhost:6006')
                 ->end()
             ->end();
+
         return $treeBuilder;
     }
 }

@@ -25,10 +25,10 @@
         "symfony/filesystem": "^7.0"
     },
     "require-dev": {
-        "symfony/framework-bundle": "^7.0",
-        "symfony/twig-bundle": "^7.0",
-        "symfony/phpunit-bridge": "^7.0",
-        "symfony/ux-twig-component": "^2.13",
-        "phpstan/phpstan": "^1.10"
+      "phpstan/phpstan": "^1.10",
+      "symfony/framework-bundle": "^7.0",
+      "symfony/phpunit-bridge": "^7.0",
+      "symfony/twig-bundle": "^7.0",
+      "symfony/ux-twig-component": "^2.13"
     }
 }

@@ -1,14 +1,5 @@
 <?php
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace Storybook\Tests\Fixtures;
 
 use Psr\Log\NullLogger;
@@ -20,9 +11,6 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\UX\TwigComponent\TwigComponentBundle;
 
-/**
- * @author Kevin Bond <kevinbond@gmail.com>
- */
 final class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
@@ -51,18 +39,18 @@ final class Kernel extends BaseKernel
 
         $container->extension('twig', [
             'default_path' => '%kernel.project_dir%/tests/Fixtures/templates',
-            'auto_reload' => false
+            'auto_reload' => false,
         ]);
 
         $container->extension('twig_component', [
             'anonymous_template_directory' => 'components/',
             'defaults' => [
-                'Storybook\Tests\Fixtures\Component\\' => 'components/'
-            ]
+                'Storybook\Tests\Fixtures\Component\\' => 'components/',
+            ],
         ]);
 
         $container->extension('storybook', [
-            'stories_path' => '%kernel.project_dir%/tests/Fixtures/stories'
+            'stories_path' => '%kernel.project_dir%/tests/Fixtures/stories',
         ]);
 
         $container->services()
