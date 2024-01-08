@@ -21,7 +21,7 @@ jobs:
           coverage: none
       - name: Validate composer.json
         run: composer validate --strict
-  cs:
+  cs-php:
     name: Check coding standards
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
             tools: php-cs-fixer
         - name: Run PHP-CS-Fixer
           run: php-cs-fixer fix . --dry-run --diff
-  sca:
+  sca-php:
     name: PHPStan
     runs-on: ubuntu-latest
     steps:
@@ -47,6 +47,64 @@ jobs:
         - name: Install composer dependencies
           run: composer install --no-progress --prefer-dist --optimize-autoloader
         - name: Install PHPUnit
-          run: vendor/bin/simple-php-unit --version
+          run: vendor/bin/simple-phpunit --version
         - name: Run PHPStan
           run: vendor/bin/phpstan analyse
+  cs-js:
+    name: JavaScript Coding Style
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get yarn cache directory path
+        working-directory: ./storybook
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - working-directory: ./storybook
+        run: yarn --frozen-lockfile
+      - working-directory: ./storybook
+        run: yarn check-lint
+      - working-directory: ./storybook
+        run: yarn check-format
+  tests-php:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+      - name: Install composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+      - name: Run PHPUnit
+        run: vendor/bin/simple-phpunit
+  tests-js:
+    name: Vitest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get yarn cache directory path
+        working-directory: ./storybook
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - working-directory: ./storybook
+        run: yarn --frozen-lockfile
+      - working-directory: ./storybook
+        run: yarn test

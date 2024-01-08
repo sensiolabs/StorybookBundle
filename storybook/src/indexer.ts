@@ -7,9 +7,9 @@ type TwigTemplateSource = string;
 type StoryId = StaticStory['id'];
 
 class TwigStoriesIndexer {
-    private templates: Map<string, TwigTemplateSource> = new Map<string, TwigTemplateSource>
-    private storyIndex: Map<StoryId, string> = new Map<StoryId, string>
-    private componentsInFiles = new Map<string, string[]>;
+    private templates: Map<string, TwigTemplateSource> = new Map<string, TwigTemplateSource>();
+    private storyIndex: Map<StoryId, string> = new Map<StoryId, string>();
+    private componentsInFiles = new Map<string, string[]>();
 
     register(id: StoryId, component: TwigTemplate, declaringFile: string) {
         const hash = crypto.createHash('sha1').update(component.getSource()).digest('hex');
@@ -45,7 +45,7 @@ class TwigStoriesIndexer {
 export const twigCsfIndexer: Indexer = {
     test: /(stories|story)\.(m?js|ts)x?$/,
     createIndex: async (fileName, options) => {
-        const csf = (await readCsf(fileName, {...options})).parse();
+        const csf = (await readCsf(fileName, { ...options })).parse();
 
         const twigIndexer = getTwigStoriesIndexer();
 
@@ -55,15 +55,15 @@ export const twigCsfIndexer: Indexer = {
         const module = require(fileName);
 
         csf.indexInputs.forEach((story) => {
-            const template = (module[story.exportName]?.template ?? module['default']?.template ?? undefined);
+            const template = module[story.exportName]?.template ?? module['default']?.template ?? undefined;
             if (undefined !== template) {
                 twigIndexer.register(story.__id, template, fileName);
             }
-        })
+        });
 
         return csf.indexInputs;
     },
-}
+};
 
 let twigIndexer: TwigStoriesIndexer;
 export function getTwigStoriesIndexer() {

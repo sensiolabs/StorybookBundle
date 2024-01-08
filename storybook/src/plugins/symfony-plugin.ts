@@ -11,9 +11,9 @@ import process from 'process';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 
 type InternalSymfonyOptions = {
-    projectDir: string,
-    twigComponent: TwigComponentConfiguration
-}
+    projectDir: string;
+    twigComponent: TwigComponentConfiguration;
+};
 
 export type FinalSymfonyOptions = SymfonyOptions & InternalSymfonyOptions;
 
@@ -27,14 +27,14 @@ const TwigStoriesCompilerPlugin = createUnplugin<FinalSymfonyOptions>((options) 
 
     return {
         name: 'twig-stories-compiler',
-        enforce: "post",
-        transformInclude: (id)=> {
+        enforce: 'post',
+        transformInclude: (id) => {
             return /\.stories\.[tj]s?$/.test(id) && twigStoriesIndexer.fileHasTemplates(id);
         },
         transform: async (code, id) => {
             const components = new Set<string>(twigStoriesIndexer.getComponentsInFile(id));
 
-            let imports: string[] = [];
+            const imports: string[] = [];
             components.forEach((v) => {
                 imports.push(resolveTwigComponentFile(v, options.twigComponent));
             });
@@ -43,12 +43,14 @@ const TwigStoriesCompilerPlugin = createUnplugin<FinalSymfonyOptions>((options) 
             ${code}
             
             ; export const __twigTemplates = [
-                ${imports.map(template => `import(
+                ${imports.map(
+                    (template) => `import(
                     '${template}'
-                )`)}
+                )`
+                )}
             ];
           `;
-        }
+        },
     };
 });
 
@@ -60,28 +62,28 @@ const TwigStoriesCompilerPlugin = createUnplugin<FinalSymfonyOptions>((options) 
 const TwigTemplateSourceLoader = createUnplugin<FinalSymfonyOptions>((options) => {
     return {
         name: 'twig-loader',
-        enforce: "pre",
-        transformInclude: (id)=> {
+        enforce: 'pre',
+        transformInclude: (id) => {
             return /\.html\.twig$/.test(id);
         },
-        transform: async (code, _) => {
+        transform: async (code) => {
             const templateSource = twig`${code}`;
             const components = new Set<string>(templateSource.getComponents());
 
-            let imports: string[] = [];
+            const imports: string[] = [];
 
             components.forEach((v) => {
                 imports.push(resolveTwigComponentFile(v, options.twigComponent));
             });
 
             return dedent`            
-            ${imports.map(templateFile => `import '${templateFile}';`).join('\n')}
+            ${imports.map((templateFile) => `import '${templateFile}';`).join('\n')}
             
             const source = \`${code}\`;
             
             export default { source }; 
           `;
-        }
+        },
     };
 });
 
@@ -92,14 +94,13 @@ const TwigTemplateSourceLoader = createUnplugin<FinalSymfonyOptions>((options) =
  */
 const TwigStoriesTemplateGeneratorPlugin = createUnplugin<SymfonyOptions>((options) => {
     const outDir = join(options.runtimePath, '/stories');
-    async function cleanRuntimeDir(dir: string)
-    {
+    async function cleanRuntimeDir(dir: string) {
         try {
             await fs.access(dir, fs.constants.F_OK);
             const files = await fs.readdir(dir);
-            await Promise.all(files.map(f => fs.unlink(join(dir, f))));
-        } catch(err) {
-            await fs.mkdir(dir, {recursive: true});
+            await Promise.all(files.map((f) => fs.unlink(join(dir, f))));
+        } catch (err) {
+            await fs.mkdir(dir, { recursive: true });
         }
     }
 
@@ -109,18 +110,23 @@ const TwigStoriesTemplateGeneratorPlugin = createUnplugin<SymfonyOptions>((optio
 
         // Write story templates
         const storiesMap = storyIndex.getMap();
-        for (let storyId in storiesMap) {
+        for (const storyId in storiesMap) {
             const storyPath = join(dir, `${storyId}.html.twig`);
-            fileOperations.push(fs.writeFile(storyPath, dedent`
+            fileOperations.push(
+                fs.writeFile(
+                    storyPath,
+                    dedent`
                 {{ include('@Stories/${storiesMap[storyId]}.html.twig') }}
-            `));
+            `
+                )
+            );
         }
 
         // Write actual story contents named by content hash
         const templates = storyIndex.getTemplates();
         templates.forEach((source, hash) => {
             fileOperations.push(fs.writeFile(join(dir, `${hash}.html.twig`), dedent(templates.get(hash))));
-        })
+        });
 
         return Promise.all(fileOperations);
     }
@@ -136,7 +142,7 @@ const TwigStoriesTemplateGeneratorPlugin = createUnplugin<SymfonyOptions>((optio
     };
 });
 
-const AssetMapperPlugin = createUnplugin((options) => {
+const AssetMapperPlugin = createUnplugin(() => {
     const PLUGIN_NAME = 'asset-mapper';
     return {
         name: PLUGIN_NAME,
@@ -158,10 +164,9 @@ const AssetMapperPlugin = createUnplugin((options) => {
                     cb(err);
                 }
             });
-        }
-    }
+        },
+    };
 });
-
 
 /**
  * Main Symfony plugin.
@@ -171,13 +176,13 @@ export const SymfonyPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
         TwigStoriesTemplateGeneratorPlugin,
         TwigStoriesCompilerPlugin,
         TwigTemplateSourceLoader,
-        options.useAssetMapper ? AssetMapperPlugin : null
-    ].filter(Boolean)
+        options.useAssetMapper ? AssetMapperPlugin : null,
+    ].filter(Boolean);
 
     return {
-       name: 'symfony-plugin',
-       webpack(compiler) {
-           plugins.forEach(plugin => plugin.webpack(options).apply(compiler));
-       }
-   };
+        name: 'symfony-plugin',
+        webpack(compiler) {
+            plugins.forEach((plugin) => plugin.webpack(options).apply(compiler));
+        },
+    };
 });

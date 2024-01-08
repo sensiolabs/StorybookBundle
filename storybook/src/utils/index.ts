@@ -1,1 +1,1 @@
-export * from './twig'
+export * from './twig';

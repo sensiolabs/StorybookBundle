@@ -7,7 +7,7 @@
 /yarn.lock
 
 /.phpunit.result.cache
-/phpunit.xml.dist
+/phpunit.xml
 
 .php-cs-fixer.cache
 

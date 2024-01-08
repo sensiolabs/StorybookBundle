@@ -6,19 +6,18 @@ import { vi } from 'vitest';
 
 vi.mock('child_process');
 
-function mockExec(error: ExecException = null,  stdout = '', stderr = '')
-{
+function mockExec(error: ExecException = null, stdout = '', stderr = '') {
     // Vitest mock types don't support signature overload?
     // @ts-ignore
     vi.mocked(exec).mockImplementation((command: string, callback: (...args) => void) => {
         callback(error, stdout, stderr);
-        return new ChildProcess;
-    })
+        return new ChildProcess();
+    });
 }
 
 describe('Symfony utils', () => {
     beforeEach(() => {
-       vi.mocked(exec).mockReset();
+        vi.mocked(exec).mockReset();
     });
     describe('runSymfonyCommand', () => {
         it('uses default options', async () => {
@@ -26,7 +25,7 @@ describe('Symfony utils', () => {
 
             await runSymfonyCommand('command');
 
-            expect(exec).toHaveBeenCalledWith(`'php' 'bin/console' 'command'`, expect.any(Function));
+            expect(exec).toHaveBeenCalledWith("'php' 'bin/console' 'command'", expect.any(Function));
         });
 
         it('with custom options', async () => {
@@ -34,20 +33,20 @@ describe('Symfony utils', () => {
 
             const options = {
                 php: '/usr/bin/php',
-                script: 'custom/bin/console'
+                script: 'custom/bin/console',
             };
 
             await expect(runSymfonyCommand('command', [], options)).resolves.toBe('');
 
-            expect(exec).toHaveBeenCalledWith(`'/usr/bin/php' 'custom/bin/console' 'command'`, expect.any(Function));
+            expect(exec).toHaveBeenCalledWith("'/usr/bin/php' 'custom/bin/console' 'command'", expect.any(Function));
         });
 
         it('rejects on exec failure', async () => {
-            mockExec({ code: 1, cmd: `'php' 'bin/console' 'command'` } as ExecException, '');
+            mockExec({ code: 1, cmd: "'php' 'bin/console' 'command'" } as ExecException, '');
 
             await expect(runSymfonyCommand('command')).rejects.toThrow();
 
-            expect(exec).toHaveBeenCalledWith(`'php' 'bin/console' 'command'`, expect.any(Function));
+            expect(exec).toHaveBeenCalledWith("'php' 'bin/console' 'command'", expect.any(Function));
         });
 
         it('accepts input arguments and options', async () => {
@@ -55,20 +54,23 @@ describe('Symfony utils', () => {
 
             await runSymfonyCommand('command', ['arg1', '-o', '--option=foo']);
 
-            expect(exec).toHaveBeenCalledWith(`'php' 'bin/console' 'command' 'arg1' '-o' '--option=foo'`, expect.any(Function));
+            expect(exec).toHaveBeenCalledWith(
+                "'php' 'bin/console' 'command' 'arg1' '-o' '--option=foo'",
+                expect.any(Function)
+            );
         });
     });
 
     describe('runSymfonyCommandJSON', () => {
         it('returns a JS object', async () => {
-            mockExec(null, `{ "prop": "value" }`);
+            mockExec(null, '{ "prop": "value" }');
 
             const expected = {
-                prop: 'value'
+                prop: 'value',
             };
 
             await expect(runSymfonyCommandJson('command')).resolves.toEqual(expected);
-        })
+        });
     });
 
     describe('resolveTwigComponentFile', () => {
@@ -78,8 +80,8 @@ describe('Symfony utils', () => {
             anonymousTemplateDirectory: `${fixturesDir}/anonymous`,
             namespaces: {
                 '': `${fixturesDir}/components`,
-                'Custom': `${fixturesDir}/custom`
-            }
+                Custom: `${fixturesDir}/custom`,
+            },
         };
 
         it('resolves component path without namespace', () => {

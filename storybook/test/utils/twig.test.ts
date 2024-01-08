@@ -2,10 +2,8 @@
 
 import { twig } from '../../src/utils/twig';
 
-
 describe('Twig utils', () => {
     describe('twig', () => {
-
         it('extracts component name', () => {
             const template = twig`<twig:Component></twig:Component>`;
 
@@ -50,5 +48,5 @@ describe('Twig utils', () => {
 
             expect(template.getComponents()).toEqual(['OtherComponent', 'Component']);
         });
-    })
+    });
 });

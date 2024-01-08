@@ -37,9 +37,11 @@ async function resolveFinalSymfonyOptions(symfonyOptions: SymfonyOptions) {
     const projectDir = await getKernelProjectDir();
     const twigComponentsConfig = await getTwigComponentConfiguration();
 
-    let componentNamespaces: {[p: string]: string} = {};
+    const componentNamespaces: { [p: string]: string } = {};
 
-    for (let { name_prefix: namePrefix, template_directory: templateDirectory } of Object.values(twigComponentsConfig.defaults)) {
+    for (const { name_prefix: namePrefix, template_directory: templateDirectory } of Object.values(
+        twigComponentsConfig.defaults
+    )) {
         componentNamespaces[namePrefix] = path.join(projectDir, 'templates', templateDirectory);
     }
 
@@ -47,7 +49,11 @@ async function resolveFinalSymfonyOptions(symfonyOptions: SymfonyOptions) {
         ...symfonyOptions,
         projectDir: projectDir,
         twigComponent: {
-            anonymousTemplateDirectory: path.join(projectDir, 'templates', twigComponentsConfig['anonymous_template_directory']),
+            anonymousTemplateDirectory: path.join(
+                projectDir,
+                'templates',
+                twigComponentsConfig['anonymous_template_directory']
+            ),
             namespaces: componentNamespaces,
         },
     } as FinalSymfonyOptions;
@@ -62,15 +68,10 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
 
     return {
         ...config,
-        plugins: [
-            ...(config.plugins || []),
-            SymfonyPlugin.webpack(symfonyOptions),
-        ],
+        plugins: [...(config.plugins || []), SymfonyPlugin.webpack(symfonyOptions)],
         module: {
             ...config.module,
-            rules: [
-                ...(config.module.rules || []),
-            ],
+            rules: [...(config.module.rules || [])],
         },
     };
 };
