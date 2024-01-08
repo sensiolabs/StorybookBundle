@@ -46,5 +46,7 @@ jobs:
             php-version: 8.2
         - name: Install composer dependencies
           run: composer install --no-progress --prefer-dist --optimize-autoloader
+        - name: Install PHPUnit
+          run: vendor/bin/simple-php-unit --version
         - name: Run PHPStan
           run: vendor/bin/phpstan analyse
