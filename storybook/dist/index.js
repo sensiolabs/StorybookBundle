@@ -2,53 +2,9 @@
 
 var fastXmlParser = require('fast-xml-parser');
 
-// src/utils/twig.ts
-var TwigTemplate = class {
-  constructor(source, components) {
-    this.source = source;
-    this.components = components;
-    this.source = source;
-  }
-  getSource() {
-    return this.source;
-  }
-  toString() {
-    return this.source;
-  }
-  getComponents() {
-    return this.components;
-  }
-};
-function parseSubComponents(source) {
-  const reservedNames = [
-    "block"
-  ];
-  const tagRe = new RegExp(/twig:[A-Za-z]+(?::[A-Za-z]+)*/);
-  const functionRe = new RegExp(/component\(\s*'([A-Za-z]+(?::[A-Za-z]+)*)'\s*(?:,.*)?\)/, "gs");
-  const documentObj = new fastXmlParser.XMLParser().parse(`<div>${source}</div>`);
-  const lookupComponents = (obj) => {
-    return Object.entries(obj).reduce((names, [key, value]) => {
-      if (value !== null && typeof value === "object") {
-        names.push(...lookupComponents(value));
-      } else if (typeof value === "string") {
-        for (let m of value.matchAll(functionRe)) {
-          names.push([...m][1]);
-        }
-      }
-      if (tagRe.test(key)) {
-        names.push(key.replace("twig:", ""));
-      }
-      return names;
-    }, []);
-  };
-  return lookupComponents(documentObj).filter((name) => !reservedNames.includes(name));
-}
-function twig(source, ...values) {
-  const rawSource = String.raw({ raw: source }, ...values);
-  return new TwigTemplate(rawSource, parseSubComponents(rawSource));
-}
+var i=class{constructor(t,r){this.source=t;this.components=r;this.source=t;}getSource(){return this.source}toString(){return this.source}getComponents(){return this.components}};function m(n){let t=["block"],r=new RegExp(/twig:[A-Za-z]+(?::[A-Za-z]+)*/),u=new RegExp(/component\(\s*'([A-Za-z]+(?::[A-Za-z]+)*)'\s*(?:,.*)?\)/,"gs"),g=new fastXmlParser.XMLParser().parse(`<div>${n}</div>`),c=s=>Object.entries(s).reduce((o,[p,e])=>{if(e!==null&&typeof e=="object")o.push(...c(e));else if(typeof e=="string")for(let a of e.matchAll(u))o.push([...a][1]);return r.test(p)&&o.push(p.replace("twig:","")),o},[]);return c(g).filter(s=>!t.includes(s))}function w(n,...t){let r=String.raw({raw:n},...t);return new i(r,m(r))}
 
-exports.TwigTemplate = TwigTemplate;
-exports.twig = twig;
+exports.TwigTemplate = i;
+exports.twig = w;
 //# sourceMappingURL=out.js.map
 //# sourceMappingURL=index.js.map

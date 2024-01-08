@@ -25,10 +25,13 @@
         "symfony/filesystem": "^7.0"
     },
     "require-dev": {
-      "phpstan/phpstan": "^1.10",
-      "symfony/framework-bundle": "^7.0",
-      "symfony/phpunit-bridge": "^7.0",
-      "symfony/twig-bundle": "^7.0",
-      "symfony/ux-twig-component": "^2.13"
+        "nelmio/cors-bundle": "^2.4",
+        "phpstan/phpstan": "^1.10",
+        "symfony/asset-mapper": "^7.0",
+        "symfony/browser-kit": "^7.0",
+        "symfony/framework-bundle": "^7.0",
+        "symfony/phpunit-bridge": "^7.0",
+        "symfony/twig-bundle": "^7.0",
+        "symfony/ux-twig-component": "^2.13"
     }
 }
