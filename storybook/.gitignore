@@ -5,3 +5,4 @@ build-storybook.log
 .env
 yarn.lock
 yarn-error.log
+.yarn

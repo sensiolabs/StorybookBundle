@@ -15,7 +15,7 @@ type InternalSymfonyOptions = {
     twigComponent: TwigComponentConfiguration;
 };
 
-export type FinalSymfonyOptions = SymfonyOptions & InternalSymfonyOptions;
+export type FinalSymfonyOptions = Required<SymfonyOptions> & InternalSymfonyOptions;
 
 /**
  * Post compiler to import component templates used in the stories file.
@@ -92,7 +92,7 @@ const TwigTemplateSourceLoader = createUnplugin<FinalSymfonyOptions>((options) =
  *
  * TODO: This should be done elsewhere, currently it's ran for each build target.
  */
-const TwigStoriesTemplateGeneratorPlugin = createUnplugin<SymfonyOptions>((options) => {
+const TwigStoriesTemplateGeneratorPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
     const outDir = join(options.runtimePath, '/stories');
     async function cleanRuntimeDir(dir: string) {
         try {
@@ -125,7 +125,7 @@ const TwigStoriesTemplateGeneratorPlugin = createUnplugin<SymfonyOptions>((optio
         // Write actual story contents named by content hash
         const templates = storyIndex.getTemplates();
         templates.forEach((source, hash) => {
-            fileOperations.push(fs.writeFile(join(dir, `${hash}.html.twig`), dedent(templates.get(hash))));
+            fileOperations.push(fs.writeFile(join(dir, `${hash}.html.twig`), dedent(source)));
         });
 
         return Promise.all(fileOperations);
@@ -161,7 +161,7 @@ const AssetMapperPlugin = createUnplugin(() => {
                     virtualModules.writeModule(importMapPath, content);
                     cb();
                 } catch (err) {
-                    cb(err);
+                    cb(err as Error);
                 }
             });
         },
@@ -182,7 +182,7 @@ export const SymfonyPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
     return {
         name: 'symfony-plugin',
         webpack(compiler) {
-            plugins.forEach((plugin) => plugin.webpack(options).apply(compiler));
+            plugins.forEach((plugin) => plugin?.webpack(options).apply(compiler));
         },
     };
 });

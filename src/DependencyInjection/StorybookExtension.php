@@ -3,7 +3,7 @@
 namespace Storybook\DependencyInjection;
 
 use Storybook\Attributes\AsStorybookLoader;
-use Storybook\Command\DumpImportMapCommand;
+use Storybook\Command\DumpImportmapModuleCommand;
 use Storybook\Controller\StorybookController;
 use Storybook\EventListener\CorsListener;
 use Storybook\EventListener\ExceptionListener;
@@ -57,7 +57,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
             ->addTag('twig.loader');
 
         if (class_exists(AssetMapper::class)) {
-            $container->register('storybook.dump_importmap_command', DumpImportMapCommand::class)
+            $container->register('storybook.dump_importmap_command', DumpImportmapModuleCommand::class)
                 ->setArgument(0, new Reference('asset_mapper.importmap.config_reader'))
                 ->addTag('console.command', ['name' => 'storybook:dump-importmap'])
             ;

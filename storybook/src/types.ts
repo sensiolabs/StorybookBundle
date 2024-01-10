@@ -9,7 +9,7 @@ import type {
     TypescriptOptions as TypescriptOptionsBuilder,
 } from '@storybook/builder-webpack5';
 
-type FrameworkName = '@storybook/symfony-webpack5';
+type FrameworkName = '@sensiolabs/storybook-symfony-webpack5';
 type BuilderName = '@storybook/builder-webpack5';
 
 type ProxyPaths = string[] | string;
@@ -38,7 +38,7 @@ export type SymfonyOptions = {
 
 export type FrameworkOptions = {
     builder?: BuilderOptions;
-    symfony?: SymfonyOptions;
+    symfony: SymfonyOptions;
 };
 
 type StorybookConfigFramework = {

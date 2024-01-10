@@ -34,6 +34,7 @@ function parseSubComponents(source: string) {
                 names.push(...lookupComponents(value));
             } else if (typeof value === 'string') {
                 for (const m of value.matchAll(functionRe)) {
+                    // @ts-ignore
                     names.push([...m][1]);
                 }
             }
@@ -41,7 +42,7 @@ function parseSubComponents(source: string) {
                 names.push(key.replace('twig:', ''));
             }
             return names;
-        }, []);
+        }, [] as string[]);
     };
 
     return lookupComponents(documentObj).filter((name) => !reservedNames.includes(name));

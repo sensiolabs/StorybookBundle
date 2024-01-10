@@ -1,12 +1,14 @@
 import { readCsf, StaticStory } from '@storybook/csf-tools';
-import { Indexer } from '@storybook/types';
+import { Indexer, IndexInput } from '@storybook/types';
 import { TwigTemplate } from './utils';
 import crypto from 'crypto';
+import dedent from 'ts-dedent';
+import { logger } from '@storybook/node-logger';
 
 type TwigTemplateSource = string;
 type StoryId = StaticStory['id'];
 
-class TwigStoriesIndexer {
+class TwigStoryIndex {
     private templates: Map<string, TwigTemplateSource> = new Map<string, TwigTemplateSource>();
     private storyIndex: Map<StoryId, string> = new Map<StoryId, string>();
     private componentsInFiles = new Map<string, string[]>();
@@ -20,6 +22,8 @@ class TwigStoriesIndexer {
         if (!this.componentsInFiles.has(declaringFile)) {
             this.componentsInFiles.set(declaringFile, []);
         }
+
+        // @ts-ignore
         this.componentsInFiles.get(declaringFile).push(...component.getComponents());
 
         this.storyIndex.set(id, hash);
@@ -42,34 +46,46 @@ class TwigStoriesIndexer {
     }
 }
 
-export const twigCsfIndexer: Indexer = {
-    test: /(stories|story)\.(m?js|ts)x?$/,
-    createIndex: async (fileName, options) => {
-        const csf = (await readCsf(fileName, { ...options })).parse();
-
-        const twigIndexer = getTwigStoriesIndexer();
-
-        // Should delete cached module to update template contents if changed
-        delete require.cache[fileName];
-        /* eslint-disable @typescript-eslint/no-var-requires */
-        const module = require(fileName);
-
-        csf.indexInputs.forEach((story) => {
-            const template = module[story.exportName]?.template ?? module['default']?.template ?? undefined;
-            if (undefined !== template) {
-                twigIndexer.register(story.__id, template, fileName);
-            }
-        });
-
-        return csf.indexInputs;
-    },
-};
-
-let twigIndexer: TwigStoriesIndexer;
+let twigIndexer: TwigStoryIndex;
 export function getTwigStoriesIndexer() {
     if (twigIndexer !== undefined) {
         return twigIndexer;
     }
 
-    return twigIndexer = new TwigStoriesIndexer();
+    return (twigIndexer = new TwigStoryIndex());
 }
+
+export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex) => {
+    return {
+        test: /(stories|story)\.(m?js|ts)x?$/,
+        createIndex: async (fileName, options) => {
+            const csf = (await readCsf(fileName, { ...options })).parse();
+
+            // Should delete cached module to update template contents if changed
+            delete require.cache[fileName];
+            /* eslint-disable @typescript-eslint/no-var-requires */
+            const module = require(fileName);
+
+            const indexedStories: IndexInput[] = [];
+
+            csf.indexInputs.forEach((story) => {
+                try {
+                    const template = module[story.exportName]?.template ?? module['default']?.template ?? undefined;
+
+                    if (undefined !== template && story.__id !== undefined) {
+                        twigStoryIndex.register(story.__id, template, fileName);
+                    }
+
+                    indexedStories.push(story);
+                } catch (err) {
+                    logger.warn(dedent`
+                    Unable to index story "${story.exportName}" in ${fileName}:
+                    ${err}
+                `);
+                }
+            });
+
+            return indexedStories;
+        },
+    } as Indexer;
+};

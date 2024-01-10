@@ -1,10 +1,10 @@
 import { FrameworkOptions, SymfonyOptions } from './types';
 import { StorybookConfig } from '@storybook/preset-server-webpack';
 import { Options, PresetProperty, Entry, Indexer } from '@storybook/types';
-import { twigCsfIndexer } from './indexer';
+import { getTwigStoriesIndexer, createTwigCsfIndexer } from './indexer';
 import { getKernelProjectDir, getTwigComponentConfiguration } from './utils/symfony';
 import * as path from 'path';
-import { FinalSymfonyOptions, SymfonyPlugin } from './plugins/symfony-plugin';
+import { SymfonyPlugin, FinalSymfonyOptions } from './plugins/symfony-plugin';
 
 export const core: PresetProperty<'core'> = async (config, options) => {
     const framework = await options.presets.apply('framework');
@@ -23,8 +23,8 @@ export const frameworkOptions = async (frameworkOptions: FrameworkOptions, optio
     const { configDir } = options;
 
     const symfonyOptions: SymfonyOptions = {
-        ...frameworkOptions.symfony,
-        runtimePath: path.join(configDir, frameworkOptions.symfony.runtimePath ?? '../var/storybook'),
+        ...(frameworkOptions.symfony || {}),
+        runtimePath: path.join(configDir, frameworkOptions.symfony?.runtimePath ?? '../var/storybook'),
     };
 
     return {
@@ -71,13 +71,13 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
         plugins: [...(config.plugins || []), SymfonyPlugin.webpack(symfonyOptions)],
         module: {
             ...config.module,
-            rules: [...(config.module.rules || [])],
+            rules: [...(config.module?.rules || [])],
         },
     };
 };
 
 export const experimental_indexers: PresetProperty<'experimental_indexers'> = (existingIndexers: Indexer[]) =>
-    [twigCsfIndexer].concat(existingIndexers || []);
+    [createTwigCsfIndexer(getTwigStoriesIndexer())].concat(existingIndexers || []);
 
 export const previewAnnotations = (entry: Entry[] = []) => {
     return [require.resolve('./preview'), ...entry];

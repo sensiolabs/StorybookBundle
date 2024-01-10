@@ -78,7 +78,6 @@ class Kernel extends BaseKernel
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->import('@StorybookBundle/config/routes.php')
-            ->prefix('_storybook');
+        $routes->import('@StorybookBundle/config/routes.php');
     }
 }

@@ -39,7 +39,7 @@ type StorybookConfig$1<TWebpackConfiguration = WebpackConfiguration> = Storybook
     webpackFinal?: (config: TWebpackConfiguration, options: Options) => TWebpackConfiguration | Promise<TWebpackConfiguration>;
 };
 
-type FrameworkName = '@storybook/symfony-webpack5';
+type FrameworkName = '@sensiolabs/storybook-symfony-webpack5';
 type BuilderName = '@storybook/builder-webpack5';
 type ProxyPaths = string[] | string;
 type SymfonyOptions = {
@@ -62,7 +62,7 @@ type SymfonyOptions = {
 };
 type FrameworkOptions = {
     builder?: BuilderOptions;
-    symfony?: SymfonyOptions;
+    symfony: SymfonyOptions;
 };
 type StorybookConfigFramework = {
     framework: FrameworkName | {

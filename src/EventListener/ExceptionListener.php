@@ -15,14 +15,8 @@ class ExceptionListener
     {
         $th = $event->getThrowable();
 
-        match (true) {
-            $th instanceof TemplateNotFoundException => $this->onTemplateNotFound($event),
-            default => null,
-        };
-    }
-
-    private function onTemplateNotFound(ExceptionEvent $event): void
-    {
-        $event->setThrowable(new NotFoundHttpException($event->getThrowable()->getMessage(), $event->getThrowable()));
+        if ($th instanceof TemplateNotFoundException) {
+            $event->setThrowable(new NotFoundHttpException($event->getThrowable()->getMessage(), $event->getThrowable()));
+        }
     }
 }

@@ -8,11 +8,14 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand('storybook:dump-importmap', hidden: true)]
 /**
+ * Dump a JavaScript module that imports assets declared in the importmap.
+ * Note this command is hidden and only intended to be run by the Storybook builder, not the user.
+ *
  * @author Nicolas Rigaud <squrious@protonmail.com>
  */
-class DumpImportMapCommand extends Command
+#[AsCommand('storybook:dump-importmap', hidden: true)]
+class DumpImportmapModuleCommand extends Command
 {
     public function __construct(private readonly ImportMapConfigReader $importMapConfigReader)
     {
