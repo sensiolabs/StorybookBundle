@@ -55,9 +55,11 @@ export function getTwigStoriesIndexer() {
     return (twigIndexer = new TwigStoryIndex());
 }
 
+export const STORIES_REGEX = /(stories|story)\.(m?js|ts)x?$/;
+
 export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex) => {
     return {
-        test: /(stories|story)\.(m?js|ts)x?$/,
+        test: STORIES_REGEX,
         createIndex: async (fileName, options) => {
             const csf = (await readCsf(fileName, { ...options })).parse();
 

@@ -3,13 +3,12 @@
 namespace Storybook\DependencyInjection;
 
 use Storybook\Attributes\AsStorybookLoader;
-use Storybook\Command\DumpImportmapModuleCommand;
+use Storybook\Command\GeneratePreviewCommand;
 use Storybook\Controller\StorybookController;
 use Storybook\EventListener\CorsListener;
 use Storybook\EventListener\ExceptionListener;
 use Storybook\Loader\StorybookLoader;
 use Storybook\Twig\StoryTemplateLoader;
-use Symfony\Component\AssetMapper\AssetMapper;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -56,12 +55,11 @@ class StorybookExtension extends Extension implements ConfigurationInterface
             ->setArgument(0, $config['runtime_dir'])
             ->addTag('twig.loader');
 
-        if (class_exists(AssetMapper::class)) {
-            $container->register('storybook.dump_importmap_command', DumpImportmapModuleCommand::class)
-                ->setArgument(0, new Reference('asset_mapper.importmap.config_reader'))
-                ->addTag('console.command', ['name' => 'storybook:dump-importmap'])
-            ;
-        }
+        $container->register('storybook.generate_preview_command', GeneratePreviewCommand::class)
+            ->setArgument(0, new Reference('twig'))
+            ->setArgument(1, $config['preview'])
+            ->addTag('console.command', ['name' => 'storybook:generate-preview'])
+        ;
     }
 
     public function getConfigTreeBuilder(): TreeBuilder
@@ -80,6 +78,11 @@ class StorybookExtension extends Extension implements ConfigurationInterface
                     ->info('Location of storybook runtime files')
                     ->cannotBeEmpty()
                     ->defaultValue('%kernel.project_dir%/var/storybook')
+                ->end()
+                ->scalarNode('preview')
+                    ->info('Preview template')
+                    ->cannotBeEmpty()
+                    ->defaultValue('@Storybook/preview.html.twig')
                 ->end()
             ->end();
 

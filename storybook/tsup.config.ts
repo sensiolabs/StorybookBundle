@@ -41,7 +41,7 @@ export default defineConfig(async (options) => {
         minify: !options.watch,
         treeshake: true,
         sourcemap: true,
-        clean: true,
+        clean: !options.watch,
     };
 
     const configs: Options[] = [];

@@ -56,9 +56,9 @@ type SymfonyOptions = {
      */
     proxyPaths?: ProxyPaths;
     /**
-     * Whether to configure AssetMapper integration. This will enable hot reload when mapped assets changed.
+     * Additional paths to watch during compilation.
      */
-    useAssetMapper?: boolean;
+    additionalWatchPaths?: string[];
 };
 type FrameworkOptions = {
     builder?: BuilderOptions;

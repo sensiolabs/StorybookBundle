@@ -1,16 +1,21 @@
 import { createUnplugin } from 'unplugin';
 import { SymfonyOptions } from '../types';
-import { getTwigStoriesIndexer } from '../indexer';
+import { getTwigStoriesIndexer, STORIES_REGEX } from '../indexer';
 import { resolveTwigComponentFile, runSymfonyCommand, TwigComponentConfiguration } from '../utils/symfony';
 import dedent from 'ts-dedent';
 import { twig } from '../utils';
 import { join } from 'path';
-import fs from 'fs/promises';
-import path from 'path';
-import process from 'process';
+import fs from 'node:fs';
+import * as fsPromise from 'fs/promises';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { JSDOM } from 'jsdom';
+import isGlob from 'is-glob';
+import { glob } from 'glob';
+import { logger } from '@storybook/node-logger';
 
 type InternalSymfonyOptions = {
+    additionalWatchPaths: string[];
     projectDir: string;
     twigComponent: TwigComponentConfiguration;
 };
@@ -29,7 +34,7 @@ const TwigStoriesCompilerPlugin = createUnplugin<FinalSymfonyOptions>((options) 
         name: 'twig-stories-compiler',
         enforce: 'post',
         transformInclude: (id) => {
-            return /\.stories\.[tj]s?$/.test(id) && twigStoriesIndexer.fileHasTemplates(id);
+            return STORIES_REGEX.test(id) && twigStoriesIndexer.fileHasTemplates(id);
         },
         transform: async (code, id) => {
             const components = new Set<string>(twigStoriesIndexer.getComponentsInFile(id));
@@ -43,11 +48,7 @@ const TwigStoriesCompilerPlugin = createUnplugin<FinalSymfonyOptions>((options) 
             ${code}
             
             ; export const __twigTemplates = [
-                ${imports.map(
-                    (template) => `import(
-                    '${template}'
-                )`
-                )}
+                ${imports.map((file) => `import('${file}')`)}
             ];
           `;
         },
@@ -59,30 +60,36 @@ const TwigStoriesCompilerPlugin = createUnplugin<FinalSymfonyOptions>((options) 
  *
  * Generates JS modules to export raw template source and imports required components.
  */
-const TwigTemplateSourceLoader = createUnplugin<FinalSymfonyOptions>((options) => {
+const TwigTemplateLoaderPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
     return {
         name: 'twig-loader',
         enforce: 'pre',
         transformInclude: (id) => {
             return /\.html\.twig$/.test(id);
         },
-        transform: async (code) => {
-            const templateSource = twig`${code}`;
-            const components = new Set<string>(templateSource.getComponents());
-
+        transform: async (code, id) => {
             const imports: string[] = [];
 
-            components.forEach((v) => {
-                imports.push(resolveTwigComponentFile(v, options.twigComponent));
-            });
+            try {
+                const templateSource = twig`${code}`;
+                const components = new Set<string>(templateSource.getComponents());
+
+                components.forEach((v) => {
+                    imports.push(resolveTwigComponentFile(v, options.twigComponent));
+                });
+            } catch (err) {
+                logger.warn(dedent`
+                Failed to parse template in '${id}': ${err}
+                `);
+            }
 
             return dedent`            
-            ${imports.map((templateFile) => `import '${templateFile}';`).join('\n')}
+            ${imports.map((file) => `import '${file}';`).join('\n')}
             
-            const source = \`${code}\`;
-            
-            export default { source }; 
-          `;
+            export default { 
+                source: \`${code}\`,
+            }; 
+           `;
         },
     };
 });
@@ -90,17 +97,17 @@ const TwigTemplateSourceLoader = createUnplugin<FinalSymfonyOptions>((options) =
 /**
  * Plugin that hooks on compilation events to clean and create templates used to render actual stories.
  *
- * TODO: This should be done elsewhere, currently it's ran for each build target.
+ * TODO: This should be done elsewhere, currently it's run for each build target.
  */
 const TwigStoriesTemplateGeneratorPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
     const outDir = join(options.runtimePath, '/stories');
     async function cleanRuntimeDir(dir: string) {
         try {
-            await fs.access(dir, fs.constants.F_OK);
-            const files = await fs.readdir(dir);
-            await Promise.all(files.map((f) => fs.unlink(join(dir, f))));
+            await fsPromise.access(dir, fs.constants.F_OK);
+            const files = await fsPromise.readdir(dir);
+            await Promise.all(files.map((f) => fsPromise.unlink(join(dir, f))));
         } catch (err) {
-            await fs.mkdir(dir, { recursive: true });
+            await fsPromise.mkdir(dir, { recursive: true });
         }
     }
 
@@ -113,19 +120,14 @@ const TwigStoriesTemplateGeneratorPlugin = createUnplugin<FinalSymfonyOptions>((
         for (const storyId in storiesMap) {
             const storyPath = join(dir, `${storyId}.html.twig`);
             fileOperations.push(
-                fs.writeFile(
-                    storyPath,
-                    dedent`
-                {{ include('@Stories/${storiesMap[storyId]}.html.twig') }}
-            `
-                )
+                fsPromise.writeFile(storyPath, `{{ include('@Stories/${storiesMap[storyId]}.html.twig') }}`)
             );
         }
 
         // Write actual story contents named by content hash
         const templates = storyIndex.getTemplates();
         templates.forEach((source, hash) => {
-            fileOperations.push(fs.writeFile(join(dir, `${hash}.html.twig`), dedent(source)));
+            fileOperations.push(fsPromise.writeFile(join(dir, `${hash}.html.twig`), dedent(source)));
         });
 
         return Promise.all(fileOperations);
@@ -142,27 +144,96 @@ const TwigStoriesTemplateGeneratorPlugin = createUnplugin<FinalSymfonyOptions>((
     };
 });
 
-const AssetMapperPlugin = createUnplugin(() => {
-    const PLUGIN_NAME = 'asset-mapper';
+/**
+ * Allow to customize the preview iframe.
+ */
+const PreviewPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
+    const PLUGIN_NAME = 'preview-plugin';
+    const { projectDir, additionalWatchPaths } = options;
     return {
         name: PLUGIN_NAME,
+        enforce: 'post',
+        transformInclude(id) {
+            return /storybook-config-entry\.js$/.test(id);
+        },
+        async transform(code) {
+            return dedent`
+            import { symfonyPreview } from './symfony-preview.js';
+
+            ${code}
+
+            window.__SYMFONY_PREVIEW__ = symfonyPreview;
+            if (import.meta.webpackHot) {
+                import.meta.webpackHot.accept('./symfony-preview.js', () => {
+                    const iframe = window.top.document.getElementById('storybook-preview-iframe');
+                    if (iframe) {
+                        iframe.src = iframe.src;
+                    }
+                });
+            }
+            `;
+        },
         webpack(compiler) {
-            const importMapFilename = 'importmap.js';
-            const importMapPath = path.resolve(path.join(process.cwd(), importMapFilename));
+            // Virtual plugin
+            const v = new VirtualModulesPlugin();
+            v.apply(compiler);
 
-            // Register virtual module plugin
-            const virtualModules = new VirtualModulesPlugin();
-            virtualModules.apply(compiler);
+            let previewHtml = '';
 
-            // Write importmap module after compilation
-            compiler.hooks.beforeCompile.tapAsync(PLUGIN_NAME, async (params, cb) => {
-                try {
-                    const content = await runSymfonyCommand('storybook:dump-importmap');
-                    virtualModules.writeModule(importMapPath, content);
-                    cb();
-                } catch (err) {
-                    cb(err as Error);
-                }
+            // Populate virtual iframe module before compilation
+            // TODO restrict this hook to the right compilation
+            compiler.hooks.beforeCompile.tapPromise(PLUGIN_NAME, async () => {
+                previewHtml = await runSymfonyCommand('storybook:generate-preview');
+
+                v.writeModule(
+                    './symfony-preview.js',
+                    dedent`
+                    export const symfonyPreview = {
+                        html: \`${previewHtml}\`,
+                    };
+                `
+                );
+            });
+
+            // TODO restrict this hook to the right compilation
+            compiler.hooks.compilation.tap(PLUGIN_NAME, (compilation) => {
+                // Register additional watch paths for HMR
+                additionalWatchPaths
+                    .map((v) => join(projectDir, v))
+                    .forEach((watchPath) => {
+                        if (isGlob(watchPath)) {
+                            glob.sync(watchPath, {
+                                dot: true,
+                                absolute: true,
+                            }).forEach((watchPath) => {
+                                compilation.fileDependencies.add(watchPath);
+                            });
+                        } else if (fs.existsSync(watchPath)) {
+                            const stats = fs.lstatSync(watchPath);
+                            if (stats.isDirectory()) {
+                                compilation.contextDependencies.add(watchPath);
+                            } else {
+                                compilation.fileDependencies.add(watchPath);
+                            }
+                        } else {
+                            logger.warn(dedent`
+                        Ignoring additional watch path '${watchPath}': path doesn't exists.
+                        `);
+                        }
+                    });
+
+                // Inject previewHead and previewBody in the iframe
+                HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution.tap(PLUGIN_NAME, (params) => {
+                    const previewDom = new JSDOM(previewHtml);
+
+                    const previewHead = previewDom.window.document.head;
+                    const previewBody = previewDom.window.document.body;
+
+                    params.html = params.html
+                        .replace('<!--PREVIEW_HEAD_PLACEHOLDER-->', previewHead.innerHTML)
+                        .replace('<!--PREVIEW_BODY_PLACEHOLDER-->', previewBody.innerHTML);
+                    return params;
+                });
             });
         },
     };
@@ -173,15 +244,17 @@ const AssetMapperPlugin = createUnplugin(() => {
  */
 export const SymfonyPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
     const plugins = [
+        PreviewPlugin,
         TwigStoriesTemplateGeneratorPlugin,
         TwigStoriesCompilerPlugin,
-        TwigTemplateSourceLoader,
-        options.useAssetMapper ? AssetMapperPlugin : null,
+        TwigTemplateLoaderPlugin,
     ].filter(Boolean);
 
     return {
         name: 'symfony-plugin',
         webpack(compiler) {
+            // Compiler types don't match
+            // @ts-ignore
             plugins.forEach((plugin) => plugin?.webpack(options).apply(compiler));
         },
     };

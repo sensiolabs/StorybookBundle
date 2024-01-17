@@ -20,7 +20,7 @@ Add the bundled NPM package for Symfony integration:
 yarn add -D @sensiolabs/storybook-symfony-webpack5@file:vendor/sensiolabs/storybook-bundle/storybook
 ```
 
-Create storybook configuration in `.storybook/`: 
+Create Storybook configuration in `.storybook/`: 
 
 ```ts
 // .storybook/main.ts
@@ -35,7 +35,7 @@ const config: StorybookConfig = {
         "@storybook/addon-essentials",
     ],
     framework: {
-        // 👇 Here tell storybook to use the Symfony framework  
+        // 👇 Here tell Storybook to use the Symfony framework  
         name: "@sensiolabs/storybook-symfony-webpack5",
         options: {
           builder: {
@@ -44,7 +44,7 @@ const config: StorybookConfig = {
           // 👇 Here configure the framework
           symfony: {
               server: 'https://localhost:8000', // This is mandatory, the URL of your Symfony dev server
-              proxyPaths: [ // Setup here paths to resolve your assets
+              proxyPaths: [ // Setup here paths to resolve your assets. Those paths are proxied to your Symfony server.
                   '/assets'
               ]
           }
@@ -107,7 +107,7 @@ Additionally, you can add custom scripts to your `package.json` file:
 
 ### CORS
 
-As the Symfony integration relies on the Storybook's server renderer, it makes requests to your Symfony server to render Twig components. These requests are cross origins, so you have to configure Symfony to accept them from your Storybook instance.
+As the Symfony integration relies on the Storybook's server renderer, it makes requests to your Symfony server to render your stories. These requests are cross origins, so you have to configure Symfony to accept them from your Storybook instance.
 
 There is two options to achieve this. You can either configure the Storybook host in the bundle, or use the popular [NelmioCorsBundle](https://symfony.com/bundles/NelmioCorsBundle/current/index.html). 
 
@@ -136,37 +136,75 @@ nelmio_cors:
       allow_methods: ['GET']
 ```
 
-## AssetMapper integration
+## Customizing the preview iframe
 
-To use Storybook with a project that uses the [AssetMapper component](https://symfony.com/doc/current/frontend/asset_mapper.html), you have to enable the integration in your `main.js|ts` file: 
+To customize the iframe where your stories are rendered, you can create a preview template:
+
+```twig
+{# templates/storybook/preview.html.twig #}
+
+{% extends '@Storybook/preview.html.twig' %}
+
+{% block previewHead %}
+    {# render additional tags to <head> #}
+{% endblock %}
+
+{% block previewBody %}
+    {# render additional tags to <body> #}
+{% endblock %}
+```
+
+Then enable it in the bundle configuration: 
+
+```yaml
+# config/storybook.yaml
+storybook: 
+  preview: storybook/preview.html.twig
+```
+
+The rendered content of these blocks will be injected in the preview iframe, similarly to the [previewHead](https://storybook.js.org/docs/configure/story-rendering#adding-to-head) and [previewBody](https://storybook.js.org/docs/configure/story-rendering#adding-to-body) configurations.
+
+> Note: 
+> \
+> The template doesn't strictly need to extend `@Storybook/preview.html.twig`, but the rendered content needs to be a valid HTML document, and this inheritance facilitates this requirement.
+
+### AssetMapper integration
+
+To use Storybook with a project that uses the [AssetMapper component](https://symfony.com/doc/current/frontend/asset_mapper.html), you need to render your importmap in the preview template: 
+
+```twig
+{# templates/storybook/preview.html.twig #}
+
+{% extends '@Storybook/preview.html.twig' %}
+
+{% block previewHead %}
+    {{ importmap('app') }}
+{% endblock %}
+```
+
+Though, standard HMR will not work properly with AssetMapper. To register additional paths to watch and re-trigger the iframe compilation, update your `main.ts|js` configuration:
 
 ```ts
 // .storybook/main.ts
+
+// ...
 
 const config: StorybookConfig = {
     framework: {
         name: "@sensiolabs/storybook-symfony-webpack5",
         options: {
+            // ...
             symfony: {
-                // 👇 Here enable AssetMapper integration
-                useAssetMapper: true
-            }
+                // 👇 Add more paths to watch
+                additionalWatchPaths: [
+                    'assets', // Directories
+                    'assets/app.js', // Files
+                    'assets/**/*.js' // Glob patterns
+                ],
+            },
         },
     },
 };
-export default config;
-```
-
-Now, before your stories are compiled by Storybook, a virtual `importmap` JS module is generated to import all assets declared in your `importmap.php` file. 
-
-To actually load this module in the Storybook preview, you have to import it in your `preview.js|ts` file:
-
-```ts
-// .storybook/preview.ts
-
-import '../importmap';
-
-// ...
 ```
 
 ## Writing stories
@@ -232,7 +270,7 @@ Then you have to clean the yarn cache for the conflicting module and reinstall:
 
 ```
 yarn cache clean string-width-cjs@npm:string-width@^4.2.0
-rm -rf node_modules yarn.lock
+rm -rf yarn.lock
 yarn install --force
 ```
 

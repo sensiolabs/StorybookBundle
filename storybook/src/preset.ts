@@ -2,9 +2,13 @@ import { FrameworkOptions, SymfonyOptions } from './types';
 import { StorybookConfig } from '@storybook/preset-server-webpack';
 import { Options, PresetProperty, Entry, Indexer } from '@storybook/types';
 import { getTwigStoriesIndexer, createTwigCsfIndexer } from './indexer';
-import { getKernelProjectDir, getTwigComponentConfiguration } from './utils/symfony';
+import {
+    getKernelProjectDir,
+    getTwigComponentConfiguration,
+} from './utils/symfony';
 import * as path from 'path';
 import { SymfonyPlugin, FinalSymfonyOptions } from './plugins/symfony-plugin';
+import dedent from 'ts-dedent';
 
 export const core: PresetProperty<'core'> = async (config, options) => {
     const framework = await options.presets.apply('framework');
@@ -48,6 +52,7 @@ async function resolveFinalSymfonyOptions(symfonyOptions: SymfonyOptions) {
     return {
         ...symfonyOptions,
         projectDir: projectDir,
+        additionalWatchPaths: symfonyOptions.additionalWatchPaths ?? [],
         twigComponent: {
             anonymousTemplateDirectory: path.join(
                 projectDir,
@@ -68,7 +73,11 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
 
     return {
         ...config,
-        plugins: [...(config.plugins || []), SymfonyPlugin.webpack(symfonyOptions)],
+
+        plugins: [
+            ...(config.plugins || []),
+            SymfonyPlugin.webpack(symfonyOptions),
+        ],
         module: {
             ...config.module,
             rules: [...(config.module?.rules || [])],
@@ -82,3 +91,13 @@ export const experimental_indexers: PresetProperty<'experimental_indexers'> = (e
 export const previewAnnotations = (entry: Entry[] = []) => {
     return [require.resolve('./preview'), ...entry];
 };
+
+export const previewHead = async (base: any) => dedent`
+    ${base}
+    <!--PREVIEW_HEAD_PLACEHOLDER-->
+    `;
+
+export const previewBody = async (base: any) => dedent`
+    ${base}
+    <!--PREVIEW_BODY_PLACEHOLDER-->
+    `;
