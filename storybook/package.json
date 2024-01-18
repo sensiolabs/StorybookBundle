@@ -1,129 +1,118 @@
 {
-  "name": "@storybook/symfony-webpack5",
-  "version": "0.0.1",
-  "description": "Storybook for Symfony",
-  "keywords": [
-    "storybook",
-    "symfony"
-  ],
-  "license": "MIT",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "node": "./dist/index.js",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+    "name": "@sensiolabs/storybook-symfony-webpack5",
+    "version": "0.0.1",
+    "description": "Storybook for Symfony",
+    "keywords": [
+        "storybook",
+        "symfony"
+    ],
+    "license": "MIT",
+    "scripts": {
+        "build": "tsup",
+        "build:watch": "npm run build -- --watch",
+        "clean": "rimraf ./dist",
+        "prebuild": "npm run clean",
+        "lint": "eslint src test",
+        "format": "prettier src/**/*.ts test/**/*.ts {,src/*/}*.{json,md} --write",
+        "test": "vitest --run ./test",
+        "check-format": "npm run format -- --no-write --check",
+        "check-lint": "npm run lint -- --no-fix"
     },
-    "./preset": {
-      "types": "./dist/preset.d.ts",
-      "require": "./dist/preset.js"
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "node": "./dist/index.js",
+            "require": "./dist/index.js",
+            "import": "./dist/index.mjs"
+        },
+        "./preset": {
+            "types": "./dist/preset.d.ts",
+            "require": "./dist/preset.js"
+        },
+        "./preview": "./dist/preview.mjs",
+        "./package.json": "./package.json"
     },
-    "./preview": "./dist/preview.mjs",
-    "./package.json": "./package.json"
-  },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "dist/index.d.ts"
-      ]
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**/*",
+        "README.md",
+        "*.js",
+        "*.d.ts",
+        "!src/**/*"
+    ],
+    "dependencies": {
+        "@storybook/builder-webpack5": "^7.6.7",
+        "@storybook/server": "^7.6.7",
+        "css-loader": "^6.7.3",
+        "html-webpack-plugin": "^5.6.0",
+        "http-proxy-middleware": "^2.0.6",
+        "jsdom": "^23.0.1",
+        "node-polyfill-webpack-plugin": "^2.0.1",
+        "tsconfig-paths": "^4.0.0",
+        "tsconfig-paths-webpack-plugin": "^4.0.1",
+        "unplugin": "^1.5.1"
+    },
+    "devDependencies": {
+        "@storybook/csf-tools": "^7.6.7",
+        "@storybook/manager": "^7.6.7",
+        "@storybook/node-logger": "^7.6.7",
+        "@storybook/preset-server-webpack": "^7.6.7",
+        "@storybook/preview": "^7.6.7",
+        "@storybook/types": "^7.6.7",
+        "@types/is-glob": "^4.0.4",
+        "@types/jest": "^29.5.11",
+        "@types/jsdom": "^21.1.6",
+        "@types/loader-utils": "^2.0.5",
+        "@types/node": "^18.0.0",
+        "@types/picomatch": "^2.3.3",
+        "@typescript-eslint/eslint-plugin": "^6.18.0",
+        "@typescript-eslint/parser": "^6.18.0",
+        "eslint": "^8.56.0",
+        "eslint-config-prettier": "^9.1.0",
+        "fast-xml-parser": "^4.3.2",
+        "glob": "^10.3.10",
+        "is-glob": "^4.0.3",
+        "prettier": "^3.2.4",
+        "rimraf": "^5.0.5",
+        "ts-dedent": "^2.0.0",
+        "ts-node": "^10.9.2",
+        "tsup": "^8.0.1",
+        "typescript": "^5.3.2",
+        "vitest": "^1.1.1",
+        "webpack": "^5.65.0",
+        "webpack-virtual-modules": "^0.6.1"
+    },
+    "peerDependencies": {
+        "typescript": "^5.3.3",
+        "webpack": "^5.0.0"
+    },
+    "peerDependenciesMeta": {
+        "typescript": {
+            "optional": true
+        },
+        "webpack": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "bundler": {
+        "nodeEntries": [
+            "./src/preset.ts",
+            "./src/builders/webpack5-builder.ts"
+        ],
+        "previewEntries": [
+            "./src/preview.ts"
+        ],
+        "exportEntries": [
+            "./src/index.ts"
+        ],
+        "managerEntries": []
     }
-  },
-  "files": [
-    "dist/**/*",
-    "README.md",
-    "*.js",
-    "*.d.ts",
-    "!src/**/*"
-  ],
-  "scripts": {
-    "clean": "rimraf ./dist",
-    "prebuild": "npm run clean",
-    "build": "tsup",
-    "build:watch": "npm run build -- --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "@storybook/addon-actions": "^7.6.0",
-    "@storybook/builder-webpack5": "^7.6.0",
-    "@storybook/core-common": "^7.6.0",
-    "@storybook/core-events": "^7.6.0",
-    "@storybook/node-logger": "^7.6.0",
-    "@storybook/preview-api": "^7.6.0",
-    "@types/node": "^18.0.0",
-    "css-loader": "^6.7.3",
-    "find-up": "^5.0.0",
-    "fs-extra": "^11.1.0",
-    "html-loader": "^4.2.0",
-    "http-proxy-middleware": "^2.0.6",
-    "image-size": "^1.0.0",
-    "loader-utils": "^3.2.1",
-    "node-polyfill-webpack-plugin": "^2.0.1",
-    "picomatch": "^3.0.1",
-    "pnp-webpack-plugin": "^1.7.0",
-    "postcss": "^8.4.21",
-    "postcss-loader": "^7.0.2",
-    "resolve-url-loader": "^5.0.0",
-    "sass-loader": "^12.4.0",
-    "semver": "^7.3.5",
-    "sharp": "^0.32.6",
-    "style-loader": "^3.3.1",
-    "ts-dedent": "^2.0.0",
-    "tsconfig-paths": "^4.0.0",
-    "tsconfig-paths-webpack-plugin": "^4.0.1",
-    "unplugin": "^1.5.1"
-  },
-  "devDependencies": {
-    "@storybook/components": "^7.6.4",
-    "@storybook/csf-tools": "^7.6.4",
-    "@storybook/icons": "^1.2.3",
-    "@storybook/manager-api": "^7.6.4",
-    "@storybook/server": "^7.6.5",
-    "@storybook/server-webpack5": "^7.6.4",
-    "@types/loader-utils": "^2.0.5",
-    "@types/picomatch": "^2.3.3",
-    "@types/react": "^18.2.45",
-    "html-webpack-plugin": "^5.5.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "rimraf": "^5.0.5",
-    "ts-node": "^10.9.2",
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.2",
-    "webpack": "^5.65.0",
-    "webpack-virtual-modules": "^0.6.1"
-  },
-  "peerDependencies": {
-    "webpack": "^5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    },
-    "webpack": {
-      "optional": true
-    }
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "bundler": {
-    "nodeEntries": [
-      "./src/preset.ts",
-      "./src/builders/webpack5-builder.ts",
-      "./src/loaders/twig-loader.ts"
-    ],
-    "previewEntries": [
-      "./src/preview.ts"
-    ],
-    "exportEntries": [
-      "./src/index.ts"
-    ],
-    "managerEntries": []
-  }
 }

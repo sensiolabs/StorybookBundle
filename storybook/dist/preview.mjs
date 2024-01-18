@@ -1,21 +1,7 @@
 import { global } from '@storybook/global';
 
-// src/preview.ts
-function getFrameworkOptions() {
-  return global.FRAMEWORK_OPTIONS;
-}
-var decorators = [
-  (StoryFn, context) => {
-    const serverUrl = `${getFrameworkOptions().symfony.server}/_storybook/render`;
-    const { server = {} } = context.parameters;
-    if (server.url === void 0) {
-      server.url = serverUrl;
-      context.parameters.server = server;
-    }
-    return StoryFn();
-  }
-];
+function n(){return global.FRAMEWORK_OPTIONS}var m=[(e,o)=>{let{server:r={}}=o.parameters;return r.url===void 0&&(r.url=`${n().symfony.server}/_storybook/render`),o.parameters.server=r,e()}];
 
-export { decorators };
+export { m as decorators };
 //# sourceMappingURL=out.js.map
 //# sourceMappingURL=preview.mjs.map

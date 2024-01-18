@@ -3,9 +3,11 @@ import { BuilderOptions, StorybookConfigWebpack, TypescriptOptions } from '@stor
 
 declare class TwigTemplate {
     private readonly source;
-    constructor(source: string);
+    private readonly components;
+    constructor(source: string, components: string[]);
     getSource(): string;
     toString(): string;
+    getComponents(): string[];
 }
 declare function twig(source: TemplateStringsArray, ...values: any[]): TwigTemplate;
 
@@ -37,7 +39,7 @@ type StorybookConfig$1<TWebpackConfiguration = WebpackConfiguration> = Storybook
     webpackFinal?: (config: TWebpackConfiguration, options: Options) => TWebpackConfiguration | Promise<TWebpackConfiguration>;
 };
 
-type FrameworkName = '@storybook/symfony-webpack5';
+type FrameworkName = '@sensiolabs/storybook-symfony-webpack5';
 type BuilderName = '@storybook/builder-webpack5';
 type ProxyPaths = string[] | string;
 type SymfonyOptions = {
@@ -54,13 +56,13 @@ type SymfonyOptions = {
      */
     proxyPaths?: ProxyPaths;
     /**
-     * Whether to configure AssetMapper integration. This will enable hot reload when mapped assets changed.
+     * Additional paths to watch during compilation.
      */
-    useAssetMapper?: boolean;
+    additionalWatchPaths?: string[];
 };
 type FrameworkOptions = {
     builder?: BuilderOptions;
-    symfony?: SymfonyOptions;
+    symfony: SymfonyOptions;
 };
 type StorybookConfigFramework = {
     framework: FrameworkName | {

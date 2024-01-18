@@ -1,18 +1,31 @@
 {
-  "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "incremental": false,
-    "isolatedModules": true,
-    "jsx": "react",
-    "lib": ["es2020", "dom"],
-    "module": "commonjs",
-    "noImplicitAny": true,
-    "rootDir": "./src",
-    "skipLibCheck": true,
-    "target": "ES2020"
-  },
-  "include": ["src/**/*"]
+    "compileOnSave": false,
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "ignoreDeprecations": "5.0",
+        "incremental": false,
+        "isolatedModules": true,
+        "jsx": "react",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "strictBindCallApply": true,
+        "target": "ES2020",
+    },
+    "exclude": ["dist", "**/dist", "node_modules", "**/node_modules"],
+    "include": ["src/**/*", "test/**/*"],
+    "ts-node": {
+        "compilerOptions": {
+            "types": ["node"],
+        },
+        "files": true,
+        "transpileOnly": true,
+    },
 }

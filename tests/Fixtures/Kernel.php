@@ -9,9 +9,13 @@ use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Symfony\UX\TwigComponent\TwigComponentBundle;
 
-final class Kernel extends BaseKernel
+/**
+ * @author Nicolas Rigaud <squrious@protonmail.com>
+ */
+class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
@@ -35,6 +39,14 @@ final class Kernel extends BaseKernel
             'handle_all_throwables' => true,
         ];
 
+        // AssetMapper configuration
+        $frameworkConfig['asset_mapper'] = [
+            'importmap_path' => '%kernel.project_dir%/tests/Fixtures/importmap.php',
+            'paths' => [
+                'assets/',
+            ],
+        ];
+
         $container->extension('framework', $frameworkConfig);
 
         $container->extension('twig', [
@@ -50,7 +62,8 @@ final class Kernel extends BaseKernel
         ]);
 
         $container->extension('storybook', [
-            'stories_path' => '%kernel.project_dir%/tests/Fixtures/stories',
+            'runtime_dir' => '%kernel.project_dir%/tests/Fixtures/var/storybook',
+            'server' => 'http://localhost:6006',
         ]);
 
         $container->services()
@@ -61,5 +74,10 @@ final class Kernel extends BaseKernel
             // Disable logging errors in the console
             ->set('logger', NullLogger::class)
         ;
+    }
+
+    protected function configureRoutes(RoutingConfigurator $routes): void
+    {
+        $routes->import('@StorybookBundle/config/routes.php');
     }
 }
