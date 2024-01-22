@@ -16,7 +16,7 @@ use Twig\Environment;
  * @internal
  */
 #[AsCommand('storybook:generate-preview', hidden: true)]
-class GeneratePreviewCommand extends Command
+final class GeneratePreviewCommand extends Command
 {
     public function __construct(private readonly Environment $twig, private readonly string $previewTemplate)
     {

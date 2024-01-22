@@ -2,12 +2,15 @@
 
 namespace Storybook\EventListener;
 
+use Storybook\Util\RequestAttributesHelper;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
+ *
+ * @internal
  */
-class CorsListener
+final class CorsListener
 {
     public function __construct(private readonly ?string $host)
     {
@@ -19,9 +22,7 @@ class CorsListener
             return;
         }
 
-        $route = $event->getRequest()->attributes->get('_route');
-
-        if ('storybook_render' !== $route) {
+        if (!RequestAttributesHelper::isStorybookRequest($event->getRequest())) {
             return;
         }
 

@@ -8,8 +8,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
+ *
+ * @internal
  */
-class ExceptionListener
+final class ExceptionListener
 {
     public function __invoke(ExceptionEvent $event): void
     {

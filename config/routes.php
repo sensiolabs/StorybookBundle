@@ -3,9 +3,9 @@
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return function (RoutingConfigurator $routes) {
-    $routes->add('storybook_render', '/_storybook/render/{id}')
+    $routes->add('storybook_render', '/_storybook/render/{story}')
         ->requirements([
-            'id' => '.+',
+            'story' => '.+',
         ])
         ->controller('storybook.controller.render_story')
     ;
