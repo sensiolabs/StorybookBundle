@@ -22,7 +22,7 @@ final class MockedPropertiesProxy
     public function __call(string $name, array $args)
     {
         if (\array_key_exists($name, $this->mockedMethods)) {
-            return $this->provider->{$this->mockedMethods[$name]}(...$args);
+            return $this->callMockedMethod($name, $args);
         }
 
         if (isset($this->component->$name)) {
@@ -41,6 +41,13 @@ final class MockedPropertiesProxy
         } catch (\InvalidArgumentException $th) {
             throw new \LogicException('No mocked method nor original method found.', previous: $th);
         }
+    }
+
+    private function callMockedMethod(string $name, array $args): mixed
+    {
+        $invocationContext = new MockInvocationContext($this->component, $args);
+
+        return $this->provider->{$this->mockedMethods[$name]}($invocationContext);
     }
 
     private function normalizeMethod(string $name): string

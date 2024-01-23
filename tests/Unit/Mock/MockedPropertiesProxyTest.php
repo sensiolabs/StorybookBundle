@@ -4,10 +4,11 @@ namespace Storybook\Tests\Unit\Mock;
 
 use PHPUnit\Framework\TestCase;
 use Storybook\Mock\MockedPropertiesProxy;
+use Storybook\Mock\MockInvocationContext;
 
 class MockedPropertiesProxyTest extends TestCase
 {
-    public function testMockedMethodInvocation()
+    public function testMockedMethodIsCalledInsteadOfOriginalMethod()
     {
         $component = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['foo'])
@@ -20,11 +21,44 @@ class MockedPropertiesProxyTest extends TestCase
         $proxy = new MockedPropertiesProxy($component, $provider, ['foo' => 'foo']);
 
         $component->expects($this->never())->method('foo');
-        $provider->expects($this->once())->method('foo')->willReturn('mocked');
+        $provider
+            ->expects($this->once())
+            ->method('foo')
+            ->with($this->isInstanceOf(MockInvocationContext::class))
+            ->willReturn('mocked');
 
         $result = $proxy->__call('foo', []);
 
         $this->assertEquals('mocked', $result);
+    }
+
+    public function testMockInvocationContextReferencesOriginalComponentAndArguments()
+    {
+        $component = $this->getMockBuilder(\stdClass::class)
+            ->addMethods(['foo'])
+            ->getMock();
+
+        $provider = $this->getMockBuilder(\stdClass::class)
+            ->addMethods(['foo'])
+            ->getMock();
+
+        $proxy = new MockedPropertiesProxy($component, $provider, ['foo' => 'foo']);
+
+        $provider
+            ->expects($this->once())
+            ->method('foo')
+            ->with($this->logicalAnd(
+                $this->isInstanceOf(MockInvocationContext::class),
+                $this->callback(function (MockInvocationContext $context) use ($component) {
+                    $this->assertSame($component, $context->component);
+                    $this->assertEquals('bar', $context->originalArgs[0]);
+                    $this->assertEquals('baz', $context->originalArgs[1]);
+
+                    return true;
+                })
+            ));
+
+        $proxy->__call('foo', ['bar', 'baz']);
     }
 
     public function testMockedMethodWithAnotherNameIsCalled()

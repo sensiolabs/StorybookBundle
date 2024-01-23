@@ -31,7 +31,7 @@ final class ComponentMockSubscriber implements EventSubscriberInterface
      */
     public function onComponentRender(ComponentRenderEvent $event): void
     {
-        if (!$componentClass = $event->getComponentClass()) {
+        if (!($componentClass = $event->getComponentClass())) {
             // Anonymous components cannot be mocked
             return;
         }

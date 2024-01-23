@@ -207,6 +207,58 @@ const config: StorybookConfig = {
 };
 ```
 
+### TailwindBundle integration
+
+If you use [TailwindBundle](https://symfony.com/bundles/TailwindBundle/current/index.html) to manage your CSS, it will
+work by default with this bundle thanks to a built-in integration. Everytime your Storybook is recompiled, Tailwind
+will also recompile your CSS. 
+
+However, each Tailwind build is executed in a one-shot process (without the `--watch` option). It may lead to errors 
+because the TailwindBundle will always try to download the latest version of the Tailwind binary. After a few builds 
+you could encounter an error trying to get the latest binary, because you requested the GitHub API too much in a short
+period of time. 
+
+A good workaround for this is to specify the binary path in the TailwindBundle configuration after you initialized 
+Tailwind with `bin/console tailwind:init`:
+
+```yaml
+# config/packages/tailwind.yaml
+
+symfonycasts_tailwind:
+  binary: "%kernel.project_dir%/var/tailwind/v3.4.1/tailwindcss-linux-x64"
+```
+
+### Live Components integration
+
+To make [Live Components](https://symfony.com/bundles/ux-live-component/current/index.html) work in Storybook, you have to enable proxy for live component requests in the 
+Storybook `main.ts|js` configuration:
+
+```ts
+// .storybook/main.ts
+
+// ...
+
+const config: StorybookConfig = {
+    framework: {
+        name: "@sensiolabs/storybook-symfony-webpack5",
+        options: {
+            // ...
+            symfony: {
+                proxyPaths: [
+                    // ...
+                    // 👇 This is the live component prefix usually set in config/routes/ux_live_component.yaml
+                    '_components/',
+                ],
+            },
+        },
+    },
+};
+```
+
+Thanks to this configuration, all requests made by live components to re-render themselves will be sent to the 
+Symfony server.
+
+
 ## Writing stories
 
 Example: 
@@ -350,6 +402,29 @@ class FeaturedProductsMock
     }    
 }
 ```
+
+If you need to access the original arguments passed to the method, or the original component instance, you can use the 
+`MockInvocationContext`:
+
+```php
+// src/Storybook/Mock/FeaturedProductsMock.php
+
+// ...
+
+use Storybook\Mock\MockInvocationContext;
+
+#[AsComponentMock(component: FeaturedProducts::class)]
+class FeaturedProductsMock
+{    
+    #[PropertyMock]
+    public function products(MockInvocationContext $context)
+    {
+        $context->component->prop; // Access to the component prop
+        $context->originalArgs[0]; // Access to the first argument passed to the method
+    }    
+}
+```
+
 
 > Note: \
 > Mocks will also bypass resolution of [computed properties](https://symfony.com/bundles/ux-twig-component/current/index.html#computed-properties), but be aware that the result will not be cached.

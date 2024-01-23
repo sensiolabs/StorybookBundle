@@ -10,9 +10,8 @@ import * as fsPromise from 'fs/promises';
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import { JSDOM } from 'jsdom';
-import isGlob from 'is-glob';
-import { glob } from 'glob';
 import { logger } from '@storybook/node-logger';
+import { computeAdditionalWatchPaths } from '../utils/computeAdditionalWatchPaths';
 
 type InternalSymfonyOptions = {
     additionalWatchPaths: string[];
@@ -149,7 +148,7 @@ const TwigStoriesTemplateGeneratorPlugin = createUnplugin<FinalSymfonyOptions>((
  */
 const PreviewPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
     const PLUGIN_NAME = 'preview-plugin';
-    const { projectDir, additionalWatchPaths } = options;
+    const { projectDir, additionalWatchPaths, runtimePath } = options;
     return {
         name: PLUGIN_NAME,
         enforce: 'post',
@@ -174,66 +173,70 @@ const PreviewPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
             `;
         },
         webpack(compiler) {
-            // Virtual plugin
+            // Virtual plugin for preview module
             const v = new VirtualModulesPlugin();
             v.apply(compiler);
 
-            let previewHtml = '';
+            const previewHtmlPath = `${runtimePath}/preview.html`;
 
-            // Populate virtual iframe module before compilation
-            // TODO restrict this hook to the right compilation
-            compiler.hooks.beforeCompile.tapPromise(PLUGIN_NAME, async () => {
-                previewHtml = await runSymfonyCommand('storybook:generate-preview');
+            // Populate virtual preview module before compilation in watch mode
+            compiler.hooks.watchRun.tapPromise(PLUGIN_NAME, async () => {
+                const previewHtml = await runSymfonyCommand('storybook:generate-preview');
+                let currentPreviewHtml = '';
+                try {
+                    currentPreviewHtml = await fsPromise.readFile(previewHtmlPath, { encoding: 'utf-8' });
+                } catch (err) {
+                    // Ignore errors
+                }
 
+                if (previewHtml != currentPreviewHtml) {
+                    // Override current preview file if content changed
+                    await fsPromise.writeFile(previewHtmlPath, previewHtml, { encoding: 'utf-8' });
+                    currentPreviewHtml = previewHtml;
+                }
+
+                // Write preview module
                 v.writeModule(
                     './symfony-preview.js',
                     dedent`
                     export const symfonyPreview = {
-                        html: \`${previewHtml}\`,
+                        html: \`${currentPreviewHtml}\`,
                     };
                 `
                 );
             });
 
-            // TODO restrict this hook to the right compilation
+            compiler.hooks.afterCompile.tap(PLUGIN_NAME, (compilation) => {
+                if ('HtmlWebpackCompiler' == compilation.name) {
+                    // Register additional watch paths for HMR
+                    const resolvedWatchPaths = computeAdditionalWatchPaths(additionalWatchPaths, projectDir);
+                    compilation.contextDependencies.addAll(resolvedWatchPaths.dirs);
+                    compilation.fileDependencies.addAll(resolvedWatchPaths.files);
+                } else if ('preview' == compilation.name) {
+                    // Register custom dependencies for iframe.html compilation
+                    compilation.fileDependencies.add(previewHtmlPath);
+                }
+            });
+
             compiler.hooks.compilation.tap(PLUGIN_NAME, (compilation) => {
-                // Register additional watch paths for HMR
-                additionalWatchPaths
-                    .map((v) => join(projectDir, v))
-                    .forEach((watchPath) => {
-                        if (isGlob(watchPath)) {
-                            glob.sync(watchPath, {
-                                dot: true,
-                                absolute: true,
-                            }).forEach((watchPath) => {
-                                compilation.fileDependencies.add(watchPath);
-                            });
-                        } else if (fs.existsSync(watchPath)) {
-                            const stats = fs.lstatSync(watchPath);
-                            if (stats.isDirectory()) {
-                                compilation.contextDependencies.add(watchPath);
-                            } else {
-                                compilation.fileDependencies.add(watchPath);
-                            }
-                        } else {
-                            logger.warn(dedent`
-                        Ignoring additional watch path '${watchPath}': path doesn't exists.
-                        `);
+                if ('preview' == compilation.name) {
+                    // Inject previewHead and previewBody in the compiled iframe.html before it is output
+                    HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution.tapPromise(
+                        PLUGIN_NAME,
+                        async (params) => {
+                            const previewHtml = await fsPromise.readFile(previewHtmlPath);
+                            const previewDom = new JSDOM(previewHtml);
+
+                            const previewHead = previewDom.window.document.head;
+                            const previewBody = previewDom.window.document.body;
+
+                            params.html = params.html
+                                .replace('<!--PREVIEW_HEAD_PLACEHOLDER-->', previewHead.innerHTML)
+                                .replace('<!--PREVIEW_BODY_PLACEHOLDER-->', previewBody.innerHTML);
+                            return params;
                         }
-                    });
-
-                // Inject previewHead and previewBody in the iframe
-                HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution.tap(PLUGIN_NAME, (params) => {
-                    const previewDom = new JSDOM(previewHtml);
-
-                    const previewHead = previewDom.window.document.head;
-                    const previewBody = previewDom.window.document.body;
-
-                    params.html = params.html
-                        .replace('<!--PREVIEW_HEAD_PLACEHOLDER-->', previewHead.innerHTML)
-                        .replace('<!--PREVIEW_BODY_PLACEHOLDER-->', previewBody.innerHTML);
-                    return params;
-                });
+                    );
+                }
             });
         },
     };
@@ -248,14 +251,14 @@ export const SymfonyPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
         TwigStoriesTemplateGeneratorPlugin,
         TwigStoriesCompilerPlugin,
         TwigTemplateLoaderPlugin,
-    ].filter(Boolean);
+    ];
 
     return {
         name: 'symfony-plugin',
         webpack(compiler) {
             // Compiler types don't match
             // @ts-ignore
-            plugins.forEach((plugin) => plugin?.webpack(options).apply(compiler));
+            plugins.forEach((plugin) => plugin.webpack(options).apply(compiler));
         },
     };
 });

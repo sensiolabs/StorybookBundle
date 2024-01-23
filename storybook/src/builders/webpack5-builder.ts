@@ -20,6 +20,9 @@ export const start: typeof baseStart = async (options) => {
                     target: symfony.server,
                     changeOrigin: true,
                     secure: isProd,
+                    headers: {
+                        'X-Storybook-Proxy': 'true',
+                    },
                 })
             );
         }

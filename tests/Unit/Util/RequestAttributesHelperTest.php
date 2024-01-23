@@ -12,17 +12,23 @@ class RequestAttributesHelperTest extends TestCase
     public function testIsStorybookRequest()
     {
         $request = new Request();
-        $request->attributes->set(RequestAttributesHelper::ATTRIBUTE_NAME, new StorybookAttributes('story'));
+        $request->attributes->set('_storybook', new StorybookAttributes('story'));
         $this->assertTrue(RequestAttributesHelper::isStorybookRequest($request));
 
+        $this->assertFalse(RequestAttributesHelper::isStorybookRequest(new Request()));
+    }
+
+    public function testIsProxyRequest()
+    {
         $request = new Request();
-        $this->assertFalse(RequestAttributesHelper::isStorybookRequest($request));
+        $request->headers->set('X-Storybook-Proxy', 'true');
+        $this->assertTrue(RequestAttributesHelper::isProxyRequest($request));
     }
 
     public function testWithStorybookAttributesAddsAttributesToRequest()
     {
         $request = RequestAttributesHelper::withStorybookAttributes(new Request(), ['story' => 'story']);
-        $attributes = $request->attributes->get(RequestAttributesHelper::ATTRIBUTE_NAME);
+        $attributes = $request->attributes->get('_storybook');
 
         $this->assertInstanceOf(StorybookAttributes::class, $attributes);
         $this->assertEquals('story', $attributes->story);
@@ -37,12 +43,10 @@ class RequestAttributesHelperTest extends TestCase
     public function testGetStorybookAttributesReturnsStorybookAttributes()
     {
         $request = new Request();
-        $request->attributes->set(RequestAttributesHelper::ATTRIBUTE_NAME, new StorybookAttributes('story'));
+        $attributes = new StorybookAttributes('story');
+        $request->attributes->set('_storybook', $attributes);
 
-        $attributes = RequestAttributesHelper::getStorybookAttributes($request);
-
-        $this->assertInstanceOf(StorybookAttributes::class, $attributes);
-        $this->assertEquals('story', $attributes->story);
+        $this->assertEquals($attributes, RequestAttributesHelper::getStorybookAttributes($request));
     }
 
     public function testGetStorybookAttributesOnNonStorybookRequestThrowsException()
@@ -55,7 +59,7 @@ class RequestAttributesHelperTest extends TestCase
     public function testGetStorybookAttributesThrowsExceptionIfAttributeIsNotStorybookAttributes()
     {
         $request = new Request();
-        $request->attributes->set(RequestAttributesHelper::ATTRIBUTE_NAME, ['foo' => 'bar']);
+        $request->attributes->set('_storybook', ['foo' => 'bar']);
 
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessageMatches(sprintf('/Expecting a instance of "%s" in the "_storybook" request attributes, but found ".*"\./', preg_quote(StorybookAttributes::class)));

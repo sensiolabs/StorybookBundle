@@ -13,6 +13,8 @@ final class RequestAttributesHelper
 {
     public const ATTRIBUTE_NAME = '_storybook';
 
+    public const PROXY_HEADER_NAME = 'X-Storybook-Proxy';
+
     public static function isStorybookRequest(Request $request): bool
     {
         return $request->attributes->has(self::ATTRIBUTE_NAME);
@@ -44,5 +46,10 @@ final class RequestAttributesHelper
         }
 
         return $attributes;
+    }
+
+    public static function isProxyRequest(Request $request): bool
+    {
+        return $request->headers->has(self::PROXY_HEADER_NAME);
     }
 }
