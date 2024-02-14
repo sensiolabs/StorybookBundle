@@ -22,7 +22,7 @@ class GeneratePreviewListener
         $process = $this->builder->runBuild(false, false);
         $process->wait();
         if (!$process->isSuccessful()) {
-            throw new \RuntimeException('Tailwind build failed.');
+            throw new \RuntimeException(sprintf('Tailwind build failed: %s', $process->getErrorOutput()));
         }
     }
 }

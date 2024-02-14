@@ -208,13 +208,13 @@ const PreviewPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
 
             compiler.hooks.afterCompile.tap(PLUGIN_NAME, (compilation) => {
                 if ('HtmlWebpackCompiler' == compilation.name) {
+                    // Register custom dependencies for iframe.html compilation
+                    compilation.fileDependencies.add(previewHtmlPath);
+
                     // Register additional watch paths for HMR
                     const resolvedWatchPaths = computeAdditionalWatchPaths(additionalWatchPaths, projectDir);
                     compilation.contextDependencies.addAll(resolvedWatchPaths.dirs);
                     compilation.fileDependencies.addAll(resolvedWatchPaths.files);
-                } else if ('preview' == compilation.name) {
-                    // Register custom dependencies for iframe.html compilation
-                    compilation.fileDependencies.add(previewHtmlPath);
                 }
             });
 
@@ -224,7 +224,8 @@ const PreviewPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
                     HtmlWebpackPlugin.getHooks(compilation).afterTemplateExecution.tapPromise(
                         PLUGIN_NAME,
                         async (params) => {
-                            const previewHtml = await fsPromise.readFile(previewHtmlPath);
+                            const previewHtml = await fsPromise.readFile(previewHtmlPath, { encoding: 'utf-8' });
+
                             const previewDom = new JSDOM(previewHtml);
 
                             const previewHead = previewDom.window.document.head;

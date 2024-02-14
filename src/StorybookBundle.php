@@ -4,6 +4,7 @@ namespace Storybook;
 
 use Storybook\DependencyInjection\Compiler\ArgsProcessorPass;
 use Storybook\DependencyInjection\Compiler\ComponentMockPass;
+use Storybook\DependencyInjection\Compiler\TailwindPreviewListenerPass;
 use Storybook\DependencyInjection\StorybookExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
@@ -18,6 +19,8 @@ class StorybookBundle extends Bundle
     {
         $container->addCompilerPass(new ArgsProcessorPass());
         $container->addCompilerPass(new ComponentMockPass());
+
+        $container->addCompilerPass(new TailwindPreviewListenerPass());
     }
 
     public function getContainerExtension(): ?ExtensionInterface

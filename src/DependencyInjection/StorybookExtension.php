@@ -5,11 +5,9 @@ namespace Storybook\DependencyInjection;
 use Storybook\ArgsProcessor\StorybookArgsProcessor;
 use Storybook\Attributes\AsArgsProcessor;
 use Storybook\Attributes\AsComponentMock;
-use Storybook\Bridge\Tailwind\GeneratePreviewListener;
 use Storybook\Command\GeneratePreviewCommand;
 use Storybook\Controller\StorybookController;
 use Storybook\DependencyInjection\Compiler\ComponentMockPass;
-use Storybook\Event\GeneratePreviewEvent;
 use Storybook\EventListener\ComponentMockSubscriber;
 use Storybook\EventListener\CorsListener;
 use Storybook\EventListener\ExceptionListener;
@@ -26,7 +24,6 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfonycasts\TailwindBundle\SymfonycastsTailwindBundle;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
@@ -108,19 +105,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface
         $container->register('storybook.component_mock_subscriber', ComponentMockSubscriber::class)
             ->setArgument(0, new Reference('storybook.component_proxy_factory'))
             ->addTag('kernel.event_subscriber');
-
-        $this->registerTailwindConfiguration($config, $container);
-    }
-
-    public function registerTailwindConfiguration(array $config, ContainerBuilder $container): void
-    {
-        if (!class_exists(SymfonycastsTailwindBundle::class) || !$container->has('tailwind.builder')) {
-            return;
-        }
-
-        $container->register('storybook.tailwind.generate_preview_listener', GeneratePreviewListener::class)
-            ->setArgument(0, new Reference('tailwind.builder'))
-            ->addTag('kernel.event_listener', ['event' => GeneratePreviewEvent::class]);
     }
 
     public function getConfigTreeBuilder(): TreeBuilder

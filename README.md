@@ -218,14 +218,13 @@ because the TailwindBundle will always try to download the latest version of the
 you could encounter an error trying to get the latest binary, because you requested the GitHub API too much in a short
 period of time. 
 
-A good workaround for this is to specify the binary path in the TailwindBundle configuration after you initialized 
-Tailwind with `bin/console tailwind:init`:
+A good workaround for this is to specify the binary version in the TailwindBundle configuration:
 
 ```yaml
 # config/packages/tailwind.yaml
 
 symfonycasts_tailwind:
-  binary: "%kernel.project_dir%/var/tailwind/v3.4.1/tailwindcss-linux-x64"
+  binary_version: v3.4.1
 ```
 
 ### Live Components integration
