@@ -256,6 +256,9 @@ export const SymfonyPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
     return {
         name: 'symfony-plugin',
         webpack(compiler) {
+            // Ensure runtime path exists
+            fs.mkdirSync(options.runtimePath, { recursive: true });
+
             // Compiler types don't match
             // @ts-ignore
             plugins.forEach((plugin) => plugin.webpack(options).apply(compiler));
