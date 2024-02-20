@@ -1,6 +1,6 @@
 <?php
 
-namespace Storybook\Bridge\Tailwind;
+namespace Storybook\Bridge;
 
 use Symfonycasts\TailwindBundle\TailwindBuilder;
 
@@ -11,7 +11,7 @@ use Symfonycasts\TailwindBundle\TailwindBuilder;
  *
  * @internal
  */
-class GeneratePreviewListener
+class TailwindPreviewListener
 {
     public function __construct(private readonly TailwindBuilder $builder)
     {
