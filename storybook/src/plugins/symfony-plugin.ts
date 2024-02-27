@@ -1,6 +1,6 @@
 import { createUnplugin } from 'unplugin';
 import { SymfonyOptions } from '../types';
-import { getTwigStoriesIndexer, STORIES_REGEX } from '../indexer';
+import { getTwigStoriesIndex, STORIES_REGEX } from '../indexer';
 import { resolveTwigComponentFile, runSymfonyCommand, TwigComponentConfiguration } from '../utils/symfony';
 import dedent from 'ts-dedent';
 import { twig } from '../utils';
@@ -27,18 +27,24 @@ export type FinalSymfonyOptions = Required<SymfonyOptions> & InternalSymfonyOpti
  * This enables HMR for component templates.
  */
 const TwigStoriesCompilerPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
-    const twigStoriesIndexer = getTwigStoriesIndexer();
+    const PLUGIN_NAME = 'twig-stories-compiler';
+
+    const twigStoryIndex = getTwigStoriesIndex();
 
     return {
-        name: 'twig-stories-compiler',
+        name: PLUGIN_NAME,
         enforce: 'post',
         transformInclude: (id) => {
-            return STORIES_REGEX.test(id) && twigStoriesIndexer.fileHasTemplates(id);
+            return STORIES_REGEX.test(id) && twigStoryIndex.hasStories(id);
         },
         transform: async (code, id) => {
-            const components = new Set<string>(twigStoriesIndexer.getComponentsInFile(id));
+            const components = twigStoryIndex.getStories(id).reduce((acc, twigStory) => {
+                twigStory.template.getComponents().forEach((component) => acc.add(component));
+                return acc;
+            }, new Set<string>());
 
             const imports: string[] = [];
+
             components.forEach((v) => {
                 imports.push(resolveTwigComponentFile(v, options.twigComponent));
             });
@@ -95,50 +101,69 @@ const TwigTemplateLoaderPlugin = createUnplugin<FinalSymfonyOptions>((options) =
 
 /**
  * Plugin that hooks on compilation events to clean and create templates used to render actual stories.
- *
- * TODO: This should be done elsewhere, currently it's run for each build target.
  */
 const TwigStoriesTemplateGeneratorPlugin = createUnplugin<FinalSymfonyOptions>((options) => {
+    const PLUGIN_NAME = 'twig-stories-template-generator';
+
+    const twigStoryIndex = getTwigStoriesIndex();
     const outDir = join(options.runtimePath, '/stories');
-    async function cleanRuntimeDir(dir: string) {
-        try {
-            await fsPromise.access(dir, fs.constants.F_OK);
-            const files = await fsPromise.readdir(dir);
-            await Promise.all(files.map((f) => fsPromise.unlink(join(dir, f))));
-        } catch (err) {
-            await fsPromise.mkdir(dir, { recursive: true });
-        }
-    }
-
-    async function writeStories(dir: string) {
-        const storyIndex = getTwigStoriesIndexer();
-        const fileOperations = [];
-
-        // Write story templates
-        const storiesMap = storyIndex.getMap();
-        for (const storyId in storiesMap) {
-            const storyPath = join(dir, `${storyId}.html.twig`);
-            fileOperations.push(
-                fsPromise.writeFile(storyPath, `{{ include('@Stories/${storiesMap[storyId]}.html.twig') }}`)
-            );
-        }
-
-        // Write actual story contents named by content hash
-        const templates = storyIndex.getTemplates();
-        templates.forEach((source, hash) => {
-            fileOperations.push(fsPromise.writeFile(join(dir, `${hash}.html.twig`), dedent(source)));
-        });
-
-        return Promise.all(fileOperations);
-    }
 
     return {
-        name: 'twig-stories-template-generator',
-        buildStart: async () => {
-            await cleanRuntimeDir(outDir);
-        },
-        buildEnd: async () => {
-            await writeStories(outDir);
+        name: PLUGIN_NAME,
+        webpack(compiler) {
+            const processedFiles = new Set<string>();
+
+            compiler.hooks.normalModuleFactory.tap(PLUGIN_NAME, (factory) => {
+                // Each time a story module is resolved, track it, so we can dump templates after compilation
+                factory.hooks.afterResolve.tap(PLUGIN_NAME, (resolveData) => {
+                    const fileName = resolveData.createData.userRequest;
+                    if (fileName && twigStoryIndex.hasStories(fileName)) {
+                        processedFiles.add(fileName);
+                    }
+                });
+            });
+
+            compiler.hooks.afterCompile.tapPromise(PLUGIN_NAME, async (compilation) => {
+                if (compilation.name === 'preview') {
+                    // First clean out dir
+                    try {
+                        await fsPromise.access(outDir, fs.constants.F_OK);
+                        const files = await fsPromise.readdir(outDir);
+                        await Promise.all(files.map((f) => fsPromise.unlink(join(outDir, f))));
+                    } catch (err) {
+                        await fsPromise.mkdir(outDir, { recursive: true });
+                    }
+
+                    // Then remove non-processed files from the index
+                    const filesToClean = twigStoryIndex.getFiles().filter((file) => !processedFiles.has(file));
+                    filesToClean.forEach((file) => twigStoryIndex.unregister(file));
+
+                    const fileOperations: Promise<void>[] = [];
+
+                    // Write all stories templates
+                    processedFiles.forEach((file) => {
+                        const stories = twigStoryIndex.getStories(file);
+                        fileOperations.push(
+                            ...stories.map((story) =>
+                                fsPromise.writeFile(
+                                    join(outDir, `${story.id}.html.twig`),
+                                    `{{ include('@Stories/${story.hash}.html.twig') }}`
+                                )
+                            )
+                        );
+                    });
+
+                    // Write actual story contents named by content hash
+                    twigStoryIndex.getTemplates().forEach((template, hash) => {
+                        fileOperations.push(fsPromise.writeFile(join(outDir, `${hash}.html.twig`), dedent(template)));
+                    });
+
+                    await Promise.all(fileOperations);
+
+                    // Clear process files so next compilation don't track removed files
+                    processedFiles.clear();
+                }
+            });
         },
     };
 });
