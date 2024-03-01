@@ -1,7 +1,7 @@
 import { FrameworkOptions, SymfonyOptions } from './types';
 import { StorybookConfig } from '@storybook/preset-server-webpack';
 import { Options, PresetProperty, Entry, Indexer } from '@storybook/types';
-import { getTwigStoriesIndexer, createTwigCsfIndexer } from './indexer';
+import { getTwigStoriesIndex, createTwigCsfIndexer } from './indexer';
 import {
     getKernelProjectDir,
     getTwigComponentConfiguration,
@@ -86,7 +86,7 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
 };
 
 export const experimental_indexers: PresetProperty<'experimental_indexers'> = (existingIndexers: Indexer[]) =>
-    [createTwigCsfIndexer(getTwigStoriesIndexer())].concat(existingIndexers || []);
+    [createTwigCsfIndexer(getTwigStoriesIndex())].concat(existingIndexers || []);
 
 export const previewAnnotations = (entry: Entry[] = []) => {
     return [require.resolve('./preview'), ...entry];

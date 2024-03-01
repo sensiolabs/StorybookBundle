@@ -6,7 +6,7 @@ import { vi } from 'vitest';
 
 vi.mock('child_process');
 
-function mockExec(error: ExecException = null, stdout = '', stderr = '') {
+function mockExec(error: ExecException | null = null, stdout = '', stderr = '') {
     // Vitest mock types don't support signature overload?
     // @ts-ignore
     vi.mocked(exec).mockImplementation((command: string, callback: (...args) => void) => {

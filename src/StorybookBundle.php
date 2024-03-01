@@ -2,11 +2,10 @@
 
 namespace Storybook;
 
-use Storybook\DependencyInjection\Compiler\RegisterLoaderPass;
+use Storybook\DependencyInjection\Compiler\ArgsProcessorPass;
+use Storybook\DependencyInjection\Compiler\ComponentMockPass;
+use Storybook\DependencyInjection\Compiler\OptionalPreviewListenersPass;
 use Storybook\DependencyInjection\StorybookExtension;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -14,11 +13,14 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
  */
-class StorybookBundle extends Bundle implements ConfigurationInterface
+class StorybookBundle extends Bundle
 {
     public function build(ContainerBuilder $container): void
     {
-        $container->addCompilerPass(new RegisterLoaderPass());
+        $container->addCompilerPass(new ArgsProcessorPass());
+        $container->addCompilerPass(new ComponentMockPass());
+
+        $container->addCompilerPass(new OptionalPreviewListenersPass());
     }
 
     public function getContainerExtension(): ?ExtensionInterface
@@ -29,22 +31,5 @@ class StorybookBundle extends Bundle implements ConfigurationInterface
     public function getPath(): string
     {
         return \dirname(__DIR__);
-    }
-
-    public function getConfigTreeBuilder(): TreeBuilder
-    {
-        $treeBuilder = new TreeBuilder('storybook');
-        $rootNode = $treeBuilder->getRootNode();
-        \assert($rootNode instanceof ArrayNodeDefinition);
-
-        $rootNode
-            ->children()
-                ->scalarNode('server')
-                    ->info('The URL of the Storybook server. Pass null to disable the CORS headers.')
-                    ->defaultValue('http://localhost:6006')
-                ->end()
-            ->end();
-
-        return $treeBuilder;
     }
 }

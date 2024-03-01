@@ -9,7 +9,7 @@ class StoryTemplateLoaderTest extends TestCase
 {
     public function testCreateLoader()
     {
-        $runtimeDir = __DIR__.'/../../Fixtures/var/storybook';
+        $runtimeDir = __DIR__.'/../../Fixtures/storybook';
 
         $loader = new StoryTemplateLoader($runtimeDir);
 

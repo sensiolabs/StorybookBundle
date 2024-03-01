@@ -1,5 +1,6 @@
-import { StorybookConfig as StorybookConfig$2, Options, TypescriptOptions as TypescriptOptions$1 } from '@storybook/types';
+import { StorybookConfig as StorybookConfig$2, Options, TypescriptOptions as TypescriptOptions$1, DecoratorFunction } from '@storybook/types';
 import { BuilderOptions, StorybookConfigWebpack, TypescriptOptions } from '@storybook/builder-webpack5';
+import { ServerRenderer } from '@storybook/server';
 
 declare class TwigTemplate {
     private readonly source;
@@ -82,4 +83,7 @@ type StorybookConfigFramework = {
  */
 type StorybookConfig = Omit<StorybookConfig$1, keyof StorybookConfigWebpack | keyof StorybookConfigFramework> & StorybookConfigWebpack & StorybookConfigFramework;
 
-export { type FrameworkOptions, type StorybookConfig, type SymfonyOptions, TwigTemplate, twig };
+type HtmlWrapper = (html: string) => string;
+declare const wrapHtml: (wrapper: HtmlWrapper) => DecoratorFunction<ServerRenderer>;
+
+export { type FrameworkOptions, type StorybookConfig, type SymfonyOptions, TwigTemplate, twig, wrapHtml };

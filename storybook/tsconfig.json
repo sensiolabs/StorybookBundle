@@ -17,15 +17,15 @@
         "skipLibCheck": true,
         "strict": true,
         "strictBindCallApply": true,
-        "target": "ES2020",
+        "target": "ES2020"
     },
     "exclude": ["dist", "**/dist", "node_modules", "**/node_modules"],
     "include": ["src/**/*", "test/**/*"],
     "ts-node": {
         "compilerOptions": {
-            "types": ["node"],
+            "types": ["node"]
         },
         "files": true,
-        "transpileOnly": true,
-    },
+        "transpileOnly": true
+    }
 }

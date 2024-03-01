@@ -51,7 +51,6 @@ class Kernel extends BaseKernel
 
         $container->extension('twig', [
             'default_path' => '%kernel.project_dir%/tests/Fixtures/templates',
-            'auto_reload' => false,
         ]);
 
         $container->extension('twig_component', [
@@ -62,7 +61,7 @@ class Kernel extends BaseKernel
         ]);
 
         $container->extension('storybook', [
-            'runtime_dir' => '%kernel.project_dir%/tests/Fixtures/var/storybook',
+            'runtime_dir' => '%kernel.project_dir%/tests/Fixtures/storybook',
             'server' => 'http://localhost:6006',
         ]);
 

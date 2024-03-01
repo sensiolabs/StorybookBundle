@@ -2,52 +2,71 @@ import { readCsf, StaticStory } from '@storybook/csf-tools';
 import { Indexer, IndexInput } from '@storybook/types';
 import { TwigTemplate } from './utils';
 import crypto from 'crypto';
-import dedent from 'ts-dedent';
 import { logger } from '@storybook/node-logger';
+import dedent from 'ts-dedent';
 
-type TwigTemplateSource = string;
+// type TwigTemplateSource = string;
 type StoryId = StaticStory['id'];
 
+type TwigStory = {
+    id: StoryId,
+    template: TwigTemplate,
+    hash: string
+};
+
 class TwigStoryIndex {
-    private templates: Map<string, TwigTemplateSource> = new Map<string, TwigTemplateSource>();
-    private storyIndex: Map<StoryId, string> = new Map<StoryId, string>();
-    private componentsInFiles = new Map<string, string[]>();
+    private storiesInFiles = new Map<string, Set<StoryId>>();
+
+    private stories: TwigStory[] = [];
 
     register(id: StoryId, component: TwigTemplate, declaringFile: string) {
         const hash = crypto.createHash('sha1').update(component.getSource()).digest('hex');
-        if (!this.templates.has(hash)) {
-            this.templates.set(hash, component.getSource());
-        }
 
-        if (!this.componentsInFiles.has(declaringFile)) {
-            this.componentsInFiles.set(declaringFile, []);
-        }
+        this.stories.push({
+            id,
+            hash,
+            template: component
+        });
 
-        // @ts-ignore
-        this.componentsInFiles.get(declaringFile).push(...component.getComponents());
-
-        this.storyIndex.set(id, hash);
+        const storiesInFile = this.storiesInFiles.get(declaringFile) ?? new Set<StoryId>();
+        storiesInFile.add(id);
+        this.storiesInFiles.set(declaringFile, storiesInFile);
     }
 
-    getMap() {
-        return Object.fromEntries(this.storyIndex);
+    unregister(fileName: string)
+    {
+        const stories = this.storiesInFiles.get(fileName);
+
+        if (!stories) return;
+
+        this.stories = this.stories.filter(story => !stories.has(story.id));
+        this.storiesInFiles.delete(fileName);
+    }
+
+    getFiles() {
+        return Array.from(this.storiesInFiles.keys());
     }
 
     getTemplates() {
-        return this.templates;
+        return new Map(
+            this.stories.map(story => [story.hash, story.template.getSource()])
+        );
     }
 
-    fileHasTemplates(fileName: string): boolean {
-        return this.componentsInFiles.has(fileName);
+    hasStories(fileName: string)
+    {
+        return this.storiesInFiles.has(fileName);
     }
 
-    getComponentsInFile(fileName: string) {
-        return this.componentsInFiles.get(fileName);
+    getStories(fileName: string)
+    {
+        const ids = this.storiesInFiles.get(fileName);
+        return ids ? this.stories.filter(story => ids.has(story.id)) : [];
     }
 }
 
 let twigIndexer: TwigStoryIndex;
-export function getTwigStoriesIndexer() {
+export const getTwigStoriesIndex = () => {
     if (twigIndexer !== undefined) {
         return twigIndexer;
     }
@@ -68,8 +87,9 @@ export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex) => {
             /* eslint-disable @typescript-eslint/no-var-requires */
             const module = require(fileName);
 
-            const indexedStories: IndexInput[] = [];
+            twigStoryIndex.unregister(fileName); // Clear existing stories
 
+            const indexedStories: IndexInput[] = [];
             csf.indexInputs.forEach((story) => {
                 try {
                     const template = module[story.exportName]?.template ?? module['default']?.template ?? undefined;
