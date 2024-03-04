@@ -1,13 +1,6 @@
 import { Args, PartialStoryFn as StoryFunction } from '@storybook/types';
-import { global } from '@storybook/global';
-import { FrameworkOptions } from './types';
 import { ServerRenderer, StoryContext} from '@storybook/server';
 import { setupActions } from './addons/actions';
-
-function getFrameworkOptions() {
-    // @ts-ignore
-    return global.FRAMEWORK_OPTIONS as FrameworkOptions;
-}
 
 
 /**
@@ -33,7 +26,7 @@ export const decorators = [
         const { server = {} } = context.parameters;
 
         if (server.url === undefined) {
-            server.url = `${getFrameworkOptions().symfony.server}/_storybook/render`;
+            server.url = `${window.location.origin}/_storybook/render`;
         }
 
         server.fetchStoryHtml = fetchStoryHtml;

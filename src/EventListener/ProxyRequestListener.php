@@ -16,6 +16,10 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
  */
 class ProxyRequestListener implements EventSubscriberInterface
 {
+    public function __construct()
+    {
+    }
+
     public static function getSubscribedEvents(): array
     {
         return [

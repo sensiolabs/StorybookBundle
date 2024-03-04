@@ -20,7 +20,7 @@ use Twig\Environment;
 #[AsCommand('storybook:generate-preview', hidden: true)]
 final class GeneratePreviewCommand extends Command
 {
-    public function __construct(private readonly Environment $twig, private readonly string $previewTemplate, private readonly EventDispatcherInterface $eventDispatcher)
+    public function __construct(private readonly Environment $twig, private readonly EventDispatcherInterface $eventDispatcher)
     {
         parent::__construct();
     }
@@ -29,7 +29,7 @@ final class GeneratePreviewCommand extends Command
     {
         $this->eventDispatcher->dispatch(new GeneratePreviewEvent());
 
-        $content = $this->twig->render($this->previewTemplate);
+        $content = $this->twig->render('@Storybook/preview.html.twig');
 
         $output->writeln($content);
 

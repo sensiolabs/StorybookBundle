@@ -107,7 +107,7 @@
     "bundler": {
         "nodeEntries": [
             "./src/preset.ts",
-            "./src/builders/webpack5-builder.ts"
+            "./src/builders/webpack5/index.ts"
         ],
         "previewEntries": [
             "./src/preview.ts"

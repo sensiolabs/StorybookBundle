@@ -1,16 +1,7 @@
 import { StorybookConfig as StorybookConfig$2, Options, TypescriptOptions as TypescriptOptions$1, DecoratorFunction } from '@storybook/types';
+export { ArgTypes, Args, Parameters, StrictArgs } from '@storybook/types';
 import { BuilderOptions, StorybookConfigWebpack, TypescriptOptions } from '@storybook/builder-webpack5';
 import { ServerRenderer } from '@storybook/server';
-
-declare class TwigTemplate {
-    private readonly source;
-    private readonly components;
-    constructor(source: string, components: string[]);
-    getSource(): string;
-    toString(): string;
-    getComponents(): string[];
-}
-declare function twig(source: TemplateStringsArray, ...values: any[]): TwigTemplate;
 
 type RulesConfig = any;
 type ModuleConfig = {
@@ -47,7 +38,7 @@ type SymfonyOptions = {
     /**
      * Symfony server URL.
      */
-    server: string;
+    server?: string;
     /**
      * Location of Storybook generated assets for Symfony renderer.
      */
@@ -86,4 +77,14 @@ type StorybookConfig = Omit<StorybookConfig$1, keyof StorybookConfigWebpack | ke
 type HtmlWrapper = (html: string) => string;
 declare const wrapHtml: (wrapper: HtmlWrapper) => DecoratorFunction<ServerRenderer>;
 
-export { type FrameworkOptions, type StorybookConfig, type SymfonyOptions, TwigTemplate, twig, wrapHtml };
+declare class TwigTemplate {
+    private readonly source;
+    private readonly components;
+    constructor(source: string, components: string[]);
+    getSource(): string;
+    toString(): string;
+    getComponents(): string[];
+}
+declare function twig(source: TemplateStringsArray | string, ...values: any[]): TwigTemplate;
+
+export { type FrameworkOptions, type StorybookConfig, type SymfonyOptions, twig, wrapHtml };

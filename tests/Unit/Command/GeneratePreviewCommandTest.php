@@ -17,7 +17,7 @@ class GeneratePreviewCommandTest extends KernelTestCase
         $twig = $this->createMock(Environment::class);
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
 
-        $command = new GeneratePreviewCommand($twig, '', $eventDispatcher);
+        $command = new GeneratePreviewCommand($twig, $eventDispatcher);
 
         $twig->method('render')->willReturn('');
         $eventDispatcher

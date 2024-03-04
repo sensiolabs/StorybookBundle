@@ -8,6 +8,7 @@ import type {
     BuilderOptions,
     TypescriptOptions as TypescriptOptionsBuilder,
 } from '@storybook/builder-webpack5';
+import { TwigComponentConfiguration } from './utils/symfony';
 
 type FrameworkName = '@sensiolabs/storybook-symfony-webpack5';
 type BuilderName = '@storybook/builder-webpack5';
@@ -18,7 +19,7 @@ export type SymfonyOptions = {
     /**
      * Symfony server URL.
      */
-    server: string;
+    server?: string;
 
     /**
      * Location of Storybook generated assets for Symfony renderer.
@@ -35,6 +36,15 @@ export type SymfonyOptions = {
      */
     additionalWatchPaths?: string[];
 };
+
+type InternalSymfonyOptions = {
+    projectDir: string;
+    twigComponent: TwigComponentConfiguration;
+};
+
+
+export type ResolvedSymfonyOptions = Required<SymfonyOptions> & InternalSymfonyOptions;
+
 
 export type FrameworkOptions = {
     builder?: BuilderOptions;
