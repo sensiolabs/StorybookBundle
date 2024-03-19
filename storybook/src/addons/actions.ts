@@ -12,7 +12,7 @@ type ActionArg = {
 
 const ACTION_ATTRIBUTE = 'data-storybook-action';
 const isActionArg = (arg: any) => {
-    return arg?.isAction ?? false;
+    return arg?.name === 'handler';
 };
 
 const generateActionId = (): string => {
