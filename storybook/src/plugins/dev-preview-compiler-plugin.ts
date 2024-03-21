@@ -52,19 +52,16 @@ export const DevPreviewCompilerPlugin = createUnplugin<Options>((options) => {
 
             // Compile preview before each compilation in watch mode
             compiler.hooks.watchRun.tapPromise(PLUGIN_NAME, async () => {
-                const newPreviewHtml = await runSymfonyCommand('storybook:generate-preview');
+                previewHtml = await runSymfonyCommand('storybook:generate-preview');
 
-                if (newPreviewHtml !== previewHtml) {
-                    previewHtml = newPreviewHtml;
-                    // Write preview module
-                    v.writeModule(
-                        './symfony-preview.js',
-                        dedent`
-                        export const symfonyPreview = {
-                            html: \`${previewHtml}\`,
-                        };`
-                    );
-                }
+                // Write preview module
+                v.writeModule(
+                    './symfony-preview.js',
+                    dedent`
+                    export const symfonyPreview = {
+                        html: \`${previewHtml}\`,
+                    };`
+                );
             });
 
             compiler.hooks.afterCompile.tap(PLUGIN_NAME, (compilation) => {
