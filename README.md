@@ -34,7 +34,7 @@ Create Storybook configuration in `.storybook/`:
 import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
 
 const config: StorybookConfig = {
-    stories: ["../stories/**/*.stories.[tj]s"],
+    stories: ["../stories/**/*.stories.[tj]s", "../stories/**/*.mdx"],
     addons: [
         // Your addons
         "@storybook/addon-links",
