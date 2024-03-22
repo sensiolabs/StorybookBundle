@@ -28,8 +28,8 @@ class ComponentMockSubscriberTest extends TestCase
         $subscriber = new ComponentMockSubscriber($proxyFactory);
 
         $variables = [
-          'this' => new \stdClass(),
-          'computed' => new \stdClass(),
+            'this' => new \stdClass(),
+            'computed' => new \stdClass(),
         ];
 
         $event = new ComponentRenderEvent('story', 'Component', $variables);

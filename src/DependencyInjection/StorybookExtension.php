@@ -91,8 +91,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface
         // Internal commands
         $container->register('storybook.generate_preview_command', GeneratePreviewCommand::class)
             ->setArgument(0, new Reference('twig'))
-            ->setArgument(1, $config['preview'])
-            ->setArgument(2, new Reference('event_dispatcher'))
+            ->setArgument(1, new Reference('event_dispatcher'))
             ->addTag('console.command', ['name' => 'storybook:generate-preview'])
         ;
 
@@ -123,11 +122,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface
                     ->info('Location of storybook runtime files')
                     ->cannotBeEmpty()
                     ->defaultValue('%kernel.project_dir%/var/storybook')
-                ->end()
-                ->scalarNode('preview')
-                    ->info('Preview template')
-                    ->cannotBeEmpty()
-                    ->defaultValue('@Storybook/preview.html.twig')
                 ->end()
             ->end();
 

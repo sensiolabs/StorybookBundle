@@ -22,6 +22,6 @@ export const wrapHtml = (wrapper: HtmlWrapper): DecoratorFunction<ServerRenderer
             `);
         }
 
-        return StoryFn();
+        return StoryFn(context);
     };
 };

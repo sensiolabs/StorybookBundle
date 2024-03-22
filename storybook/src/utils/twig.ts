@@ -57,7 +57,8 @@ function parseSubComponents(source: string) {
     }
 }
 
-export function twig(source: TemplateStringsArray, ...values: any[]): TwigTemplate {
-    const rawSource = String.raw({ raw: source }, ...values);
+export function twig(source: TemplateStringsArray | string, ...values: any[]): TwigTemplate {
+    const strings = typeof source === 'string' ? [source] : source;
+    const rawSource = String.raw({ raw: strings }, ...values);
     return new TwigTemplate(rawSource, parseSubComponents(rawSource));
 }

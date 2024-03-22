@@ -1,3 +1,3 @@
-export * from './utils';
-export * from './types';
+export * from './public-types';
 export * from './decorators';
+export { twig } from './utils/twig'

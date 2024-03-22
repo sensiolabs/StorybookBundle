@@ -15,21 +15,16 @@ class ProxyRequestListenerTest extends TestCase
     /**
      * @dataProvider requestsProvider
      */
-    public function testProxyRequestStorybookAttributes(bool $isProxy, ?string $referer, bool $shouldHaveAttributes, array $attributeValues)
+    public function testProxyRequestStorybookAttributes(array $headers, ?array $attributeValues)
     {
         $request = new Request();
-        if ($isProxy) {
-            $request->headers->set('X-Storybook-Proxy', 'true');
-        }
-        if (null !== $referer) {
-            $request->headers->set('referer', $referer);
-        }
+        $request->headers->add($headers);
 
         $listener = new ProxyRequestListener();
 
         $listener->onKernelRequest(new RequestEvent($this->createMock(KernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST));
 
-        if (!$shouldHaveAttributes) {
+        if (null === $attributeValues) {
             $this->assertFalse(RequestAttributesHelper::isStorybookRequest($request));
 
             return;
@@ -46,42 +41,47 @@ class ProxyRequestListenerTest extends TestCase
     public static function requestsProvider(): iterable
     {
         yield 'Proxy request with viewMode=story and id in referer' => [
-            true,
-            'http://localhost/iframe.html?viewMode=story&id=some-story',
-            true,
+            [
+                'X-Storybook-Proxy' => true,
+                'referer' => 'http://localhost/iframe.html?viewMode=story&id=some-story',
+            ],
             [
                 'story' => 'some-story',
             ],
         ];
         yield 'Proxy request without viewMode and id in referer' => [
-            true,
-            'http://localhost/iframe.html',
-            false,
-            [],
+            [
+                'X-Storybook-Proxy' => true,
+                'referer' => 'http://localhost/iframe.html',
+            ],
+            null,
         ];
         yield 'Proxy request without id in referer' => [
-            true,
-            'http://localhost/iframe.html?viewMode=story',
-            false,
-            [],
+            [
+                'X-Storybook-Proxy' => true,
+                'referer' => 'http://localhost/iframe.html?viewMode=story',
+            ],
+            null,
         ];
         yield 'Proxy request without viewMode in referer' => [
-            true,
-            'http://localhost/iframe.html?id=some-story',
-            false,
-            [],
+            [
+                'X-Storybook-Proxy' => true,
+                'referer' => 'http://localhost/iframe.html?id=some-story',
+            ],
+            null,
         ];
         yield 'Proxy request with another viewMode in referer' => [
-            true,
-            'http://localhost/iframe.html?viewMode=foo&id=some-story',
-            false,
-            [],
+            [
+                'X-Storybook-Proxy' => true,
+                'referer' => 'http://localhost/iframe.html?viewMode=foo&id=some-story',
+            ],
+            null,
         ];
         yield 'Non-proxy request' => [
-            false,
-            'http://localhost/iframe.html?viewMode=story&id=some-story',
-            false,
-            [],
+            [
+                'referer' => 'http://localhost/iframe.html?viewMode=story&id=some-story',
+            ],
+            null,
         ];
     }
 }

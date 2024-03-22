@@ -1,11 +1,10 @@
 import { readCsf, StaticStory } from '@storybook/csf-tools';
 import { Indexer, IndexInput } from '@storybook/types';
-import { TwigTemplate } from './utils';
+import { TwigTemplate } from './utils/twig';
 import crypto from 'crypto';
 import { logger } from '@storybook/node-logger';
 import dedent from 'ts-dedent';
 
-// type TwigTemplateSource = string;
 type StoryId = StaticStory['id'];
 
 type TwigStory = {
@@ -14,7 +13,7 @@ type TwigStory = {
     hash: string
 };
 
-class TwigStoryIndex {
+export class TwigStoryIndex {
     private storiesInFiles = new Map<string, Set<StoryId>>();
 
     private stories: TwigStory[] = [];
@@ -65,20 +64,9 @@ class TwigStoryIndex {
     }
 }
 
-let twigIndexer: TwigStoryIndex;
-export const getTwigStoriesIndex = () => {
-    if (twigIndexer !== undefined) {
-        return twigIndexer;
-    }
-
-    return (twigIndexer = new TwigStoryIndex());
-}
-
-export const STORIES_REGEX = /(stories|story)\.(m?js|ts)x?$/;
-
-export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex) => {
+export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex, pattern: RegExp) => {
     return {
-        test: STORIES_REGEX,
+        test: pattern,
         createIndex: async (fileName, options) => {
             const csf = (await readCsf(fileName, { ...options })).parse();
 

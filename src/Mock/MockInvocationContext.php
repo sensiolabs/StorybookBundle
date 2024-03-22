@@ -7,8 +7,6 @@ namespace Storybook\Mock;
  * a reference to the component and the original arguments.
  *
  * @author Nicolas Rigaud <squrious@protonmail.com>
- *
- * @internal
  */
 class MockInvocationContext
 {
