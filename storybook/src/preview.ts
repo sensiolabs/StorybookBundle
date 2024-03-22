@@ -1,6 +1,7 @@
-import { Args, PartialStoryFn as StoryFunction } from '@storybook/types';
-import { ServerRenderer, StoryContext} from '@storybook/server';
-import { setupActions } from './addons/actions';
+import { Args } from '@storybook/types';
+import { StoryContext} from '@storybook/server';
+import { setupActionListeners } from './addons/actions/decorator';
+import { actionLoader } from './addons/actions/loader';
 
 
 /**
@@ -11,6 +12,11 @@ import { setupActions } from './addons/actions';
 const fetchStoryHtml = async (url: string, path: string, params: any, storyContext: StoryContext<Args>) => {
     const fetchUrl = new URL(`${url}/${path}`);
 
+    for (const name in params) {
+        if (params[name]._sfActionId !== undefined) {
+            params[name] = params[name]._sfActionId;
+        }
+    }
     fetchUrl.search = new URLSearchParams({ ...storyContext.globals, ...params }).toString();
 
     const response = await fetch(fetchUrl);
@@ -18,22 +24,16 @@ const fetchStoryHtml = async (url: string, path: string, params: any, storyConte
     return response.text();
 };
 
-/**
- * Decorator to set server URL
- */
+
 export const decorators = [
-    (StoryFn: StoryFunction<ServerRenderer>, context: StoryContext<ServerRenderer>) => {
-        const { server = {} } = context.parameters;
-
-        if (server.url === undefined) {
-            server.url = `${window.location.origin}/_storybook/render`;
-        }
-
-        server.fetchStoryHtml = fetchStoryHtml;
-
-        context.parameters.server = server;
-
-        return StoryFn();
-    },
-    setupActions
+    setupActionListeners,
 ];
+
+export const loaders = [actionLoader];
+
+export const parameters = {
+    server: {
+        url: `${window.location.origin}/_storybook/render`,
+        fetchStoryHtml: fetchStoryHtml
+    }
+}

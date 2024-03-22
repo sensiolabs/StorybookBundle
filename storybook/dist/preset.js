@@ -299,10 +299,10 @@ globstar while`,e,d,r,f,p),this.matchOne(e.slice(d),r.slice(f),i))return this.de
                 }
             });
         }
-        `},webpack(i){let n=new ZI.default;n.apply(i);let s="";i.hooks.watchRun.tapPromise(Ml,async()=>{let a=await ml("storybook:generate-preview");a!==s&&(s=a,n.writeModule("./symfony-preview.js",Pt`
-                        export const symfonyPreview = {
-                            html: \`${s}\`,
-                        };`));}),i.hooks.afterCompile.tap(Ml,a=>{if(a.name=="HtmlWebpackCompiler"){let o=QI(r,e);a.contextDependencies.addAll(o.dirs),a.fileDependencies.addAll(o.files);}}),i.hooks.thisCompilation.tap(Ml,a=>{L0e__default.default.getHooks(a).afterTemplateExecution.tapPromise(Ml,async o=>{try{return o.html=gf(s,o.html),o}catch(l){return eO.logger.error(Pt`
+        `},webpack(i){let n=new ZI.default;n.apply(i);let s="";i.hooks.watchRun.tapPromise(Ml,async()=>{s=await ml("storybook:generate-preview"),n.writeModule("./symfony-preview.js",Pt`
+                    export const symfonyPreview = {
+                        html: \`${s}\`,
+                    };`);}),i.hooks.afterCompile.tap(Ml,a=>{if(a.name=="HtmlWebpackCompiler"){let o=QI(r,e);a.contextDependencies.addAll(o.dirs),a.fileDependencies.addAll(o.files);}}),i.hooks.thisCompilation.tap(Ml,a=>{L0e__default.default.getHooks(a).afterTemplateExecution.tapPromise(Ml,async o=>{try{return o.html=gf(s,o.html),o}catch(l){return eO.logger.error(Pt`
                             Failed to inject Symfony preview template in main iframe.html.
                             ERR: ${l}
                             `),o}});});}}});Lr();var Abe="twig-stories-compiler",rO=unplugin.createUnplugin(t=>{let{twigStoryIndex:e,resolver:r}=t;return {name:Abe,enforce:"post",transformInclude:i=>e.hasStories(i),transform:async(i,n)=>{let s=e.getStories(n).reduce((o,l)=>(l.template.getComponents().forEach(u=>o.add(u)),o),new Set),a=[];return s.forEach(o=>{a.push(r(o));}),Pt`
