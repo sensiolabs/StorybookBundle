@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin';
 import { TwigStoryIndex } from '../indexer';
 import dedent from 'ts-dedent';
+import { logger } from '@storybook/node-logger';
 
 const PLUGIN_NAME = 'twig-stories-compiler';
 
@@ -33,7 +34,14 @@ export const TwigStoriesDependenciesPlugin = createUnplugin<Options>((options) =
             const imports: string[] = [];
 
             components.forEach((name) => {
-                imports.push(resolver(name));
+                try {
+                    imports.push(resolver(name));
+                } catch (err) {
+                    logger.warn(dedent`
+                    Failed to resolve Twig component: ${name}:
+                    ${err}
+                    `)
+                }
             });
 
             return dedent`
