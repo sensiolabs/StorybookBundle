@@ -25,12 +25,12 @@ export const TwigStoriesGeneratorPlugin = createUnplugin<Options>((options) => {
         name: PLUGIN_NAME,
         enforce: 'pre',
         transformInclude: (id) => twigStoryIndex.hasStories(id),
-        async transform(source, id){
+        async transform(source, id) {
             const storiesSourceMap: Record<string, string> = {};
-            twigStoryIndex.getStories(id).forEach(story => {
-               storiesSourceMap[story.name] = story.template.getSource();
+            twigStoryIndex.getStories(id).forEach((story) => {
+                storiesSourceMap[story.name] = story.template.getSource();
             });
-            const csf = (await readCsf(id, {makeTitle: (userTitle?: string) => userTitle ?? 'default'})).parse();
+            const csf = (await readCsf(id, { makeTitle: (userTitle?: string) => userTitle ?? 'default' })).parse();
             enrichTwigCsf(csf, storiesSourceMap);
 
             return formatCsf(csf, { sourceMaps: true });

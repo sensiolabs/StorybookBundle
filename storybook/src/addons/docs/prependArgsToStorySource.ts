@@ -22,7 +22,7 @@ const formatValue = (value: any, level: number = 0): string => {
         formattedValue = [
             '{',
             Object.entries(value)
-                .filter(([_, v]) => validArg(v))
+                .filter((v) => validArg(v[1]))
                 .map(([key, v]) => {
                     return `${indent(level + 1)}'${key}': ${formatValue(v, level + 1)}`
                 })
@@ -51,7 +51,7 @@ const formatValue = (value: any, level: number = 0): string => {
 }
 
 export const prependArgsToStorySource = (source: string, args: any) => {
-    let preamble = dedent`
+    const preamble = dedent`
     {% set args = ${formatValue(args)} %}
     `;
 

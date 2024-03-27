@@ -40,7 +40,7 @@ export const TwigStoriesDependenciesPlugin = createUnplugin<Options>((options) =
                     logger.warn(dedent`
                     Failed to resolve Twig component: ${name}:
                     ${err}
-                    `)
+                    `);
                 }
             });
 

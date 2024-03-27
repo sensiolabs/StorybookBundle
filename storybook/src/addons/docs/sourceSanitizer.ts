@@ -49,8 +49,7 @@ const getAttributeName = (name: AttributeNodeName) => {
 }
 
 const traverseNode = (node: XmlNode, args: any) => {
-    if (typeof node === 'string') {
-    } else {
+    if (typeof node !== 'string') {
         for (const child in node) {
             if (isAttributeName(child)) {
                 const attrName = getAttributeName(child);

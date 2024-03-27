@@ -3,12 +3,7 @@ import * as t from '@babel/types';
 // import * as generate from '@babel/generator';
 import type { CsfFile, EnrichCsfOptions } from '@storybook/csf-tools';
 
-
-export const enrichTwigCsf = (
-    csf: CsfFile,
-    sourceMap: Record<string, string>,
-    options?: EnrichCsfOptions
-) => {
+export const enrichTwigCsf = (csf: CsfFile, sourceMap: Record<string, string>, options?: EnrichCsfOptions) => {
     if (options?.disableSource) {
         return;
     }
@@ -16,31 +11,16 @@ export const enrichTwigCsf = (
         useTemplateSourceInCsf(csf, key, sourceMap[key]);
     });
 };
-const useTemplateSourceInCsf = (
-    csf: CsfFile,
-    key: string,
-    source: string,
-) => {
-
+const useTemplateSourceInCsf = (csf: CsfFile, key: string, source: string) => {
     const parameters = [];
     const originalParameters = t.memberExpression(t.identifier(key), t.identifier('parameters'));
     parameters.push(t.spreadElement(originalParameters));
-    const optionalDocs = t.optionalMemberExpression(
-        originalParameters,
-        t.identifier('docs'),
-        false,
-        true
-    );
+    const optionalDocs = t.optionalMemberExpression(originalParameters, t.identifier('docs'), false, true);
     const extraDocsParameters = [];
 
     // docs: { source: { originalSource: %%source%% } },
     if (source) {
-        const optionalSource = t.optionalMemberExpression(
-            optionalDocs,
-            t.identifier('source'),
-            false,
-            true
-        );
+        const optionalSource = t.optionalMemberExpression(optionalDocs, t.identifier('source'), false, true);
 
         extraDocsParameters.push(
             t.objectProperty(
