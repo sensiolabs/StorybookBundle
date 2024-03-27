@@ -62,7 +62,7 @@ export default config;
 ```
 
 ```ts
-// .storybook/preset.ts
+// .storybook/preview.ts
 
 import { Preview } from '@storybook/server';
 
