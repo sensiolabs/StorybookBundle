@@ -1,10 +1,9 @@
 import { Args, ArgTypesEnhancer } from '@storybook/types';
-import { StoryContext} from '@storybook/server';
+import { StoryContext } from '@storybook/server';
 import { setupActionListeners } from './addons/actions/decorator';
 import { actionLoader } from './addons/actions/loader';
 import { enhanceArgTypes, SourceType } from '@storybook/docs-tools';
 import { sourceDecorator } from './addons/docs/sourceDecorator';
-
 
 /**
  * Copy/pasted from storybook/renderers/server/src/render.ts.
@@ -26,18 +25,14 @@ const fetchStoryHtml = async (url: string, path: string, params: any, storyConte
     return response.text();
 };
 
-
-export const decorators = [
-    sourceDecorator,
-    setupActionListeners,
-];
+export const decorators = [sourceDecorator, setupActionListeners];
 
 export const loaders = [actionLoader];
 
 export const parameters = {
     server: {
         url: `${window.location.origin}/_storybook/render`,
-        fetchStoryHtml: fetchStoryHtml
+        fetchStoryHtml: fetchStoryHtml,
     },
     docs: {
         source: {
@@ -48,8 +43,8 @@ export const parameters = {
                 code: undefined,
                 excludeDecorators: undefined,
             },
-        }
-    }
-}
+        },
+    },
+};
 
 export const argTypesEnhancers: ArgTypesEnhancer[] = [enhanceArgTypes];

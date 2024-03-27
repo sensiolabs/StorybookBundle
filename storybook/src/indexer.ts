@@ -8,10 +8,10 @@ import dedent from 'ts-dedent';
 type StoryId = StaticStory['id'];
 
 type TwigStory = {
-    id: StoryId,
-    name: string,
-    template: TwigTemplate,
-    hash: string
+    id: StoryId;
+    name: string;
+    template: TwigTemplate;
+    hash: string;
 };
 
 export class TwigStoryIndex {
@@ -31,7 +31,7 @@ export class TwigStoryIndex {
             id,
             name: story.exportName,
             hash,
-            template: component
+            template: component,
         });
 
         const storiesInFile = this.storiesInFiles.get(declaringFile) ?? new Set<StoryId>();
@@ -39,13 +39,12 @@ export class TwigStoryIndex {
         this.storiesInFiles.set(declaringFile, storiesInFile);
     }
 
-    unregister(fileName: string)
-    {
+    unregister(fileName: string) {
         const stories = this.storiesInFiles.get(fileName);
 
         if (!stories) return;
 
-        this.stories = this.stories.filter(story => !stories.has(story.id));
+        this.stories = this.stories.filter((story) => !stories.has(story.id));
         this.storiesInFiles.delete(fileName);
     }
 
@@ -54,20 +53,16 @@ export class TwigStoryIndex {
     }
 
     getTemplates() {
-        return new Map(
-            this.stories.map(story => [story.hash, story.template.getSource()])
-        );
+        return new Map(this.stories.map((story) => [story.hash, story.template.getSource()]));
     }
 
-    hasStories(fileName: string)
-    {
+    hasStories(fileName: string) {
         return this.storiesInFiles.has(fileName);
     }
 
-    getStories(fileName: string)
-    {
+    getStories(fileName: string) {
         const ids = this.storiesInFiles.get(fileName);
-        return ids ? this.stories.filter(story => ids.has(story.id)) : [];
+        return ids ? this.stories.filter((story) => ids.has(story.id)) : [];
     }
 }
 

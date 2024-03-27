@@ -8,7 +8,6 @@ import type { ServerRenderer } from '@storybook/server';
 import { prependArgsToStorySource } from './prependArgsToStorySource';
 import { sanitize } from './sourceSanitizer';
 
-
 function skipSourceRender(context: Parameters<DecoratorFunction<ServerRenderer>>[1]) {
     const sourceParams = context?.parameters.docs?.source;
     const isArgsStory = context?.parameters.__isArgsStory;

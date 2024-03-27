@@ -75,7 +75,7 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
 
     const resolver = (name: string) => {
         return resolveTwigComponentFile(name, symfonyOptions.twigComponent);
-    }
+    };
 
     const storiesPath = join(symfonyOptions.runtimePath, '/stories');
 
@@ -87,18 +87,18 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
                 ...(options.configType === 'PRODUCTION'
                     ? [PreviewCompilerPlugin.webpack()]
                     : [
-                        DevPreviewCompilerPlugin.webpack({
-                            projectDir: symfonyOptions.projectDir,
-                            additionalWatchPaths: symfonyOptions.additionalWatchPaths
-                        }),
-                        TwigStoriesDependenciesPlugin.webpack({
-                            twigStoryIndex,
-                            resolver
-                        }),
-                        TwigLoaderPlugin.webpack({resolver})
-                    ]),
-                TwigStoriesGeneratorPlugin.webpack({ twigStoryIndex, storiesPath })
-            ]
+                          DevPreviewCompilerPlugin.webpack({
+                              projectDir: symfonyOptions.projectDir,
+                              additionalWatchPaths: symfonyOptions.additionalWatchPaths,
+                          }),
+                          TwigStoriesDependenciesPlugin.webpack({
+                              twigStoryIndex,
+                              resolver,
+                          }),
+                          TwigLoaderPlugin.webpack({ resolver }),
+                      ]),
+                TwigStoriesGeneratorPlugin.webpack({ twigStoryIndex, storiesPath }),
+            ],
         ],
         module: {
             ...config.module,

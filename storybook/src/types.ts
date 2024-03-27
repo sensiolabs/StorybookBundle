@@ -42,9 +42,7 @@ type InternalSymfonyOptions = {
     twigComponent: TwigComponentConfiguration;
 };
 
-
 export type ResolvedSymfonyOptions = Required<SymfonyOptions> & InternalSymfonyOptions;
-
 
 export type FrameworkOptions = {
     builder?: BuilderOptions;

@@ -5,7 +5,7 @@ const isObject = (value: any) => typeof value === 'object' && null !== value && 
 
 const indent = (level: number) => '    '.repeat(level);
 const formatValue = (value: any, level: number = 0): string => {
-    let formattedValue: string|undefined = undefined;
+    let formattedValue: string | undefined = undefined;
     if (null === value) {
         formattedValue = 'null';
     }
@@ -16,7 +16,7 @@ const formatValue = (value: any, level: number = 0): string => {
         formattedValue = `${value}`;
     }
     if (typeof value === 'boolean') {
-        formattedValue = value ? 'true' :  'false';
+        formattedValue = value ? 'true' : 'false';
     }
     if (isObject(value)) {
         formattedValue = [
@@ -24,22 +24,22 @@ const formatValue = (value: any, level: number = 0): string => {
             Object.entries(value)
                 .filter((v) => validArg(v[1]))
                 .map(([key, v]) => {
-                    return `${indent(level + 1)}'${key}': ${formatValue(v, level + 1)}`
+                    return `${indent(level + 1)}'${key}': ${formatValue(v, level + 1)}`;
                 })
                 .join(',\n'),
-            `${indent(level)}}`
+            `${indent(level)}}`,
         ].join('\n');
     }
     if (Array.isArray(value)) {
         formattedValue = [
             '[',
             value
-                .filter(v => validArg(v))
-                .map(v => {
-                    return `${indent(level + 1)}${formatValue(v, level + 1)}`
+                .filter((v) => validArg(v))
+                .map((v) => {
+                    return `${indent(level + 1)}${formatValue(v, level + 1)}`;
                 })
                 .join(',\n'),
-            `${indent(level)}]`
+            `${indent(level)}]`,
         ].join('\n');
     }
 
@@ -48,7 +48,7 @@ const formatValue = (value: any, level: number = 0): string => {
         throw new Error(`Unhandled type: ${typeof value}`);
     }
     return `${formattedValue}`;
-}
+};
 
 export const prependArgsToStorySource = (source: string, args: any) => {
     const preamble = dedent`
@@ -56,4 +56,4 @@ export const prependArgsToStorySource = (source: string, args: any) => {
     `;
 
     return `${preamble}\n\n${source}`;
-}
+};

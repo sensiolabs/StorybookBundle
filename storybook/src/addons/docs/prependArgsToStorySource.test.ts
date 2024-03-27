@@ -13,10 +13,10 @@ describe('prependArgsToStorySource', () => {
             objectProp: {
                 foo: 'foo',
                 bar: {
-                    baz: 'baz'
-                }
+                    baz: 'baz',
+                },
             },
-            arrayProp: ['a', 2, null]
+            arrayProp: ['a', 2, null],
         };
 
         const res = prependArgsToStorySource(source, args);
@@ -39,6 +39,6 @@ describe('prependArgsToStorySource', () => {
         } %}
 
         <twig:Component :prop="args.prop" />
-        `)
+        `);
     });
 });

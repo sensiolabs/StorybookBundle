@@ -2,7 +2,6 @@ import { DecoratorFunction } from '@storybook/types';
 import { ServerRenderer } from '@storybook/server';
 import dedent from 'ts-dedent';
 
-
 const ACTION_ATTRIBUTE = 'data-storybook-action';
 const proxifyEvent = <T extends Event>(e: T) => {
     if (e.currentTarget !== null && Object.hasOwn(e.currentTarget, '__component')) {
@@ -32,25 +31,29 @@ export const setupActionListeners: DecoratorFunction<ServerRenderer> = (StoryFn,
     const root = document.getElementById('storybook-root');
 
     // Configure action listeners once story has been rendered
-    document.addEventListener('DOMContentLoaded', () => {
-        if (null === root) {
-            return;
-        }
-        Object.entries(args)
-            .filter(([, arg]) => typeof arg === 'function' && arg._sfActionId !== undefined)
-            .forEach(([name, arg]) => {
-                const el = root.querySelector(`[${ACTION_ATTRIBUTE}='${arg._sfActionId}']`)
-                if (null !== el) {
-                    el.addEventListener(name, (...eventArgs) => {
-                        arg(...eventArgs.map(proxifyEvent))
-                    });
-                } else {
-                    console.warn(dedent`
+    document.addEventListener(
+        'DOMContentLoaded',
+        () => {
+            if (null === root) {
+                return;
+            }
+            Object.entries(args)
+                .filter(([, arg]) => typeof arg === 'function' && arg._sfActionId !== undefined)
+                .forEach(([name, arg]) => {
+                    const el = root.querySelector(`[${ACTION_ATTRIBUTE}='${arg._sfActionId}']`);
+                    if (null !== el) {
+                        el.addEventListener(name, (...eventArgs) => {
+                            arg(...eventArgs.map(proxifyEvent));
+                        });
+                    } else {
+                        console.warn(dedent`
                         Action arg "${name} is not bound to any DOM element."
                     `);
-                }
-            });
-    }, {once: true});
+                    }
+                });
+        },
+        { once: true }
+    );
 
     return StoryFn(context);
 };
