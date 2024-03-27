@@ -9,6 +9,7 @@ type StoryId = StaticStory['id'];
 
 type TwigStory = {
     id: StoryId,
+    name: string,
     template: TwigTemplate,
     hash: string
 };
@@ -18,11 +19,17 @@ export class TwigStoryIndex {
 
     private stories: TwigStory[] = [];
 
-    register(id: StoryId, component: TwigTemplate, declaringFile: string) {
+    register(story: IndexInput, component: TwigTemplate, declaringFile: string) {
         const hash = crypto.createHash('sha1').update(component.getSource()).digest('hex');
+
+        const id = story.__id;
+        if (id === undefined) {
+            throw new Error(dedent`Missing story id.`);
+        }
 
         this.stories.push({
             id,
+            name: story.exportName,
             hash,
             template: component
         });
@@ -83,7 +90,7 @@ export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex, pattern: Re
                     const template = module[story.exportName]?.template ?? module['default']?.template ?? undefined;
 
                     if (undefined !== template && story.__id !== undefined) {
-                        twigStoryIndex.register(story.__id, template, fileName);
+                        twigStoryIndex.register(story, template, fileName);
                     }
 
                     indexedStories.push(story);

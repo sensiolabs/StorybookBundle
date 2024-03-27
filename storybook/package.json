@@ -56,6 +56,7 @@
     },
     "devDependencies": {
         "@storybook/csf-tools": "^8.0.0",
+        "@storybook/docs-tools": "^8.0.4",
         "@storybook/manager": "^8.0.0",
         "@storybook/node-logger": "^8.0.0",
         "@storybook/preset-server-webpack": "^8.0.0",

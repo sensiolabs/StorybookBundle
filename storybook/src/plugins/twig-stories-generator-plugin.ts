@@ -3,6 +3,8 @@ import { TwigStoryIndex } from '../indexer';
 import { join } from 'path';
 import * as fs from 'fs/promises';
 import dedent from 'ts-dedent';
+import { formatCsf, readCsf } from '@storybook/csf-tools';
+import { enrichTwigCsf } from '../utils/csf';
 
 const PLUGIN_NAME = 'twig-stories-template-generator';
 
@@ -21,6 +23,18 @@ export const TwigStoriesGeneratorPlugin = createUnplugin<Options>((options) => {
 
     return {
         name: PLUGIN_NAME,
+        enforce: 'pre',
+        transformInclude: (id) => twigStoryIndex.hasStories(id),
+        async transform(source, id){
+            const storiesSourceMap: Record<string, string> = {};
+            twigStoryIndex.getStories(id).forEach(story => {
+               storiesSourceMap[story.name] = story.template.getSource();
+            });
+            const csf = (await readCsf(id, {makeTitle: (userTitle?: string) => userTitle ?? 'default'})).parse();
+            enrichTwigCsf(csf, storiesSourceMap);
+
+            return formatCsf(csf, { sourceMaps: true });
+        },
         async buildStart() {
             try {
                 const files = await fs.readdir(storiesPath);

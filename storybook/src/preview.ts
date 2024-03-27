@@ -1,7 +1,9 @@
-import { Args } from '@storybook/types';
+import { Args, ArgTypesEnhancer } from '@storybook/types';
 import { StoryContext} from '@storybook/server';
 import { setupActionListeners } from './addons/actions/decorator';
 import { actionLoader } from './addons/actions/loader';
+import { enhanceArgTypes, SourceType } from '@storybook/docs-tools';
+import { sourceDecorator } from './addons/docs/sourceDecorator';
 
 
 /**
@@ -26,6 +28,7 @@ const fetchStoryHtml = async (url: string, path: string, params: any, storyConte
 
 
 export const decorators = [
+    sourceDecorator,
     setupActionListeners,
 ];
 
@@ -35,5 +38,18 @@ export const parameters = {
     server: {
         url: `${window.location.origin}/_storybook/render`,
         fetchStoryHtml: fetchStoryHtml
+    },
+    docs: {
+        source: {
+            story: { inline: true },
+            source: {
+                type: SourceType.DYNAMIC,
+                language: 'html',
+                code: undefined,
+                excludeDecorators: undefined,
+            },
+        }
     }
 }
+
+export const argTypesEnhancers: ArgTypesEnhancer[] = [enhanceArgTypes];
