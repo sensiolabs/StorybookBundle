@@ -6,6 +6,7 @@ use Storybook\ArgsProcessor\StorybookArgsProcessor;
 use Storybook\Attributes\AsArgsProcessor;
 use Storybook\Attributes\AsComponentMock;
 use Storybook\Command\GeneratePreviewCommand;
+use Storybook\Command\StorybookInitCommand;
 use Storybook\Controller\StorybookController;
 use Storybook\DependencyInjection\Compiler\ComponentMockPass;
 use Storybook\EventListener\ComponentMockSubscriber;
@@ -94,6 +95,11 @@ class StorybookExtension extends Extension implements ConfigurationInterface
             ->setArgument(1, new Reference('event_dispatcher'))
             ->addTag('console.command', ['name' => 'storybook:generate-preview'])
         ;
+
+        // Init command
+        $container->register('storybook.init_command', StorybookInitCommand::class)
+            ->setArgument(0, $container->getParameter('kernel.project_dir'))
+            ->addTag('console.command', ['name' => 'storybook:init']);
 
         // Component subscriber
         $container->register('storybook.twig.on_pre_render_listener', TwigComponentSubscriber::class)

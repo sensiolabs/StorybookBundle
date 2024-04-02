@@ -41,7 +41,7 @@ class Kernel extends BaseKernel
 
         // AssetMapper configuration
         $frameworkConfig['asset_mapper'] = [
-            'importmap_path' => '%kernel.project_dir%/tests/Fixtures/importmap.php',
+            'importmap_path' => '%kernel.project_dir%/importmap.php',
             'paths' => [
                 'assets/',
             ],
@@ -50,7 +50,7 @@ class Kernel extends BaseKernel
         $container->extension('framework', $frameworkConfig);
 
         $container->extension('twig', [
-            'default_path' => '%kernel.project_dir%/tests/Fixtures/templates',
+            'default_path' => '%kernel.project_dir%/templates',
         ]);
 
         $container->extension('twig_component', [
@@ -61,7 +61,7 @@ class Kernel extends BaseKernel
         ]);
 
         $container->extension('storybook', [
-            'runtime_dir' => '%kernel.project_dir%/tests/Fixtures/storybook',
+            'runtime_dir' => '%kernel.project_dir%/storybook',
             'server' => 'http://localhost:6006',
         ]);
 
@@ -73,6 +73,21 @@ class Kernel extends BaseKernel
             // Disable logging errors in the console
             ->set('logger', NullLogger::class)
         ;
+    }
+
+    public function getCacheDir(): string
+    {
+        return sys_get_temp_dir().'/cache'.spl_object_hash($this);
+    }
+
+    public function getLogDir(): string
+    {
+        return sys_get_temp_dir().'/logs'.spl_object_hash($this);
+    }
+
+    public function getProjectDir(): string
+    {
+        return __DIR__;
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
