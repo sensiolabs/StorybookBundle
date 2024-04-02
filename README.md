@@ -2,109 +2,30 @@
 
 This bundle provides a basic integration for Storybook into a Symfony application using Twig Components.
 
-> WARNING: this is NOT ready to use
+> DISCLAIMER: \
+> This bundle is under active development. Some features may not work as expected and the current documentation may be incomplete.
 
 ## Installation
 
 Clone this repo and install the bundle in your project.
 
-Install Storybook in your project:
+Initialize Storybook in your project:
 
 ```shell
-yarn add -D @storybook/cli @storybook/addon-essentials @storybook/addon-links @storybook/blocks react react-dom @storybook/
+bin/console storybook:init
 ```
 
-To use TypeScript, add: 
+This will create basic configuration files and add required dependencies to your `package.json`.  
+
+Install new dependencies with: 
+```shell
+npm install
+```
+
+Ensure your Symfony server is running on the same address defined in your `main.ts` configuration file. Then run the Storybook dev server with:
 
 ```shell
-yarn add -D @storybook/addon-webpack5-compiler-swc
-```
-
-Add the bundled NPM package for Symfony integration:
-
-```shell
-yarn add -D @sensiolabs/storybook-symfony-webpack5@file:vendor/sensiolabs/storybook-bundle/storybook
-```
-
-Create Storybook configuration in `.storybook/`: 
-
-```ts
-// .storybook/main.ts
-
-import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
-
-const config: StorybookConfig = {
-    stories: ["../stories/**/*.stories.[tj]s", "../stories/**/*.mdx"],
-    addons: [
-        // Your addons
-        "@storybook/addon-links",
-        "@storybook/addon-essentials",
-        "@storybook/addon-webpack5-compiler-swc", // Add this addon for TypeScript
-    ],
-    framework: {
-        // 👇 Here tell Storybook to use the Symfony framework  
-        name: "@sensiolabs/storybook-symfony-webpack5",
-        options: {
-          // 👇 Here configure the framework
-          symfony: {
-              server: 'https://localhost:8000', // This is mandatory for development, the URL of your Symfony dev server
-              proxyPaths: [ // Setup here paths to resolve your assets. Those paths are proxied to your Symfony server.
-                  '/assets'
-              ]
-          }
-        },
-    },
-    docs: {
-        autodocs: "tag",
-    },
-};
-export default config;
-```
-
-```ts
-// .storybook/preview.ts
-
-import { Preview } from '@storybook/server';
-
-const preview: Preview = {
-    parameters: {
-        actions: { argTypesRegex: "^on[A-Z].*" },
-        controls: {
-            matchers: {
-                color: /(background|color)$/i,
-                date: /Date$/i,
-            },
-        },
-    },
-};
-
-export default preview;
-
-```
-
-Register the route for Storybook in your symfony project:
-
-```yaml
-# config/routes/storybook.yaml
-
-storybook:
-  resource: '@StorybookBundle/config/routes.php'
-```
-
-Run Storybook with:
-```shell
-yarn run sb dev -p 6006
-```
-
-Additionally, you can add custom scripts to your `package.json` file: 
-
-```json
-{
-    "scripts": {
-        "storybook": "sb dev -p 6006",
-        "build-storybook": "sb build"
-    }
-}
+npm run storybook
 ```
 
 ## Symfony configuration
@@ -120,7 +41,7 @@ In the StorybookBundle:
 ```yaml
 # config/storybook.yaml
 storybook: 
-  server: http://localhost:6006
+  server: http://localhost:6006 # This is the default
 ```
 
 With NelmioCorsBundle:
@@ -142,7 +63,7 @@ nelmio_cors:
 
 ## Customizing the preview iframe
 
-To customize the iframe where your stories are rendered, you can create a preview template:
+To customize the iframe where your stories are rendered, you can override the preview template provided by the bundle:
 
 ```twig
 {# templates/bundles/@StorybookBundle/preview.html.twig #}
@@ -160,10 +81,6 @@ To customize the iframe where your stories are rendered, you can create a previe
 
 The rendered content of these blocks will be injected in the preview iframe, similarly to the [previewHead](https://storybook.js.org/docs/configure/story-rendering#adding-to-head) and [previewBody](https://storybook.js.org/docs/configure/story-rendering#adding-to-body) configurations.
 
-> Note: 
-> \
-> The template doesn't strictly need to extend `@Storybook/preview.html.twig`, but the rendered content needs to be a valid HTML document, and this inheritance facilitates this requirement.
-
 ### AssetMapper integration
 
 To use Storybook with a project that uses the [AssetMapper component](https://symfony.com/doc/current/frontend/asset_mapper.html), you need to render your importmap in the preview template: 
@@ -178,7 +95,7 @@ To use Storybook with a project that uses the [AssetMapper component](https://sy
 {% endblock %}
 ```
 
-Though, standard HMR will not work properly with AssetMapper. To register additional paths to watch and re-trigger the iframe compilation, update your `main.ts|js` configuration:
+Though, standard HMR will not work properly with AssetMapper. To register additional paths to watch and re-trigger the iframe compilation on change, update your `main.ts|js` configuration:
 
 ```ts
 // .storybook/main.ts
@@ -257,7 +174,7 @@ const config: StorybookConfig = {
 ```
 
 Thanks to this configuration, all requests made by live components to re-render themselves will be sent to the 
-Symfony server.
+Symfony dev server.
 
 
 ## Writing stories
@@ -473,42 +390,6 @@ class MyArgsProcessor
         } 
     }
 }
-```
-
-
-# Troubleshooting
-
-## Conflicting `string-width` module
-
-When you install storybook, you might encounter the following warnings:
-
-```
-warning Pattern ["string-width-cjs@npm:string-width@^4.2.0"] is trying to unpack in the same destination "/home/john/.cache/yarn/v6/npm-string-width-cjs-4.2.3-269c7117d27b05ad2e536830a8ec895ef9c6d010-integrity/node_modules/string-width-cjs" as pattern ["string-width@^4.2.0"]. This could result in non-deterministic behavior, skipping.
-warning Pattern ["strip-ansi-cjs@npm:strip-ansi@^6.0.1"] is trying to unpack in the same destination "/home/john/.cache/yarn/v6/npm-strip-ansi-cjs-6.0.1-9e26c63d30f53443e9489495b2105d37b67a85d9-integrity/node_modules/strip-ansi-cjs" as pattern ["strip-ansi@^6.0.0"]. This could result in non-deterministic behavior, skipping.
-warning Pattern ["string-width@^4.1.0"] is trying to unpack in the same destination "/home/john/.cache/yarn/v6/npm-string-width-cjs-4.2.3-269c7117d27b05ad2e536830a8ec895ef9c6d010-integrity/node_modules/string-width-cjs" as pattern ["string-width@^4.2.0"]. This could result in non-deterministic behavior, skipping.
-```
-
-
-When trying to run storybook, if you get the following error:
-```
-🔴 Error: It looks like you are having a known issue with package hoisting.
-Please check the following issue for details and solutions: https://github.com/storybookjs/storybook/issues/22431#issuecomment-1630086092
-
-
-/home/john/Projects/storybook/node_modules/cli-table3/src/utils.js:1
-const stringWidth = require('string-width');
-                    ^
-
-Error [ERR_REQUIRE_ESM]: require() of ES Module /home/john/Projects/storybook/node_modules/string-width/index.js from /home/john/Projects/storybook/node_modules/cli-table3/src/utils.js not supported.
-
-```
-
-Then you have to clean the yarn cache for the conflicting module and reinstall: 
-
-```
-yarn cache clean string-width-cjs@npm:string-width@^4.2.0
-rm yarn.lock
-yarn install --force
 ```
 
 # License
