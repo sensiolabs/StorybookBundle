@@ -112,8 +112,16 @@ const STORIES_REGEX = /(stories|story)\.(m?js|ts)x?$/;
 export const experimental_indexers: PresetProperty<'experimental_indexers'> = (existingIndexers?: Indexer[]) =>
     [createTwigCsfIndexer(twigStoryIndex, STORIES_REGEX)].concat(existingIndexers || []);
 
-export const previewAnnotations = (entry: Entry[] = []) => {
-    return [require.resolve('./preview'), ...entry];
+export const previewAnnotations: PresetProperty<'previewAnnotations'> = async (entry: Entry[] = [], options) => {
+    const docsEnabled = Object.keys(await options.presets.apply('docs', {}, options)).length > 0;
+
+    const result: string[] = [];
+
+    return result
+        .concat(entry)
+        .concat([join(__dirname, 'entry-preview.mjs')])
+        .concat(docsEnabled ? [join(__dirname, 'entry-preview-docs.mjs')] : []);
+
 };
 
 export const previewHead = async (base: any) => dedent`

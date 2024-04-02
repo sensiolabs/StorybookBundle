@@ -29,7 +29,8 @@
             "types": "./dist/preset.d.ts",
             "require": "./dist/preset.js"
         },
-        "./preview": "./dist/preview.mjs",
+        "./dist/entry-preview.mjs": "./dist/entry-preview.mjs",
+        "./dist/entry-preview-docs.mjs": "./dist/entry-preview-docs.mjs",
         "./package.json": "./package.json"
     },
     "main": "dist/index.js",
@@ -111,7 +112,8 @@
             "./src/builders/webpack5/index.ts"
         ],
         "previewEntries": [
-            "./src/preview.ts"
+            "./src/entry-preview.ts",
+            "./src/entry-preview-docs.ts"
         ],
         "exportEntries": [
             "./src/index.ts"
