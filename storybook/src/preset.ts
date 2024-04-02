@@ -27,7 +27,10 @@ export const core: PresetProperty<'core'> = async (config, options) => {
     };
 };
 
-export const frameworkOptions = async (frameworkOptions: FrameworkOptions, options: Options) => {
+export const frameworkOptions: StorybookConfig['framework'] = async (
+    frameworkOptions: FrameworkOptions,
+    options: Options
+) => {
     const { configDir } = options;
 
     const symfonyOptions: SymfonyOptions = {
@@ -121,15 +124,14 @@ export const previewAnnotations: PresetProperty<'previewAnnotations'> = async (e
         .concat(entry)
         .concat([join(__dirname, 'entry-preview.mjs')])
         .concat(docsEnabled ? [join(__dirname, 'entry-preview-docs.mjs')] : []);
-
 };
 
-export const previewHead = async (base: any) => dedent`
+export const previewHead: PresetProperty<'previewHead'> = async (base: any) => dedent`
     ${base}
     <!--PREVIEW_HEAD_PLACEHOLDER-->
     `;
 
-export const previewBody = async (base: any) => dedent`
+export const previewBody: PresetProperty<'previewBody'> = async (base: any) => dedent`
     ${base}
     <!--PREVIEW_BODY_PLACEHOLDER-->
     `;
