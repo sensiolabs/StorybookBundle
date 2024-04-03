@@ -2,15 +2,18 @@
 
 namespace Storybook\Tests\Functional\EventListener;
 
+use Storybook\Tests\StoryTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class ComponentRenderSubscriberTest extends WebTestCase
 {
+    use StoryTestTrait;
+
     public function testRenderMockedComponent()
     {
         $client = static::createClient();
 
-        $crawler = $client->request('GET', '_storybook/render/story-with-mocked-component');
+        $crawler = $this->renderStory($client, 'story-with-mocked-component');
 
         $this->assertResponseIsSuccessful();
 

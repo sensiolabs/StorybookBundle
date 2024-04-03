@@ -2,6 +2,7 @@
 
 namespace Storybook\ArgsProcessor;
 
+use Storybook\Args;
 use Storybook\Util\RequestAttributesHelper;
 use Storybook\Util\StorybookAttributes;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,11 +13,11 @@ use Symfony\Component\HttpFoundation\Request;
 final class StorybookArgsProcessor
 {
     /**
-     * @var array<array{'story': ?string, 'processor': callable}>
+     * @var array<array{'story': ?string, 'processor': ArgsProcessorInterface}>
      */
     private array $processors = [];
 
-    public function addProcessor(callable $processor, ?string $story): void
+    public function addProcessor(ArgsProcessorInterface $processor, ?string $story): void
     {
         $this->processors[] = [
             'story' => $story,
@@ -24,27 +25,30 @@ final class StorybookArgsProcessor
         ];
     }
 
-    public function process(Request $request): array
+    public function process(Request $request): Args
     {
         $storybookAttributes = RequestAttributesHelper::getStorybookAttributes($request);
 
-        $args = $request->query->all();
-
-        // Decode JSON args
-        foreach ($args as $key => $value) {
-            $decoded = json_decode($value, associative: true);
-            if (\JSON_ERROR_NONE === json_last_error()) {
-                $args[$key] = $decoded;
-            }
-        }
+        $args = $this->getArgsFromRequest($request);
 
         foreach ($this->processors as ['story' => $story, 'processor' => $processor]) {
             if ($this->match($story, $storybookAttributes)) {
+                if (!$processor instanceof ArgsProcessorInterface) {
+                    throw new \LogicException(sprintf('Args processor "%s" must implement "%s".', get_debug_type($processor), ArgsProcessorInterface::class));
+                }
+
                 $processor($args);
             }
         }
 
         return $args;
+    }
+
+    private function getArgsFromRequest(Request $request): Args
+    {
+        $args = $request->getPayload()->all()['args'] ?? [];
+
+        return new Args($args);
     }
 
     private function match(?string $story, StorybookAttributes $storybookAttributes): bool

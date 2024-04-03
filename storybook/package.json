@@ -1,6 +1,6 @@
 {
     "name": "@sensiolabs/storybook-symfony-webpack5",
-    "version": "0.0.1",
+    "version": "0.0.1-beta",
     "description": "Storybook for Symfony",
     "keywords": [
         "storybook",
@@ -25,12 +25,12 @@
             "require": "./dist/index.js",
             "import": "./dist/index.mjs"
         },
+        "./renderer": {
+            "require": "./dist/renderer/preset.js"
+        },
         "./preset": {
-            "types": "./dist/preset.d.ts",
             "require": "./dist/preset.js"
         },
-        "./dist/entry-preview.mjs": "./dist/entry-preview.mjs",
-        "./dist/entry-preview-docs.mjs": "./dist/entry-preview-docs.mjs",
         "./package.json": "./package.json"
     },
     "main": "dist/index.js",
@@ -45,7 +45,11 @@
     ],
     "dependencies": {
         "@storybook/builder-webpack5": "^8.0.4",
-        "@storybook/server": "^8.0.4",
+        "@storybook/csf-tools": "^8.0.4",
+        "@storybook/docs-tools": "^8.0.4",
+        "@storybook/node-logger": "^8.0.4",
+        "@storybook/preview-api": "^8.0.4",
+        "@storybook/types": "^8.0.4",
         "css-loader": "^6.7.3",
         "html-webpack-plugin": "^5.6.0",
         "http-proxy-middleware": "^2.0.6",
@@ -56,20 +60,12 @@
         "unplugin": "^1.5.1"
     },
     "devDependencies": {
-        "@storybook/csf-tools": "^8.0.4",
-        "@storybook/docs-tools": "^8.0.4",
         "@storybook/manager": "^8.0.4",
-        "@storybook/node-logger": "^8.0.4",
-        "@storybook/preset-server-webpack": "^8.0.4",
-        "@storybook/preview": "^8.0.4",
-        "@storybook/preview-api": "^8.0.4",
-        "@storybook/types": "^8.0.4",
         "@types/is-glob": "^4.0.4",
         "@types/jest": "^29.5.11",
         "@types/jsdom": "^21.1.6",
         "@types/loader-utils": "^2.0.5",
         "@types/node": "^18.0.0",
-        "@types/picomatch": "^2.3.3",
         "@typescript-eslint/eslint-plugin": "^7.4.0",
         "@typescript-eslint/parser": "^7.4.0",
         "eslint": "^8.56.0",
@@ -101,7 +97,7 @@
         }
     },
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=18.0.0"
     },
     "publishConfig": {
         "access": "public"
@@ -109,16 +105,16 @@
     "bundler": {
         "nodeEntries": [
             "./src/preset.ts",
-            "./src/builders/webpack5/index.ts"
-        ],
-        "previewEntries": [
-            "./src/entry-preview.ts",
-            "./src/entry-preview-docs.ts"
+            "./src/server/framework-preset.ts",
+            "./src/builders/webpack-builder.ts"
         ],
         "exportEntries": [
             "./src/index.ts"
         ],
-        "managerEntries": []
+        "previewEntries": [
+            "./src/entry-preview.ts",
+            "./src/entry-preview-docs.ts"
+        ]
     },
     "packageManager": "yarn@4.1.1"
 }

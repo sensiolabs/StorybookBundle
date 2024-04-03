@@ -9,7 +9,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\UX\TwigComponent\Event\PreRenderEvent;
 
-class TwigComponentSubscriber implements EventSubscriberInterface
+/**
+ * @author Nicolas Rigaud <squrious@protonmail.com>
+ *
+ * @internal
+ */
+final class TwigComponentSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly RequestStack $requestStack,

@@ -1,7 +1,6 @@
-import { StorybookConfig as StorybookConfig$2, Options, TypescriptOptions as TypescriptOptions$1, DecoratorFunction } from '@storybook/types';
+import { StorybookConfig as StorybookConfig$2, Options, TypescriptOptions as TypescriptOptions$1, WebRenderer, Args, ComponentAnnotations, AnnotatedStoryFn, StoryAnnotations, StrictArgs, DecoratorFunction, LoaderFunction, StoryContext as StoryContext$1, ProjectAnnotations } from '@storybook/types';
 export { ArgTypes, Args, Parameters, StrictArgs } from '@storybook/types';
 import { BuilderOptions, StorybookConfigWebpack, TypescriptOptions } from '@storybook/builder-webpack5';
-import { ServerRenderer } from '@storybook/server';
 
 type RulesConfig = any;
 type ModuleConfig = {
@@ -40,10 +39,6 @@ type SymfonyOptions = {
      */
     server?: string;
     /**
-     * Location of Storybook generated assets for Symfony renderer.
-     */
-    runtimePath?: string;
-    /**
      * Paths to proxy to the Symfony server. This is useful to resolve assets (i.e. with '/assets').
      */
     proxyPaths?: ProxyPaths;
@@ -74,17 +69,47 @@ type StorybookConfigFramework = {
  */
 type StorybookConfig = Omit<StorybookConfig$1, keyof StorybookConfigWebpack | keyof StorybookConfigFramework> & StorybookConfigWebpack & StorybookConfigFramework;
 
-type HtmlWrapper = (html: string) => string;
-declare const wrapHtml: (wrapper: HtmlWrapper) => DecoratorFunction<ServerRenderer>;
-
 declare class TwigTemplate {
     private readonly source;
-    private readonly components;
-    constructor(source: string, components: string[]);
+    constructor(source: string);
     getSource(): string;
     toString(): string;
-    getComponents(): string[];
 }
 declare function twig(source: TemplateStringsArray | string, ...values: any[]): TwigTemplate;
 
-export { type FrameworkOptions, type StorybookConfig, type SymfonyOptions, twig, wrapHtml };
+type StoryFnSymfonyReturnType = {
+    template: TwigTemplate;
+};
+type TwigComponent = {
+    source: string;
+};
+interface SymfonyRenderer extends WebRenderer {
+    component: TwigComponent | undefined;
+    storyResult: StoryFnSymfonyReturnType;
+}
+
+/**
+ * Metadata to configure the stories for a component.
+ *
+ * @see [Default export](https://storybook.js.org/docs/formats/component-story-format/#default-export)
+ */
+type Meta<TArgs = Args> = ComponentAnnotations<SymfonyRenderer, TArgs>;
+/**
+ * Story function that represents a CSFv2 component example.
+ *
+ * @see [Named Story exports](https://storybook.js.org/docs/formats/component-story-format/#named-story-exports)
+ */
+type StoryFn<TArgs = Args> = AnnotatedStoryFn<SymfonyRenderer, TArgs>;
+/**
+ * Story object that represents a CSFv3 component example.
+ *
+ * @see [Named Story exports](https://storybook.js.org/docs/formats/component-story-format/#named-story-exports)
+ */
+type StoryObj<TArgs = Args> = StoryAnnotations<SymfonyRenderer, TArgs>;
+
+type Decorator<TArgs = StrictArgs> = DecoratorFunction<SymfonyRenderer, TArgs>;
+type Loader<TArgs = StrictArgs> = LoaderFunction<SymfonyRenderer, TArgs>;
+type StoryContext<TArgs = StrictArgs> = StoryContext$1<SymfonyRenderer, TArgs>;
+type Preview = ProjectAnnotations<SymfonyRenderer>;
+
+export { type Decorator, type FrameworkOptions, type Loader, type Meta, type Preview, type StoryContext, type StoryFn, type StoryObj, type StorybookConfig, type SymfonyOptions, type SymfonyRenderer, twig };

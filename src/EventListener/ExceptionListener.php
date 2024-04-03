@@ -2,9 +2,9 @@
 
 namespace Storybook\EventListener;
 
-use Storybook\Exception\TemplateNotFoundException;
+use Storybook\Exception\UnauthorizedStoryException;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
@@ -17,8 +17,8 @@ final class ExceptionListener
     {
         $th = $event->getThrowable();
 
-        if ($th instanceof TemplateNotFoundException) {
-            $event->setThrowable(new NotFoundHttpException($event->getThrowable()->getMessage(), $event->getThrowable()));
+        if ($th instanceof UnauthorizedStoryException) {
+            $event->setThrowable(new BadRequestHttpException($event->getThrowable()->getMessage(), $event->getThrowable()));
         }
     }
 }

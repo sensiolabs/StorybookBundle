@@ -3,14 +3,12 @@
 namespace Storybook\Controller;
 
 use Storybook\ArgsProcessor\StorybookArgsProcessor;
-use Storybook\Exception\RenderException;
-use Storybook\Exception\TemplateNotFoundException;
+use Storybook\Story;
+use Storybook\StoryRenderer;
 use Storybook\Util\RequestAttributesHelper;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Twig\Environment;
-use Twig\Error\Error;
-use Twig\Error\LoaderError;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
@@ -18,7 +16,7 @@ use Twig\Error\LoaderError;
 final class StorybookController
 {
     public function __construct(
-        private readonly Environment $twig,
+        private readonly StoryRenderer $storyRenderer,
         private readonly StorybookArgsProcessor $argsProcessor,
     ) {
     }
@@ -27,17 +25,17 @@ final class StorybookController
     {
         $request = RequestAttributesHelper::withStorybookAttributes($request, ['story' => $story]);
 
+        $templateString = $request->getPayload()->get('template');
+
+        if (null === $templateString) {
+            throw new BadRequestHttpException('Missing "template" in request body.');
+        }
+
         $args = $this->argsProcessor->process($request);
 
-        $template = sprintf('@Stories/%s.html.twig', $story);
+        $storyObj = new Story($story, $templateString, $args);
 
-        try {
-            $content = $this->twig->render($template, ['args' => $args]);
-        } catch (LoaderError $th) {
-            throw new TemplateNotFoundException(sprintf('Unable to find template for story "%s".', $story), $th);
-        } catch (Error $th) {
-            throw new RenderException(sprintf('Unable to render story "%s".', $story), $th);
-        }
+        $content = $this->storyRenderer->render($storyObj);
 
         return new Response($content);
     }

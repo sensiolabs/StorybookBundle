@@ -4,6 +4,8 @@ namespace Storybook\Tests\Unit\ArgsProcessor;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Storybook\Args;
+use Storybook\ArgsProcessor\ArgsProcessorInterface;
 use Storybook\ArgsProcessor\StorybookArgsProcessor;
 use Storybook\Util\RequestAttributesHelper;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,26 +15,24 @@ class StorybookArgsProcessorTest extends TestCase
     /**
      * @dataProvider getExtractTests
      */
-    public function testExtractRequest(string $queryString, array $expected)
+    public function testExtractRequest(array $json, array $expected)
     {
-        $request = Request::create('/'.('' !== $queryString ? '?'.$queryString : ''));
+        $request = Request::create('/', content: json_encode($json));
         $request = RequestAttributesHelper::withStorybookAttributes($request, ['story' => 'story']);
         $argsProcessor = new StorybookArgsProcessor();
 
         $data = $argsProcessor->process($request);
 
-        $this->assertSame($expected, $data);
+        $this->assertSame($expected, $data->toArray());
     }
 
     public function getExtractTests(): iterable
     {
         yield from [
-            'no data' => ['', []],
-            'scalar data' => ['foo=bar&baz=42', ['foo' => 'bar', 'baz' => 42]],
-            'boolean' => ['foo=true&bar=false', ['foo' => true, 'bar' => false]],
-            'null' => ['foo=null', ['foo' => null]],
-            'array' => ['foo=["a", "b"]', ['foo' => ['a', 'b']]],
-            'object' => ['foo={"prop": "value"}', ['foo' => ['prop' => 'value']]],
+            'no data' => [[], []],
+            'no args' => [['foo' => 'bar'], []],
+            'empty args' => [['args' => []], []],
+            'some args' => [['args' => ['foo' => 'bar']], ['foo' => 'bar']],
         ];
     }
 
@@ -63,7 +63,10 @@ class StorybookArgsProcessorTest extends TestCase
 
         $request = $this->createRequest('story', ['foo' => 'bar']);
 
-        $processor->expects($this->once())->method('__invoke')->with(['foo' => 'bar']);
+        $processor->expects($this->once())->method('__invoke')->with(
+            $this->equalTo(new Args(['foo' => 'bar']))
+        );
+
         $argsProcessor->process($request);
     }
 
@@ -94,20 +97,20 @@ class StorybookArgsProcessorTest extends TestCase
     public function testMultipleProcessorsAreExecutedInOrder()
     {
         $argsProcessor = new StorybookArgsProcessor();
-        $argsProcessor->addProcessor(new class() {
-            public function __invoke(array &$args): void
+        $argsProcessor->addProcessor(new class() implements ArgsProcessorInterface {
+            public function __invoke(Args $args): void
             {
-                $args += ['foo' => 'first'];
+                $args->merge(['foo' => 'first']);
             }
         }, 'story');
-        $argsProcessor->addProcessor(new class() {
-            public function __invoke(array &$args): void
+        $argsProcessor->addProcessor(new class() implements ArgsProcessorInterface {
+            public function __invoke(Args $args): void
             {
-                $args += ['bar' => 'value'];
+                $args->merge(['bar' => 'value']);
             }
         }, null);
-        $argsProcessor->addProcessor(new class() {
-            public function __invoke(array &$args): void
+        $argsProcessor->addProcessor(new class() implements ArgsProcessorInterface {
+            public function __invoke(Args $args): void
             {
                 if (isset($args['bar'])) {
                     $args['foo'] = 'second';
@@ -117,21 +120,18 @@ class StorybookArgsProcessorTest extends TestCase
 
         $request = $this->createRequest('story');
 
-        $this->assertEquals(['bar' => 'value', 'foo' => 'second'], $argsProcessor->process($request));
+        $this->assertEquals(new Args(['bar' => 'value', 'foo' => 'second']), $argsProcessor->process($request));
     }
 
-    private function createRequest(string $story, array $queryParameters = []): Request
+    private function createRequest(string $story, array $args = []): Request
     {
-        $request = new Request($queryParameters);
+        $request = new Request(request: ['args' => $args]);
 
         return RequestAttributesHelper::withStorybookAttributes($request, ['story' => $story]);
     }
 
-    private function createProcessorMock(): MockObject|callable
+    private function createProcessorMock(): MockObject|ArgsProcessorInterface
     {
-        return $this
-            ->getMockBuilder(\stdClass::class)
-            ->addMethods(['__invoke'])
-            ->getMock();
+        return $this->createMock(ArgsProcessorInterface::class);
     }
 }

@@ -194,6 +194,16 @@ TS;
         $content = <<<YAML
 storybook: ~
 
+when@prod:
+  storybook:
+    sandbox:
+      deniedFunctions:
+        - 'dump'
+      deniedProperties:
+        'Symfony\Bridge\Twig\AppVariable': '*'
+      deniedMethods:
+        'Symfony\Bridge\Twig\AppVariable': '*'
+
 YAML;
         $this->writeFileWithConfirmation($configFile, $content);
     }

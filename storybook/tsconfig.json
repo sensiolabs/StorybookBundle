@@ -20,7 +20,7 @@
         "target": "ES2020"
     },
     "exclude": ["dist", "**/dist", "node_modules", "**/node_modules"],
-    "include": ["src/**/*", "test/**/*"],
+    "include": ["src/**/*"],
     "ts-node": {
         "compilerOptions": {
             "types": ["node"]

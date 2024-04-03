@@ -13,7 +13,8 @@ use Storybook\EventListener\ComponentMockSubscriber;
 use Storybook\EventListener\ExceptionListener;
 use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Mock\ComponentProxyFactory;
-use Storybook\Twig\StoryTemplateLoader;
+use Storybook\StoryRenderer;
+use Storybook\Twig\Sandbox\SecurityPolicy;
 use Storybook\Twig\TwigComponentSubscriber;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -63,9 +64,23 @@ class StorybookExtension extends Extension implements ConfigurationInterface
 
         // Main controller
         $container->register('storybook.controller.render_story', StorybookController::class)
-            ->setArgument(0, new Reference('twig'))
+            ->setArgument(0, new Reference('storybook.story_renderer'))
             ->setArgument(1, new Reference('storybook.args_processor'))
             ->addTag('controller.service_arguments')
+        ;
+
+        // Story renderer
+        $container->register('storybook.sandbox_security_policy', SecurityPolicy::class)
+            ->setArgument(0, $config['sandbox']['deniedFunctions'])
+            ->setArgument(1, $config['sandbox']['deniedFilters'])
+            ->setArgument(2, $config['sandbox']['deniedTags'])
+            ->setArgument(3, $config['sandbox']['deniedProperties'])
+            ->setArgument(4, $config['sandbox']['deniedMethods']);
+
+        $container->register('storybook.story_renderer', StoryRenderer::class)
+            ->setArgument(0, new Reference('twig'))
+            ->setArgument(1, new Reference('storybook.sandbox_security_policy'))
+            ->setArgument(2, $config['cache'] ?? false)
         ;
 
         // Args processors
@@ -74,11 +89,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface
         // Proxy factory
         $container->register('storybook.component_proxy_factory', ComponentProxyFactory::class)
             ->setArgument(0, new AbstractArgument(sprintf('Provided in "%s".', ComponentMockPass::class)));
-
-        // Twig template loader
-        $container->register('storybook.twig.loader', StoryTemplateLoader::class)
-            ->setArgument(0, $config['runtime_dir'])
-            ->addTag('twig.loader');
 
         // Internal commands
         $container->register('storybook.generate_preview_command', GeneratePreviewCommand::class)
@@ -111,10 +121,50 @@ class StorybookExtension extends Extension implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->scalarNode('runtime_dir')
-                    ->info('Location of storybook runtime files')
-                    ->cannotBeEmpty()
-                    ->defaultValue('%kernel.project_dir%/var/storybook')
+                ->scalarNode('cache')
+                    ->defaultValue('%kernel.cache_dir%/storybook/twig')
+                ->end()
+                ->arrayNode('sandbox')
+                    ->info('Configure the sandbox for Twig rendering.')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->arrayNode('deniedFunctions')
+                            ->info('Functions that are not allowed in stories.')
+                            ->scalarPrototype()->end()
+                        ->end()
+                        ->arrayNode('deniedTags')
+                            ->info('Tags that are not allowed in stories.')
+                            ->scalarPrototype()->end()
+                        ->end()
+                        ->arrayNode('deniedFilters')
+                            ->info('Filters that are not allowed in stories.')
+                            ->scalarPrototype()->end()
+                        ->end()
+                        ->arrayNode('deniedProperties')
+                            ->info('Properties that are not allowed in stories.')
+                            ->arrayPrototype()
+                                ->info('Map class FQCN to properties. Use "*" to deny all properties.')
+                                ->beforeNormalization()
+                                    ->ifString()
+                                    ->then(static fn (string $v) => [$v])
+                                ->end()
+                                ->useAttributeAsKey('class')
+                                ->scalarPrototype()->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('deniedMethods')
+                            ->info('Methods that are not allowed in stories.')
+                            ->arrayPrototype()
+                                ->info('Map class FQCN to methods. Use "*" to deny all methods.')
+                                ->useAttributeAsKey('class')
+                                ->beforeNormalization()
+                                    ->ifString()
+                                    ->then(static fn (string $v) => [$v])
+                                ->end()
+                                ->scalarPrototype()->end()
+                            ->end()
+                        ->end()
+                    ->end()
                 ->end()
             ->end();
 

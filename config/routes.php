@@ -8,6 +8,7 @@ return function (RoutingConfigurator $routes) {
             ->requirements([
                 'story' => '.+',
             ])
+            ->methods(['POST'])
             ->controller('storybook.controller.render_story')
     ;
 };
