@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - name: Checkout code
-          uses: actions/checkout@v2
+          uses: actions/checkout@v4
         - name: Setup PHP
           uses: shivammathur/setup-php@v2
           with:
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - name: Checkout code
-          uses: actions/checkout@v2
+          uses: actions/checkout@v4
         - name: Setup PHP
           uses: shivammathur/setup-php@v2
           with:
@@ -55,12 +55,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - name: Get yarn cache directory path
         working-directory: ./storybook
         id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v2
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -68,7 +70,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - working-directory: ./storybook
-        run: yarn --frozen-lockfile
+        run: yarn install --immutable
       - working-directory: ./storybook
         run: yarn check-lint
       - working-directory: ./storybook
@@ -78,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -92,12 +94,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
       - name: Get yarn cache directory path
         working-directory: ./storybook
         id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v2
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
         id: yarn-cache
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -105,6 +109,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - working-directory: ./storybook
-        run: yarn --frozen-lockfile
+        run: yarn install --immutable
       - working-directory: ./storybook
         run: yarn test
