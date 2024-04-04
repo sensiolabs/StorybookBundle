@@ -1,14 +1,18 @@
-import { FrameworkOptions, SymfonyOptions } from './types';
+import { FrameworkOptions, ResolvedSymfonyOptions, SymfonyOptions } from './types';
 import { StorybookConfig } from '@storybook/preset-server-webpack';
 import { Options, PresetProperty, Entry, Indexer } from '@storybook/types';
-import { getTwigStoriesIndex, createTwigCsfIndexer } from './indexer';
-import {
-    getKernelProjectDir,
-    getTwigComponentConfiguration,
-} from './utils/symfony';
+import { createTwigCsfIndexer, TwigStoryIndex } from './indexer';
+import { getKernelProjectDir, getTwigComponentConfiguration, resolveTwigComponentFile } from './utils/symfony';
 import * as path from 'path';
-import { SymfonyPlugin, FinalSymfonyOptions } from './plugins/symfony-plugin';
 import dedent from 'ts-dedent';
+import { PreviewCompilerPlugin } from './plugins/preview-compiler-plugin';
+import { join } from 'path';
+import { DevPreviewCompilerPlugin } from './plugins/dev-preview-compiler-plugin';
+import { TwigStoriesDependenciesPlugin } from './plugins/twig-stories-dependencies-plugin';
+import { TwigLoaderPlugin } from './plugins/twig-loader-plugin';
+import { TwigStoriesGeneratorPlugin } from './plugins/twig-stories-generator-plugin';
+
+const twigStoryIndex = new TwigStoryIndex();
 
 export const core: PresetProperty<'core'> = async (config, options) => {
     const framework = await options.presets.apply('framework');
@@ -16,14 +20,17 @@ export const core: PresetProperty<'core'> = async (config, options) => {
     return {
         ...config,
         builder: {
-            name: require.resolve('./builders/webpack5-builder'),
+            name: require.resolve('./builders/webpack5'),
             options: typeof framework === 'string' ? {} : framework.options.builder || {},
         },
         renderer: '@storybook/server',
     };
 };
 
-export const frameworkOptions = async (frameworkOptions: FrameworkOptions, options: Options) => {
+export const frameworkOptions: StorybookConfig['framework'] = async (
+    frameworkOptions: FrameworkOptions,
+    options: Options
+) => {
     const { configDir } = options;
 
     const symfonyOptions: SymfonyOptions = {
@@ -49,19 +56,17 @@ async function resolveFinalSymfonyOptions(symfonyOptions: SymfonyOptions) {
         componentNamespaces[namePrefix] = path.join(projectDir, 'templates', templateDirectory);
     }
 
+    const anonymousNamespace = path.join(projectDir, 'templates', twigComponentsConfig['anonymous_template_directory']);
+
     return {
         ...symfonyOptions,
         projectDir: projectDir,
         additionalWatchPaths: symfonyOptions.additionalWatchPaths ?? [],
         twigComponent: {
-            anonymousTemplateDirectory: path.join(
-                projectDir,
-                'templates',
-                twigComponentsConfig['anonymous_template_directory']
-            ),
+            anonymousTemplateDirectory: anonymousNamespace,
             namespaces: componentNamespaces,
         },
-    } as FinalSymfonyOptions;
+    } as ResolvedSymfonyOptions;
 }
 
 export const webpack: StorybookConfig['webpack'] = async (config, options) => {
@@ -71,12 +76,32 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
     // TODO: Maybe find a better place for this?
     const symfonyOptions = await resolveFinalSymfonyOptions(frameworkOptions.symfony);
 
+    const resolver = (name: string) => {
+        return resolveTwigComponentFile(name, symfonyOptions.twigComponent);
+    };
+
+    const storiesPath = join(symfonyOptions.runtimePath, '/stories');
+
     return {
         ...config,
-
         plugins: [
             ...(config.plugins || []),
-            SymfonyPlugin.webpack(symfonyOptions),
+            ...[
+                ...(options.configType === 'PRODUCTION'
+                    ? [PreviewCompilerPlugin.webpack()]
+                    : [
+                          DevPreviewCompilerPlugin.webpack({
+                              projectDir: symfonyOptions.projectDir,
+                              additionalWatchPaths: symfonyOptions.additionalWatchPaths,
+                          }),
+                          TwigStoriesDependenciesPlugin.webpack({
+                              twigStoryIndex,
+                              resolver,
+                          }),
+                          TwigLoaderPlugin.webpack({ resolver }),
+                      ]),
+                TwigStoriesGeneratorPlugin.webpack({ twigStoryIndex, storiesPath }),
+            ],
         ],
         module: {
             ...config.module,
@@ -85,19 +110,28 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
     };
 };
 
-export const experimental_indexers: PresetProperty<'experimental_indexers'> = (existingIndexers: Indexer[]) =>
-    [createTwigCsfIndexer(getTwigStoriesIndex())].concat(existingIndexers || []);
+const STORIES_REGEX = /(stories|story)\.(m?js|ts)x?$/;
 
-export const previewAnnotations = (entry: Entry[] = []) => {
-    return [require.resolve('./preview'), ...entry];
+export const experimental_indexers: PresetProperty<'experimental_indexers'> = (existingIndexers?: Indexer[]) =>
+    [createTwigCsfIndexer(twigStoryIndex, STORIES_REGEX)].concat(existingIndexers || []);
+
+export const previewAnnotations: PresetProperty<'previewAnnotations'> = async (entry: Entry[] = [], options) => {
+    const docsEnabled = Object.keys(await options.presets.apply('docs', {}, options)).length > 0;
+
+    const result: string[] = [];
+
+    return result
+        .concat(entry)
+        .concat([join(__dirname, 'entry-preview.mjs')])
+        .concat(docsEnabled ? [join(__dirname, 'entry-preview-docs.mjs')] : []);
 };
 
-export const previewHead = async (base: any) => dedent`
+export const previewHead: PresetProperty<'previewHead'> = async (base: any) => dedent`
     ${base}
     <!--PREVIEW_HEAD_PLACEHOLDER-->
     `;
 
-export const previewBody = async (base: any) => dedent`
+export const previewBody: PresetProperty<'previewBody'> = async (base: any) => dedent`
     ${base}
     <!--PREVIEW_BODY_PLACEHOLDER-->
     `;

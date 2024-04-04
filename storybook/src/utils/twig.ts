@@ -1,4 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
+import dedent from 'ts-dedent';
 
 export class TwigTemplate {
     constructor(
@@ -57,7 +58,8 @@ function parseSubComponents(source: string) {
     }
 }
 
-export function twig(source: TemplateStringsArray, ...values: any[]): TwigTemplate {
-    const rawSource = String.raw({ raw: source }, ...values);
-    return new TwigTemplate(rawSource, parseSubComponents(rawSource));
+export function twig(source: TemplateStringsArray | string, ...values: any[]): TwigTemplate {
+    const strings = typeof source === 'string' ? [source] : source;
+    const rawSource = String.raw({ raw: strings }, ...values);
+    return new TwigTemplate(dedent(rawSource), parseSubComponents(rawSource));
 }

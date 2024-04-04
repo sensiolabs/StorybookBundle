@@ -12,9 +12,9 @@
         "build:watch": "npm run build -- --watch",
         "clean": "rimraf ./dist",
         "prebuild": "npm run clean",
-        "lint": "eslint src test",
-        "format": "prettier src/**/*.ts test/**/*.ts {,src/*/}*.{json,md} --write",
-        "test": "vitest --run ./test",
+        "lint": "eslint src",
+        "format": "prettier src/**/*.ts {,src/*/}*.{json,md} --write",
+        "test": "vitest --run src/**/*.test.ts",
         "check-format": "npm run format -- --no-write --check",
         "check-lint": "npm run lint -- --no-fix"
     },
@@ -29,7 +29,8 @@
             "types": "./dist/preset.d.ts",
             "require": "./dist/preset.js"
         },
-        "./preview": "./dist/preview.mjs",
+        "./dist/entry-preview.mjs": "./dist/entry-preview.mjs",
+        "./dist/entry-preview-docs.mjs": "./dist/entry-preview-docs.mjs",
         "./package.json": "./package.json"
     },
     "main": "dist/index.js",
@@ -43,8 +44,8 @@
         "!src/**/*"
     ],
     "dependencies": {
-        "@storybook/builder-webpack5": "^7.6.7",
-        "@storybook/server": "^7.6.7",
+        "@storybook/builder-webpack5": "^8.0.4",
+        "@storybook/server": "^8.0.4",
         "css-loader": "^6.7.3",
         "html-webpack-plugin": "^5.6.0",
         "http-proxy-middleware": "^2.0.6",
@@ -55,21 +56,22 @@
         "unplugin": "^1.5.1"
     },
     "devDependencies": {
-        "@storybook/csf-tools": "^7.6.7",
-        "@storybook/manager": "^7.6.7",
-        "@storybook/node-logger": "^7.6.7",
-        "@storybook/preset-server-webpack": "^7.6.7",
-        "@storybook/preview": "^7.6.7",
-        "@storybook/preview-api": "^7.6.13",
-        "@storybook/types": "^7.6.7",
+        "@storybook/csf-tools": "^8.0.4",
+        "@storybook/docs-tools": "^8.0.4",
+        "@storybook/manager": "^8.0.4",
+        "@storybook/node-logger": "^8.0.4",
+        "@storybook/preset-server-webpack": "^8.0.4",
+        "@storybook/preview": "^8.0.4",
+        "@storybook/preview-api": "^8.0.4",
+        "@storybook/types": "^8.0.4",
         "@types/is-glob": "^4.0.4",
         "@types/jest": "^29.5.11",
         "@types/jsdom": "^21.1.6",
         "@types/loader-utils": "^2.0.5",
         "@types/node": "^18.0.0",
         "@types/picomatch": "^2.3.3",
-        "@typescript-eslint/eslint-plugin": "^6.18.0",
-        "@typescript-eslint/parser": "^6.18.0",
+        "@typescript-eslint/eslint-plugin": "^7.4.0",
+        "@typescript-eslint/parser": "^7.4.0",
         "eslint": "^8.56.0",
         "eslint-config-prettier": "^9.1.0",
         "fast-xml-parser": "^4.3.2",
@@ -107,14 +109,16 @@
     "bundler": {
         "nodeEntries": [
             "./src/preset.ts",
-            "./src/builders/webpack5-builder.ts"
+            "./src/builders/webpack5/index.ts"
         ],
         "previewEntries": [
-            "./src/preview.ts"
+            "./src/entry-preview.ts",
+            "./src/entry-preview-docs.ts"
         ],
         "exportEntries": [
             "./src/index.ts"
         ],
         "managerEntries": []
-    }
+    },
+    "packageManager": "yarn@4.1.1"
 }

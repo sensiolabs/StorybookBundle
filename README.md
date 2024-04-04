@@ -11,7 +11,13 @@ Clone this repo and install the bundle in your project.
 Install Storybook in your project:
 
 ```shell
-yarn add -D @storybook/cli @storybook/addon-essentials @storybook/addon-links @storybook/blocks react react-dom 
+yarn add -D @storybook/cli @storybook/addon-essentials @storybook/addon-links @storybook/blocks react react-dom @storybook/
+```
+
+To use TypeScript, add: 
+
+```shell
+yarn add -D @storybook/addon-webpack5-compiler-swc
 ```
 
 Add the bundled NPM package for Symfony integration:
@@ -28,22 +34,20 @@ Create Storybook configuration in `.storybook/`:
 import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
 
 const config: StorybookConfig = {
-    stories: ["../stories/**/*.stories.[tj]s"],
+    stories: ["../stories/**/*.stories.[tj]s", "../stories/**/*.mdx"],
     addons: [
         // Your addons
         "@storybook/addon-links",
         "@storybook/addon-essentials",
+        "@storybook/addon-webpack5-compiler-swc", // Add this addon for TypeScript
     ],
     framework: {
         // 👇 Here tell Storybook to use the Symfony framework  
         name: "@sensiolabs/storybook-symfony-webpack5",
         options: {
-          builder: {
-              useSWC: true
-          },
           // 👇 Here configure the framework
           symfony: {
-              server: 'https://localhost:8000', // This is mandatory, the URL of your Symfony dev server
+              server: 'https://localhost:8000', // This is mandatory for development, the URL of your Symfony dev server
               proxyPaths: [ // Setup here paths to resolve your assets. Those paths are proxied to your Symfony server.
                   '/assets'
               ]
@@ -58,7 +62,7 @@ export default config;
 ```
 
 ```ts
-// .storybook/preset.ts
+// .storybook/preview.ts
 
 import { Preview } from '@storybook/server';
 
@@ -141,9 +145,9 @@ nelmio_cors:
 To customize the iframe where your stories are rendered, you can create a preview template:
 
 ```twig
-{# templates/storybook/preview.html.twig #}
+{# templates/bundles/@StorybookBundle/preview.html.twig #}
 
-{% extends '@Storybook/preview.html.twig' %}
+{% extends '@!Storybook/preview.html.twig' %}
 
 {% block previewHead %}
     {# render additional tags to <head> #}
@@ -152,14 +156,6 @@ To customize the iframe where your stories are rendered, you can create a previe
 {% block previewBody %}
     {# render additional tags to <body> #}
 {% endblock %}
-```
-
-Then enable it in the bundle configuration: 
-
-```yaml
-# config/storybook.yaml
-storybook: 
-  preview: storybook/preview.html.twig
 ```
 
 The rendered content of these blocks will be injected in the preview iframe, similarly to the [previewHead](https://storybook.js.org/docs/configure/story-rendering#adding-to-head) and [previewBody](https://storybook.js.org/docs/configure/story-rendering#adding-to-body) configurations.
@@ -173,9 +169,9 @@ The rendered content of these blocks will be injected in the preview iframe, sim
 To use Storybook with a project that uses the [AssetMapper component](https://symfony.com/doc/current/frontend/asset_mapper.html), you need to render your importmap in the preview template: 
 
 ```twig
-{# templates/storybook/preview.html.twig #}
+{# templates/bundles/@StorybookBundle/preview.html.twig #}
 
-{% extends '@Storybook/preview.html.twig' %}
+{% extends '@!Storybook/preview.html.twig' %}
 
 {% block previewHead %}
     {{ importmap('app') }}
@@ -209,22 +205,28 @@ const config: StorybookConfig = {
 
 ### TailwindBundle integration
 
-If you use [TailwindBundle](https://symfony.com/bundles/TailwindBundle/current/index.html) to manage your CSS, it will
-work by default with this bundle thanks to a built-in integration. Everytime your Storybook is recompiled, Tailwind
-will also recompile your CSS. 
+If you use [TailwindBundle](https://symfony.com/bundles/TailwindBundle/current/index.html) to manage your CSS, you need to tell Storybook to watch the built CSS file, so the 
+preview is refreshed with HMR on change:
 
-However, each Tailwind build is executed in a one-shot process (without the `--watch` option). It may lead to errors 
-because the TailwindBundle will always try to download the latest version of the Tailwind binary. After a few builds 
-you could encounter an error trying to get the latest binary, because you requested the GitHub API too much in a short
-period of time. 
+```ts
+// .storybook/main.ts
 
-A good workaround for this is to specify the binary version in the TailwindBundle configuration:
+// ...
 
-```yaml
-# config/packages/tailwind.yaml
-
-symfonycasts_tailwind:
-  binary_version: v3.4.1
+const config: StorybookConfig = {
+    framework: {
+        name: "@sensiolabs/storybook-symfony-webpack5",
+        options: {
+            // ...
+            symfony: {
+                additionalWatchPaths: [
+                    // ...
+                    'var/tailwind/tailwind.built.css'
+                ],
+            },
+        },
+    },
+};
 ```
 
 ### Live Components integration
@@ -245,7 +247,7 @@ const config: StorybookConfig = {
             symfony: {
                 proxyPaths: [
                     // ...
-                    // 👇 This is the live component prefix usually set in config/routes/ux_live_component.yaml
+                    // 👇 This is the live component route prefix usually set in config/routes/ux_live_component.yaml
                     '_components/',
                 ],
             },
@@ -505,7 +507,7 @@ Then you have to clean the yarn cache for the conflicting module and reinstall:
 
 ```
 yarn cache clean string-width-cjs@npm:string-width@^4.2.0
-rm -rf yarn.lock
+rm yarn.lock
 yarn install --force
 ```
 

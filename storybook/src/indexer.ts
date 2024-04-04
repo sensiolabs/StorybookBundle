@@ -1,31 +1,37 @@
 import { readCsf, StaticStory } from '@storybook/csf-tools';
 import { Indexer, IndexInput } from '@storybook/types';
-import { TwigTemplate } from './utils';
+import { TwigTemplate } from './utils/twig';
 import crypto from 'crypto';
 import { logger } from '@storybook/node-logger';
 import dedent from 'ts-dedent';
 
-// type TwigTemplateSource = string;
 type StoryId = StaticStory['id'];
 
 type TwigStory = {
-    id: StoryId,
-    template: TwigTemplate,
-    hash: string
+    id: StoryId;
+    name: string;
+    template: TwigTemplate;
+    hash: string;
 };
 
-class TwigStoryIndex {
+export class TwigStoryIndex {
     private storiesInFiles = new Map<string, Set<StoryId>>();
 
     private stories: TwigStory[] = [];
 
-    register(id: StoryId, component: TwigTemplate, declaringFile: string) {
+    register(story: IndexInput, component: TwigTemplate, declaringFile: string) {
         const hash = crypto.createHash('sha1').update(component.getSource()).digest('hex');
+
+        const id = story.__id;
+        if (id === undefined) {
+            throw new Error(dedent`Missing story id.`);
+        }
 
         this.stories.push({
             id,
+            name: story.exportName,
             hash,
-            template: component
+            template: component,
         });
 
         const storiesInFile = this.storiesInFiles.get(declaringFile) ?? new Set<StoryId>();
@@ -33,13 +39,12 @@ class TwigStoryIndex {
         this.storiesInFiles.set(declaringFile, storiesInFile);
     }
 
-    unregister(fileName: string)
-    {
+    unregister(fileName: string) {
         const stories = this.storiesInFiles.get(fileName);
 
         if (!stories) return;
 
-        this.stories = this.stories.filter(story => !stories.has(story.id));
+        this.stories = this.stories.filter((story) => !stories.has(story.id));
         this.storiesInFiles.delete(fileName);
     }
 
@@ -48,37 +53,22 @@ class TwigStoryIndex {
     }
 
     getTemplates() {
-        return new Map(
-            this.stories.map(story => [story.hash, story.template.getSource()])
-        );
+        return new Map(this.stories.map((story) => [story.hash, story.template.getSource()]));
     }
 
-    hasStories(fileName: string)
-    {
+    hasStories(fileName: string) {
         return this.storiesInFiles.has(fileName);
     }
 
-    getStories(fileName: string)
-    {
+    getStories(fileName: string) {
         const ids = this.storiesInFiles.get(fileName);
-        return ids ? this.stories.filter(story => ids.has(story.id)) : [];
+        return ids ? this.stories.filter((story) => ids.has(story.id)) : [];
     }
 }
 
-let twigIndexer: TwigStoryIndex;
-export const getTwigStoriesIndex = () => {
-    if (twigIndexer !== undefined) {
-        return twigIndexer;
-    }
-
-    return (twigIndexer = new TwigStoryIndex());
-}
-
-export const STORIES_REGEX = /(stories|story)\.(m?js|ts)x?$/;
-
-export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex) => {
+export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex, pattern: RegExp) => {
     return {
-        test: STORIES_REGEX,
+        test: pattern,
         createIndex: async (fileName, options) => {
             const csf = (await readCsf(fileName, { ...options })).parse();
 
@@ -95,7 +85,7 @@ export const createTwigCsfIndexer = (twigStoryIndex: TwigStoryIndex) => {
                     const template = module[story.exportName]?.template ?? module['default']?.template ?? undefined;
 
                     if (undefined !== template && story.__id !== undefined) {
-                        twigStoryIndex.register(story.__id, template, fileName);
+                        twigStoryIndex.register(story, template, fileName);
                     }
 
                     indexedStories.push(story);
