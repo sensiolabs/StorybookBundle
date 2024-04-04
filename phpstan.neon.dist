@@ -7,6 +7,6 @@ parameters:
         - vendor/bin/.phpunit/phpunit/vendor/autoload.php
     ignoreErrors:
         -
-             message: '#^Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface\:\:scalarNode\(\)\.$#'
+             message: '#^Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface\:\:end\(\)\.$#'
              count: 1
              path: src/DependencyInjection/StorybookExtension.php

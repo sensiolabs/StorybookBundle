@@ -30,37 +30,6 @@ npm run storybook
 
 ## Symfony configuration
 
-### CORS
-
-As the Symfony integration relies on the Storybook's server renderer, it makes requests to your Symfony server to render your stories. These requests are cross origins, so you have to configure Symfony to accept them from your Storybook instance.
-
-There is two options to achieve this. You can either configure the Storybook host in the bundle, or use the popular [NelmioCorsBundle](https://symfony.com/bundles/NelmioCorsBundle/current/index.html). 
-
-In the StorybookBundle: 
-
-```yaml
-# config/storybook.yaml
-storybook: 
-  server: http://localhost:6006 # This is the default
-```
-
-With NelmioCorsBundle:
-```yaml
-# config/storybook.yaml
-storybook: 
-  server: null # Disable CORS management in Storybook Bundle
-```
-
-```yaml
-# config/nelmio_cors.yaml
-nelmio_cors:
-  # ...
-  paths:
-    '^/_storybook': 
-      allow_origin: ['http://localhost:6006']
-      allow_methods: ['GET']
-```
-
 ## Customizing the preview iframe
 
 To customize the iframe where your stories are rendered, you can override the preview template provided by the bundle:
