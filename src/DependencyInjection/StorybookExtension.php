@@ -10,7 +10,6 @@ use Storybook\Command\StorybookInitCommand;
 use Storybook\Controller\StorybookController;
 use Storybook\DependencyInjection\Compiler\ComponentMockPass;
 use Storybook\EventListener\ComponentMockSubscriber;
-use Storybook\EventListener\CorsListener;
 use Storybook\EventListener\ExceptionListener;
 use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Mock\ComponentProxyFactory;
@@ -53,14 +52,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface
         );
 
         $config = (new Processor())->processConfiguration($this, $configs);
-
-        // CORS listener
-        if (isset($config['server'])) {
-            $container->register('storybook.listener.cors', CorsListener::class)
-                ->setArgument(0, $config['server'])
-                ->addTag('kernel.event_listener')
-            ;
-        }
 
         // Exception listener
         $container->register('storybook.listener.exception', ExceptionListener::class)
@@ -120,10 +111,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->scalarNode('server')
-                    ->info('The URL of the Storybook server. Pass null to disable the CORS headers.')
-                    ->defaultValue('http://localhost:6006')
-                ->end()
                 ->scalarNode('runtime_dir')
                     ->info('Location of storybook runtime files')
                     ->cannotBeEmpty()

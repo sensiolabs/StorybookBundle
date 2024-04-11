@@ -62,7 +62,6 @@ class Kernel extends BaseKernel
 
         $container->extension('storybook', [
             'runtime_dir' => '%kernel.project_dir%/storybook',
-            'server' => 'http://localhost:6006',
         ]);
 
         $container->services()

@@ -192,8 +192,7 @@ TS;
         $configFile = Path::join($this->projectDir, 'config', 'packages', 'storybook.yaml');
 
         $content = <<<YAML
-storybook:
-  server: localhost:6006
+storybook: ~
 
 YAML;
         $this->writeFileWithConfirmation($configFile, $content);
