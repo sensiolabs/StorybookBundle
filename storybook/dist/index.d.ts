@@ -1,4 +1,4 @@
-import { StorybookConfig as StorybookConfig$2, Options, TypescriptOptions as TypescriptOptions$1, WebRenderer, Args, ComponentAnnotations, AnnotatedStoryFn, StoryAnnotations, StrictArgs, DecoratorFunction, LoaderFunction, StoryContext as StoryContext$1, ProjectAnnotations } from '@storybook/types';
+import { StorybookConfig as StorybookConfig$2, Options, TypescriptOptions as TypescriptOptions$1, WebRenderer, ArgsStoryFn, Args, ComponentAnnotations, AnnotatedStoryFn, StoryAnnotations, StrictArgs, DecoratorFunction, LoaderFunction, StoryContext as StoryContext$1, ProjectAnnotations } from '@storybook/types';
 export { ArgTypes, Args, Parameters, StrictArgs } from '@storybook/types';
 import { BuilderOptions, StorybookConfigWebpack, TypescriptOptions } from '@storybook/builder-webpack5';
 
@@ -79,12 +79,14 @@ declare function twig(source: TemplateStringsArray | string, ...values: any[]): 
 
 type StoryFnSymfonyReturnType = {
     template: TwigTemplate;
+    components?: TwigComponent[];
 };
 type TwigComponent = {
-    source: string;
+    hash: string;
+    name: string;
 };
 interface SymfonyRenderer extends WebRenderer {
-    component: TwigComponent | undefined;
+    component: TwigComponent | TwigTemplate | string | ArgsStoryFn<SymfonyRenderer> | undefined;
     storyResult: StoryFnSymfonyReturnType;
 }
 

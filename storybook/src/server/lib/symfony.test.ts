@@ -1,7 +1,7 @@
 'use strict';
 
 import { exec, ChildProcess, ExecException } from 'child_process';
-import { resolveTwigComponentFile, runSymfonyCommand, runSymfonyCommandJson } from './symfony';
+import { runSymfonyCommand, runSymfonyCommandJson } from './symfony';
 import { vi } from 'vitest';
 
 vi.mock('child_process');
@@ -70,44 +70,6 @@ describe('Symfony utils', () => {
             };
 
             await expect(runSymfonyCommandJson('command')).resolves.toEqual(expected);
-        });
-    });
-
-    describe('resolveTwigComponentFile', () => {
-        const fixturesDir = `${__dirname}/__fixtures__`;
-
-        const twigComponentConfig = {
-            anonymousTemplateDirectory: `${fixturesDir}/anonymous`,
-            namespaces: {
-                '': `${fixturesDir}/components`,
-                Custom: `${fixturesDir}/custom`,
-            },
-        };
-
-        it('resolves component path without namespace', () => {
-            const resolved = resolveTwigComponentFile('Component', twigComponentConfig);
-
-            expect(resolved).toEqual(`${fixturesDir}/components/Component.html.twig`);
-        });
-        it('resolves component with auto namespace', () => {
-            const resolved = resolveTwigComponentFile('Namespace:AutoNamespace', twigComponentConfig);
-
-            expect(resolved).toEqual(`${fixturesDir}/components/Namespace/AutoNamespace.html.twig`);
-        });
-        it('resolves component with custom namespace', () => {
-            const resolved = resolveTwigComponentFile('Custom:CustomNamespace', twigComponentConfig);
-
-            expect(resolved).toEqual(`${fixturesDir}/custom/CustomNamespace.html.twig`);
-        });
-        it('fallbacks to default namespace', () => {
-            const resolved = resolveTwigComponentFile('Custom:NotInCustomNamespace', twigComponentConfig);
-
-            expect(resolved).toEqual(`${fixturesDir}/components/Custom/NotInCustomNamespace.html.twig`);
-        });
-        it('fallbacks to anonymous component', () => {
-            const resolved = resolveTwigComponentFile('Anonymous', twigComponentConfig);
-
-            expect(resolved).toEqual(`${fixturesDir}/anonymous/Anonymous.html.twig`);
         });
     });
 });

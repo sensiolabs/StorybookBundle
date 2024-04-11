@@ -252,8 +252,7 @@ TWIG;
 import {twig} from "@sensiolabs/storybook-symfony-webpack5";
 
 export default {
-    component: 'Sample',
-    template: twig`
+    component: twig`
         <div>Hello {{ args.name }}!</div>
     `,
     args: {

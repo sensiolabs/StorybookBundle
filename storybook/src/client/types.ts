@@ -1,20 +1,22 @@
-import type { StoryContext as StoryContextBase, WebRenderer } from '@storybook/types';
+import type { ArgsStoryFn, StoryContext as StoryContextBase, WebRenderer } from '@storybook/types';
 import { TwigTemplate } from '../lib/twig';
 
 export type { RenderContext } from '@storybook/types';
 
 export type StoryFnSymfonyReturnType = {
     template: TwigTemplate;
+    components?: TwigComponent[];
 };
 
 export type TwigComponent = {
-    source: string;
+    hash: string;
+    name: string;
 };
 
 export type StoryContext = StoryContextBase<SymfonyRenderer>;
 
 export interface SymfonyRenderer extends WebRenderer {
-    component: TwigComponent | undefined;
+    component: TwigComponent | TwigTemplate | string | ArgsStoryFn<SymfonyRenderer> | undefined;
     storyResult: StoryFnSymfonyReturnType;
 }
 

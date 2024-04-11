@@ -1,6 +1,6 @@
 import { XMLParser } from 'fast-xml-parser';
 
-function parseSubComponents(source: string) {
+export const extractComponentsFromTemplate = (source: string) => {
     const reservedNames = ['block'];
     const tagRe = new RegExp(/twig:[A-Za-z]+(?::[A-Za-z]+)*/);
     const functionRe = new RegExp(/component\(\s*'([A-Za-z]+(?::[A-Za-z]+)*)'\s*(?:,.*)?\)/, 'gs');
@@ -34,8 +34,4 @@ function parseSubComponents(source: string) {
             },
         });
     }
-}
-
-export const extractComponentsFromTemplate = (source: string) => {
-    return parseSubComponents(source);
 };

@@ -2,7 +2,6 @@ import {
     getBundleConfig,
     getKernelProjectDir,
     getTwigComponentConfiguration,
-    resolveTwigComponentFile,
     TwigComponentConfiguration,
 } from './lib/symfony';
 import { StorybookConfig, SymfonyOptions } from '../types';
@@ -55,10 +54,6 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
     // This options resolution should be done right before creating the build configuration (i.e. not in options presets).
     const symfonyOptions = await getBuildOptions(frameworkOptions.symfony);
 
-    const resolver = (name: string) => {
-        return resolveTwigComponentFile(name, symfonyOptions.twigComponent);
-    };
-
     return {
         ...config,
         plugins: [
@@ -70,7 +65,7 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
                           projectDir: symfonyOptions.projectDir,
                           additionalWatchPaths: symfonyOptions.additionalWatchPaths,
                       }),
-                TwigLoaderPlugin.webpack({ resolver }),
+                TwigLoaderPlugin.webpack({ twigComponentConfiguration: symfonyOptions.twigComponent }),
             ],
         ],
         module: {

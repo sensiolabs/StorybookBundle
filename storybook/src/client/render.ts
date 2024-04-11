@@ -1,14 +1,15 @@
 import { global } from '@storybook/global';
 
 import { dedent } from 'ts-dedent';
-import type { RenderContext } from '@storybook/types';
+import type { ArgsStoryFn, RenderContext } from '@storybook/types';
 import { simulatePageLoad, simulateDOMContentLoaded } from '@storybook/preview-api';
 import type { Args, ArgTypes } from './public-types';
 import type { FetchStoryHtmlType, SymfonyRenderer } from './types';
+import { twig } from '../lib/twig';
 
 const { fetch, Node } = global;
 
-const defaultFetchStoryHtml: FetchStoryHtmlType = async (url, path, params, storyContext, template) => {
+const fetchStoryHtml: FetchStoryHtmlType = async (url, path, params, storyContext, template) => {
     const fetchUrl = new URL(`${url}/${path}`);
 
     // Modify action args to pass action id instead of the handler
@@ -54,6 +55,59 @@ const buildStoryArgs = (args: Args, argTypes: ArgTypes) => {
     return storyArgs;
 };
 
+const createComponent = (name: string, args: Args) => {
+    const argsString = Object.entries(args)
+        .map(([name, value]) => {
+            if (value._sfActionId !== undefined) {
+                return `:data-storybook-action="args['${name}']"`;
+            }
+            return `:${name}="args['${name}']"`;
+        })
+        .join(' ');
+
+    return twig`
+        <twig:${name} ${argsString} />
+    `;
+};
+
+export const render: ArgsStoryFn<SymfonyRenderer> = (args, context) => {
+    const { id, component } = context;
+
+    if (typeof component === 'string') {
+        return {
+            template: twig(component),
+        };
+    }
+
+    if (typeof component === 'object') {
+        if ('getSource' in component && typeof component.getSource === 'function') {
+            return {
+                template: component,
+            };
+        } else if ('name' in component) {
+            return {
+                template: createComponent(component.name, args),
+                components: [component],
+            };
+        }
+    }
+
+    if (typeof component === 'function') {
+        return component(args, context);
+    }
+
+    console.log(component);
+    console.warn(dedent`
+    Symfony renderer only supports rendering Twig templates. Either:
+    - Create a "render" function in your story export
+    - Set the "component" story's property to a string or a template created with the "twig" helper
+
+    Received: ${component}
+    `);
+
+    throw new Error(`Unable to render story ${id}`);
+};
+
 export async function renderToCanvas(
     {
         id,
@@ -68,17 +122,18 @@ export async function renderToCanvas(
     }: RenderContext<SymfonyRenderer>,
     canvasElement: SymfonyRenderer['canvasElement']
 ) {
-    const { template } = storyFn(storyContext);
+    const { template } = storyFn();
 
     const storyArgs = buildStoryArgs(args, argTypes);
 
     const {
-        server: { url, fetchStoryHtml = defaultFetchStoryHtml, params },
+        symfony: { id: storyId, params },
     } = parameters;
 
+    const url = `${window.location.origin}/_storybook/render`;
+    const fetchId = storyId || id;
     const storyParams = { ...params, ...storyArgs };
-
-    const element = await fetchStoryHtml(url, id, storyParams, storyContext, template);
+    const element = await fetchStoryHtml(url, fetchId, storyParams, storyContext, template);
 
     showMain();
     if (typeof element === 'string') {
