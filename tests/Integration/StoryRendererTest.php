@@ -127,4 +127,17 @@ class StoryRendererTest extends KernelTestCase
             <twig:UnauthorizedMethod />
         '];
     }
+
+    public function testComponentUsingTrait()
+    {
+        self::bootKernel();
+
+        $renderer = static::getContainer()->get('storybook.story_renderer');
+
+        $story = new Story('story', '<twig:ComponentUsingTrait />', new Args());
+
+        $content = $renderer->render($story);
+
+        $this->assertEquals('bar', $content);
+    }
 }

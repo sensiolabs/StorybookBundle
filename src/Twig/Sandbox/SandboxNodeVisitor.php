@@ -3,7 +3,7 @@
 namespace Storybook\Twig\Sandbox;
 
 use Storybook\Twig\Sandbox\Node\BypassCheckSecurityCallNode;
-use Storybook\Twig\Sandbox\Node\SafeNode;
+use Storybook\Twig\Sandbox\Node\SafeBodyNode;
 use Twig\Environment;
 use Twig\Node\CheckSecurityCallNode;
 use Twig\Node\ModuleNode;
@@ -37,8 +37,8 @@ final class SandboxNodeVisitor implements NodeVisitorInterface
     public function leaveNode(Node $node, Environment $env): ?Node
     {
         if ($node instanceof ModuleNode && $this->inTrustedModule) {
-            // Wraps module body in a SafeNode to disable sandbox before it is displayed and re-enable it after
-            $node->setNode('body', new SafeNode($node->getNode('body'), $node->getNode('body')->getTemplateLine(), $node->getNodeTag()));
+            // Wraps module body in a safe node to disable sandbox before it is displayed and re-enable it after
+            $node->setNode('body', new SafeBodyNode($node->getNode('body')));
             $this->bypassSecurityCheckCall($node);
         }
 

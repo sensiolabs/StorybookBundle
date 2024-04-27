@@ -4,19 +4,21 @@ namespace Storybook\Twig\Sandbox\Node;
 
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
-use Twig\Node\Node;
+use Twig\Node\BodyNode;
 
 /**
+ * Wraps a BodyNode in a safe space.
+ *
  * @author Nicolas Rigaud <squrious@protonmail.com>
  *
  * @internal
  */
 #[YieldReady]
-class SafeNode extends Node
+class SafeBodyNode extends BodyNode
 {
-    public function __construct(Node $body, int $lineno, ?string $tag = null)
+    public function __construct(BodyNode $body)
     {
-        parent::__construct(['body' => $body], [], $lineno, $tag);
+        parent::__construct($body->nodes, $body->attributes, $body->lineno, $body->tag);
     }
 
     public function compile(Compiler $compiler): void
@@ -28,8 +30,11 @@ class SafeNode extends Node
             ->write("\$this->sandbox->disableSandbox();\n")
             ->outdent()
             ->write("}\n")
-            ->subcompile($this->getNode('body'))
-            ->write("if (\$alreadySandboxed) {\n")
+        ;
+
+        parent::compile($compiler);
+
+        $compiler->write("if (\$alreadySandboxed) {\n")
             ->indent()
             ->write("\$this->sandbox->enableSandbox();\n")
             ->outdent()

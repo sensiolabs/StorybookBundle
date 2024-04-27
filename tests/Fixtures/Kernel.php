@@ -51,7 +51,6 @@ class Kernel extends BaseKernel
         $container->extension('framework', $frameworkConfig);
 
         $container->extension('twig', [
-            'cache' => false,
             'default_path' => '%kernel.project_dir%/templates',
             'globals' => [
                 'dummy_global' => '@Storybook\\Tests\\Fixtures\\SandboxTest\\DummyVariable',
