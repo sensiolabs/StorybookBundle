@@ -4,7 +4,7 @@ namespace Storybook\Tests\Fixtures;
 
 use Psr\Log\NullLogger;
 use Storybook\StorybookBundle;
-use Storybook\Tests\Fixtures\SandboxTest\UnauthorizedVariable;
+use Storybook\Tests\Fixtures\SandboxTest\DummyVariable;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
@@ -51,9 +51,10 @@ class Kernel extends BaseKernel
         $container->extension('framework', $frameworkConfig);
 
         $container->extension('twig', [
+            'cache' => false,
             'default_path' => '%kernel.project_dir%/templates',
             'globals' => [
-                'unauthorized_var' => '@Storybook\\Tests\\Fixtures\\SandboxTest\\UnauthorizedVariable',
+                'dummy_global' => '@Storybook\\Tests\\Fixtures\\SandboxTest\\DummyVariable',
             ],
         ]);
 
@@ -66,15 +67,15 @@ class Kernel extends BaseKernel
 
         $container->extension('storybook', [
             'sandbox' => [
-                'deniedProperties' => [
-                    UnauthorizedVariable::class => '*',
+                'allowedProperties' => [
+                    DummyVariable::class => ['authorizedProperty'],
                 ],
-                'deniedMethods' => [
-                    UnauthorizedVariable::class => '*',
+                'allowedMethods' => [
+                    DummyVariable::class => ['authorizedMethod', 'getAuthorizedPrivateProperty'],
                 ],
-                'deniedFunctions' => ['unauthorized'],
-                'deniedTags' => ['unauthorized'],
-                'deniedFilters' => ['unauthorized'],
+                'allowedFunctions' => ['authorized'],
+                'allowedTags' => ['authorized'],
+                'allowedFilters' => ['authorized'],
             ],
         ]);
 

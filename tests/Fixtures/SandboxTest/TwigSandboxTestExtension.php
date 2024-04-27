@@ -12,6 +12,7 @@ class TwigSandboxTestExtension extends AbstractExtension
     {
         return [
             new TwigFunction('unauthorized', static fn () => null),
+            new TwigFunction('authorized', static fn () => null),
         ];
     }
 
@@ -19,11 +20,12 @@ class TwigSandboxTestExtension extends AbstractExtension
     {
         return [
             new TwigFilter('unauthorized', static fn () => null),
+            new TwigFilter('authorized', static fn () => null),
         ];
     }
 
     public function getTokenParsers(): array
     {
-        return [new UnauthorizedTagTokenParser()];
+        return [new UnauthorizedTagTokenParser(), new AuthorizedTagTokenParser()];
     }
 }

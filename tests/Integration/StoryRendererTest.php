@@ -39,12 +39,16 @@ class StoryRendererTest extends KernelTestCase
             {{ "foo"|unauthorized }}
         '];
 
-        yield 'variable property' => ['
-            {{ unauthorized_var.foo }}
+        yield 'property' => ['
+            {{ dummy_global.unauthorizedProperty }}
         '];
 
-        yield 'variable method' => ['
-            {{ unauthorized_var.bar }}
+        yield 'property accessor' => ['
+            {{ dummy_global.unauthorizedPrivateProperty }}
+        '];
+
+        yield 'method' => ['
+            {{ dummy_global.unauthorizedMethod }}
         '];
 
         yield 'unauthorized content before component' => ['
@@ -61,12 +65,12 @@ class StoryRendererTest extends KernelTestCase
     /**
      * @dataProvider getValidTemplates
      */
-    public function testRenderStoryWithRestrictedContentFromInnerComponentIsOk(string $template)
+    public function testRenderStoryWithAllowedContent(string $template, array $args = [])
     {
         self::bootKernel();
 
         $renderer = static::getContainer()->get('storybook.story_renderer');
-        $story = new Story('story', $template, new Args());
+        $story = new Story('story', $template, new Args($args));
 
         $content = $renderer->render($story);
 
@@ -75,24 +79,52 @@ class StoryRendererTest extends KernelTestCase
 
     public static function getValidTemplates(): iterable
     {
-        yield 'function in component' => ['
+        yield 'access story args' => ['
+            {{ args.foo }}
+        ', ['foo' => 'bar']];
+
+        yield 'authorized property' => ['
+            {{ dummy_global.authorizedProperty }}
+        '];
+
+        yield 'authorized property accessor' => ['
+            {{ dummy_global.authorizedPrivateProperty }}
+        '];
+
+        yield 'authorized method' => ['
+            {{ dummy_global.authorizedMethod }}
+        '];
+
+        yield 'authorized function' => ['
+            {{ authorized() }}
+        '];
+
+        yield 'authorized filter' => ['
+            {{ "foo"|authorized }}
+        '];
+
+        yield 'authorized tag' => ['
+            {% authorized %}{% endauthorized %}
+        '];
+
+        yield 'unauthorized function in component' => ['
             <twig:UnauthorizedFunction />
         '];
 
-        yield 'tag in component' => ['
+        yield 'unauthorized tag in component' => ['
             <twig:UnauthorizedTag />
         '];
 
-        yield 'filter in component' => ['
+        yield 'unauthorized filter in component' => ['
             <twig:UnauthorizedFilter />
         '];
 
-        yield 'variable property in component' => ['
-            <twig:UnauthorizedVariableProperty />
+        yield 'unauthorized property in component' => ['
+            <twig:UnauthorizedProperty />
         '];
 
-        yield 'variable method in component' => ['
-            <twig:UnauthorizedVariableMethod />
+        yield 'unauthorized method in component' => ['
+            <twig:UnauthorizedMethod />
         '];
     }
 }

@@ -14,7 +14,6 @@ use Storybook\EventListener\ExceptionListener;
 use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Mock\ComponentProxyFactory;
 use Storybook\StoryRenderer;
-use Storybook\Twig\Sandbox\SecurityPolicy;
 use Storybook\Twig\TwigComponentSubscriber;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -25,6 +24,7 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
+use Twig\Sandbox\SecurityPolicy;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
@@ -70,17 +70,25 @@ class StorybookExtension extends Extension implements ConfigurationInterface
         ;
 
         // Story renderer
-        $container->register('storybook.sandbox_security_policy', SecurityPolicy::class)
-            ->setArgument(0, $config['sandbox']['deniedFunctions'])
-            ->setArgument(1, $config['sandbox']['deniedFilters'])
-            ->setArgument(2, $config['sandbox']['deniedTags'])
-            ->setArgument(3, $config['sandbox']['deniedProperties'])
-            ->setArgument(4, $config['sandbox']['deniedMethods']);
-
         $container->register('storybook.story_renderer', StoryRenderer::class)
             ->setArgument(0, new Reference('twig'))
             ->setArgument(1, new Reference('storybook.sandbox_security_policy'))
             ->setArgument(2, $config['cache'] ?? false)
+        ;
+
+        // Sandbox configuration
+        $allowedTags = array_merge($config['sandbox']['allowedTags'], ['component']);
+        $allowedFunctions = array_merge($config['sandbox']['allowedFunctions'], ['component']);
+        $allowedFilters = array_merge($config['sandbox']['allowedFilters'], ['escape']);
+        $allowedMethods = $config['sandbox']['allowedMethods'];
+        $allowedProperties = $config['sandbox']['allowedProperties'];
+
+        $container->register('storybook.sandbox_security_policy', SecurityPolicy::class)
+            ->setArgument(0, $allowedTags)
+            ->setArgument(1, $allowedFilters)
+            ->setArgument(2, $allowedMethods)
+            ->setArgument(3, $allowedProperties)
+            ->setArgument(4, $allowedFunctions)
         ;
 
         // Args processors
@@ -128,39 +136,31 @@ class StorybookExtension extends Extension implements ConfigurationInterface
                     ->info('Configure the sandbox for Twig rendering.')
                     ->addDefaultsIfNotSet()
                     ->children()
-                        ->arrayNode('deniedFunctions')
-                            ->info('Functions that are not allowed in stories.')
+                        ->arrayNode('allowedFunctions')
+                            ->info('Functions that are allowed in stories.')
                             ->scalarPrototype()->end()
                         ->end()
-                        ->arrayNode('deniedTags')
-                            ->info('Tags that are not allowed in stories.')
+                        ->arrayNode('allowedTags')
+                            ->info('Tags that are allowed in stories.')
                             ->scalarPrototype()->end()
                         ->end()
-                        ->arrayNode('deniedFilters')
-                            ->info('Filters that are not allowed in stories.')
+                        ->arrayNode('allowedFilters')
+                            ->info('Filters that are allowed in stories.')
                             ->scalarPrototype()->end()
                         ->end()
-                        ->arrayNode('deniedProperties')
-                            ->info('Properties that are not allowed in stories.')
+                        ->arrayNode('allowedProperties')
+                            ->info('Properties that are allowed in stories.')
                             ->arrayPrototype()
-                                ->info('Map class FQCN to properties. Use "*" to deny all properties.')
-                                ->beforeNormalization()
-                                    ->ifString()
-                                    ->then(static fn (string $v) => [$v])
-                                ->end()
+                                ->info('Map class FQCN to properties.')
                                 ->useAttributeAsKey('class')
                                 ->scalarPrototype()->end()
                             ->end()
                         ->end()
-                        ->arrayNode('deniedMethods')
-                            ->info('Methods that are not allowed in stories.')
+                        ->arrayNode('allowedMethods')
+                            ->info('Methods that are allowed in stories.')
                             ->arrayPrototype()
-                                ->info('Map class FQCN to methods. Use "*" to deny all methods.')
+                                ->info('Map class FQCN to methods.')
                                 ->useAttributeAsKey('class')
-                                ->beforeNormalization()
-                                    ->ifString()
-                                    ->then(static fn (string $v) => [$v])
-                                ->end()
                                 ->scalarPrototype()->end()
                             ->end()
                         ->end()
