@@ -96,7 +96,6 @@ export const render: ArgsStoryFn<SymfonyRenderer> = (args, context) => {
         return component(args, context);
     }
 
-    console.log(component);
     console.warn(dedent`
     Symfony renderer only supports rendering Twig templates. Either:
     - Create a "render" function in your story export

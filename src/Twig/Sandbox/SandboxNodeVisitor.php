@@ -6,12 +6,13 @@ use Storybook\Twig\Sandbox\Node\BypassCheckSecurityCallNode;
 use Storybook\Twig\Sandbox\Node\SafeBodyNode;
 use Twig\Environment;
 use Twig\Node\CheckSecurityCallNode;
+use Twig\Node\CheckSecurityNode;
 use Twig\Node\ModuleNode;
 use Twig\Node\Node;
 use Twig\NodeVisitor\NodeVisitorInterface;
 
 /**
- * Node visitor to disable sandbox in nested modules, but not in the main story module.
+ * Node visitor to disable sandbox in trusted templates, i.e. the ones having a path the server.
  *
  * @author Nicolas Rigaud <squrious@protonmail.com>
  *
@@ -19,33 +20,23 @@ use Twig\NodeVisitor\NodeVisitorInterface;
  */
 final class SandboxNodeVisitor implements NodeVisitorInterface
 {
-    private bool $inTrustedModule = false;
-    private int $nestingLevel = 0;
-
     public function enterNode(Node $node, Environment $env): Node
     {
-        if ($node instanceof ModuleNode) {
-            if (!$this->inTrustedModule && ++$this->nestingLevel > 2) {
-                // Depth > 2 means we are processing a known template
-                $this->inTrustedModule = true;
-            }
-        }
-
         return $node;
     }
 
     public function leaveNode(Node $node, Environment $env): ?Node
     {
-        if ($node instanceof ModuleNode && $this->inTrustedModule) {
+        if ($node instanceof ModuleNode && '' !== $node->getSourceContext()->getPath()) {
             // Wraps module body in a safe node to disable sandbox before it is displayed and re-enable it after
             $node->setNode('body', new SafeBodyNode($node->getNode('body')));
-            $this->bypassSecurityCheckCall($node);
+            $this->bypassSecurity($node);
         }
 
         return $node;
     }
 
-    private function bypassSecurityCheckCall(ModuleNode $node): void
+    private function bypassSecurity(ModuleNode $node): void
     {
         $constructorEnd = $node->getNode('constructor_end');
         foreach ($constructorEnd as $index => $child) {
@@ -56,6 +47,14 @@ final class SandboxNodeVisitor implements NodeVisitorInterface
         }
 
         $node->setNode('constructor_end', new Node([new BypassCheckSecurityCallNode(), $constructorEnd]));
+
+        $classEnd = $node->getNode('class_end');
+        foreach ($classEnd as $index => $child) {
+            if ($child instanceof CheckSecurityNode) {
+                $classEnd->removeNode($index);
+                break;
+            }
+        }
     }
 
     public function getPriority(): int

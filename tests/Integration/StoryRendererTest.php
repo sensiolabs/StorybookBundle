@@ -51,13 +51,23 @@ class StoryRendererTest extends KernelTestCase
             {{ dummy_global.unauthorizedMethod }}
         '];
 
-        yield 'unauthorized content before component' => ['
+        yield 'unauthorized content before function-style component' => ['
             {{ unauthorized() }}
-            <twig:UnauthorizedFunction />
+            {{ component("AnonymousComponent") }}
         '];
 
-        yield 'unauthorized content after component' => ['
-            <twig:UnauthorizedFunction />
+        yield 'unauthorized content after function-style component' => ['
+            {{ component("AnonymousComponent") }}
+            {{ unauthorized() }}
+        '];
+
+        yield 'unauthorized content before tag-style component' => ['
+            {{ unauthorized() }}
+            {% component "AnonymousComponent" %}{% endcomponent %}
+        '];
+
+        yield 'unauthorized after before tag-style component' => ['
+            {% component "AnonymousComponent" %}{% endcomponent %}
             {{ unauthorized() }}
         '];
     }
@@ -107,24 +117,49 @@ class StoryRendererTest extends KernelTestCase
             {% authorized %}{% endauthorized %}
         '];
 
-        yield 'unauthorized function in component' => ['
-            <twig:UnauthorizedFunction />
+        yield 'unauthorized function in function-style component' => ['
+            {{ component("UnauthorizedFunction") }}
+        '];
+
+        yield 'unauthorized function in tag-style component' => ['
+            {% component "UnauthorizedFunction" %}
+            {% endcomponent %}
         '];
 
         yield 'unauthorized tag in component' => ['
-            <twig:UnauthorizedTag />
+            {{ component("UnauthorizedTag") }}
         '];
 
-        yield 'unauthorized filter in component' => ['
-            <twig:UnauthorizedFilter />
+        yield 'unauthorized tag in tag-style component' => ['
+            {% component "UnauthorizedTag" %}
+            {% endcomponent %}
         '];
 
-        yield 'unauthorized property in component' => ['
-            <twig:UnauthorizedProperty />
+        yield 'unauthorized filter in function-style component' => ['
+            {{ component("UnauthorizedFilter") }}
         '];
 
-        yield 'unauthorized method in component' => ['
-            <twig:UnauthorizedMethod />
+        yield 'unauthorized filter in tag-style component' => ['
+            {% component "UnauthorizedFilter" %}
+            {% endcomponent %}
+        '];
+
+        yield 'unauthorized property in function-style component' => ['
+            {{ component("UnauthorizedProperty") }}
+        '];
+
+        yield 'unauthorized property in tag-style component' => ['
+            {% component "UnauthorizedProperty" %}
+            {% endcomponent %}
+        '];
+
+        yield 'unauthorized method in function-style component' => ['
+            {{ component("UnauthorizedMethod") }}
+        '];
+
+        yield 'unauthorized method in tag-style component' => ['
+            {% component "UnauthorizedMethod" %}
+            {% endcomponent %}
         '];
     }
 
