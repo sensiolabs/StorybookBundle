@@ -12,7 +12,6 @@ class ArgsProcessorTest extends WebTestCase
     public function testCustomArgsProcessorIsCalled()
     {
         $client = static::createClient();
-        $client->catchExceptions(false);
 
         $crawler = $this->renderStory($client, 'args-processor', []);
 

@@ -26,11 +26,7 @@ class StoryRendererTest extends TestCase
             ->method('render')
             ->with(
                 $this->isType('string'),
-                $this->logicalAnd(
-                    $this->isType('array'),
-                    $this->arrayHasKey('args'),
-                    $this->callback(static fn (array $context) => $context['args'] instanceof Args)
-                ),
+                $this->isType('array')
             );
 
         $story = new Story(

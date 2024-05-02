@@ -79,6 +79,7 @@ declare function twig(source: TemplateStringsArray | string, ...values: any[]): 
 
 type StoryFnSymfonyReturnType = {
     template: TwigTemplate;
+    setup?: () => any;
     components?: TwigComponent[];
 };
 type TwigComponent = {

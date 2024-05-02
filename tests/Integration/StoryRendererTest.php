@@ -90,7 +90,7 @@ class StoryRendererTest extends KernelTestCase
     public static function getValidTemplates(): iterable
     {
         yield 'access story args' => ['
-            {{ args.foo }}
+            {{ foo }}
         ', ['foo' => 'bar']];
 
         yield 'authorized property' => ['

@@ -24,6 +24,8 @@ function skipSourceRender(context: Parameters<DecoratorFunction<SymfonyRenderer>
 
 export const sourceDecorator: DecoratorFunction<SymfonyRenderer> = (storyFn, context) => {
     const story = storyFn();
+    const setup = story.setup;
+
     let source: string;
     if (!skipSourceRender(context)) {
         source = story.template.getSource();
@@ -32,8 +34,12 @@ export const sourceDecorator: DecoratorFunction<SymfonyRenderer> = (storyFn, con
     useEffect(() => {
         const { id, unmappedArgs } = context;
         if (source) {
-            source = sanitize(source, unmappedArgs);
-            source = prependArgsToStorySource(source, unmappedArgs);
+            source = sanitize(source);
+
+            // If there is a setup function we should call it to resolve real args
+            const args = setup ? setup() : unmappedArgs;
+
+            source = prependArgsToStorySource(source, args);
             addons.getChannel().emit(SNIPPET_RENDERED, { id, args: unmappedArgs, source: source });
         }
     });

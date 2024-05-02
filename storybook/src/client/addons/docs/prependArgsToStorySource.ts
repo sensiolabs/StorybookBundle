@@ -51,9 +51,15 @@ const formatValue = (value: any, level: number = 0): string => {
 };
 
 export const prependArgsToStorySource = (source: string, args: any) => {
-    const preamble = dedent`
-    {% set args = ${formatValue(args)} %}
-    `;
+    const varDeclarations = Object.entries(args)
+        .filter(([, value]) => validArg(value))
+        .map(([name, value]) => `{% set ${name} = ${formatValue(value)} %}`);
 
-    return `${preamble}\n\n${source}`;
+    const preamble = varDeclarations.join('\n');
+
+    return dedent`
+        ${preamble}
+
+        ${source}
+    `;
 };

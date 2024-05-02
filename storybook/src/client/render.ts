@@ -59,9 +59,9 @@ const createComponent = (name: string, args: Args) => {
     const argsString = Object.entries(args)
         .map(([name, value]) => {
             if (value._sfActionId !== undefined) {
-                return `:data-storybook-action="args['${name}']"`;
+                return `:data-storybook-action="_context['${name}']"`;
             }
-            return `:${name}="args['${name}']"`;
+            return `:${name}="_context['${name}']"`;
         })
         .join(' ');
 
@@ -121,7 +121,11 @@ export async function renderToCanvas(
     }: RenderContext<SymfonyRenderer>,
     canvasElement: SymfonyRenderer['canvasElement']
 ) {
-    const { template } = storyFn();
+    const { template, setup } = storyFn();
+
+    if (typeof setup === 'function') {
+        args = setup();
+    }
 
     const storyArgs = buildStoryArgs(args, argTypes);
 

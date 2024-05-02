@@ -4,7 +4,7 @@ import dedent from 'ts-dedent';
 describe('prependArgsToStorySource', () => {
     it('Adds args', () => {
         const source = dedent`
-        <twig:Component :prop="args.prop" />
+        <twig:Component :prop="prop" />
         `;
 
         const args = {
@@ -23,22 +23,20 @@ describe('prependArgsToStorySource', () => {
 
         // language=twig
         expect(res).toEqual(dedent`
-        {% set args = {
-            'prop': 'foo',
-            'objectProp': {
-                'foo': 'foo',
-                'bar': {
-                    'baz': 'baz'
-                }
-            },
-            'arrayProp': [
-                'a',
-                2,
-                null
-            ]
+        {% set prop = 'foo' %}
+        {% set objectProp = {
+            'foo': 'foo',
+            'bar': {
+                'baz': 'baz'
+            }
         } %}
+        {% set arrayProp = [
+            'a',
+            2,
+            null
+        ] %}
 
-        <twig:Component :prop="args.prop" />
+        <twig:Component :prop="prop" />
         `);
     });
 });

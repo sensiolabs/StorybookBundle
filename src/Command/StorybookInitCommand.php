@@ -116,7 +116,7 @@ HELP
         $this->io->note('Generating Storybook configuration files');
 
         $previewFile = <<<TS
-import { Preview } from '@storybook/server';
+import { Preview } from '@sensiolabs/storybook-symfony-webpack5';
 
 const preview: Preview = {
     parameters: {

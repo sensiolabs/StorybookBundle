@@ -47,7 +47,7 @@ final class StoryRenderer
         $this->twig->setCache($this->cacheDir);
 
         try {
-            return $this->twig->render($storyTemplateName, ['args' => $story->getArgs()]);
+            return $this->twig->render($storyTemplateName, $story->getArgs()->toArray());
         } catch (SecurityError $th) {
             throw new UnauthorizedStoryException('Story contains unauthorized content', $th);
         } catch (Error $th) {

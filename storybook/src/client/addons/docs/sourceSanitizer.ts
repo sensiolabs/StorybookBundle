@@ -46,7 +46,7 @@ const getAttributeName = (name: AttributeNodeName) => {
     throw new Error('Invalid argument');
 };
 
-const traverseNode = (node: XmlNode, args: any) => {
+const traverseNode = (node: XmlNode) => {
     if (typeof node !== 'string') {
         for (const child in node) {
             if (isAttributeName(child)) {
@@ -57,13 +57,13 @@ const traverseNode = (node: XmlNode, args: any) => {
                 }
             }
             if (isNodeName(child)) {
-                traverseNode(node[child], args);
+                traverseNode(node[child]);
             }
         }
     }
 };
 
-export const sanitize = (source: string, args: any) => {
+export const sanitize = (source: string): string => {
     const parser = new XMLParser({
         ignoreAttributes: false,
         stopNodes: ['*.pre', '*.script'],
@@ -76,7 +76,7 @@ export const sanitize = (source: string, args: any) => {
 
     const xml = parser.parse(source);
 
-    traverseNode(xml, args);
+    traverseNode(xml);
 
     const builder = new XMLBuilder({
         ignoreAttributes: false,
@@ -86,5 +86,6 @@ export const sanitize = (source: string, args: any) => {
         preserveOrder: true,
         suppressBooleanAttributes: true,
     });
-    return builder.build(xml);
+
+    return builder.build(xml).trim();
 };

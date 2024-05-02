@@ -5,6 +5,7 @@ export type { RenderContext } from '@storybook/types';
 
 export type StoryFnSymfonyReturnType = {
     template: TwigTemplate;
+    setup?: () => any;
     components?: TwigComponent[];
 };
 
