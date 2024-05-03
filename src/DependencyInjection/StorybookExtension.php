@@ -14,6 +14,7 @@ use Storybook\EventListener\ExceptionListener;
 use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Mock\ComponentProxyFactory;
 use Storybook\StoryRenderer;
+use Storybook\Twig\StorybookEnvironmentConfigurator;
 use Storybook\Twig\TwigComponentSubscriber;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -70,25 +71,36 @@ class StorybookExtension extends Extension implements ConfigurationInterface
         ;
 
         // Story renderer
-        $container->register('storybook.story_renderer', StoryRenderer::class)
-            ->setArgument(0, new Reference('twig'))
-            ->setArgument(1, new Reference('storybook.sandbox_security_policy'))
+        $defaultSandboxConfig = [
+            'allowedTags' => ['component'],
+            'allowedFunctions' => ['component'],
+            'allowedFilters' => ['escape'],
+            'allowedMethods' => [],
+            'allowedProperties' => [],
+        ];
+
+        $sandboxConfig = array_merge_recursive($defaultSandboxConfig, $config['sandbox']);
+
+        $container->register('storybook.twig.security_policy', SecurityPolicy::class)
+            ->setArgument(0, $sandboxConfig['allowedTags'])
+            ->setArgument(1, $sandboxConfig['allowedFilters'])
+            ->setArgument(2, $sandboxConfig['allowedMethods'])
+            ->setArgument(3, $sandboxConfig['allowedProperties'])
+            ->setArgument(4, $sandboxConfig['allowedFunctions'])
+        ;
+
+        $container->register('storybook.twig.environment_configurator', StorybookEnvironmentConfigurator::class)
+            ->setArgument(0, new Reference('twig.configurator.environment'))
+            ->setArgument(1, new Reference('storybook.twig.security_policy'))
             ->setArgument(2, $config['cache'] ?? false)
         ;
 
-        // Sandbox configuration
-        $allowedTags = array_merge($config['sandbox']['allowedTags'], ['component']);
-        $allowedFunctions = array_merge($config['sandbox']['allowedFunctions'], ['component']);
-        $allowedFilters = array_merge($config['sandbox']['allowedFilters'], ['escape']);
-        $allowedMethods = $config['sandbox']['allowedMethods'];
-        $allowedProperties = $config['sandbox']['allowedProperties'];
+        $container->setDefinition('storybook.twig', new ChildDefinition('twig'))
+            ->setConfigurator([new Reference('storybook.twig.environment_configurator'), 'configure'])
+        ;
 
-        $container->register('storybook.sandbox_security_policy', SecurityPolicy::class)
-            ->setArgument(0, $allowedTags)
-            ->setArgument(1, $allowedFilters)
-            ->setArgument(2, $allowedMethods)
-            ->setArgument(3, $allowedProperties)
-            ->setArgument(4, $allowedFunctions)
+        $container->register('storybook.story_renderer', StoryRenderer::class)
+            ->setArgument(0, new Reference('storybook.twig'))
         ;
 
         // Args processors

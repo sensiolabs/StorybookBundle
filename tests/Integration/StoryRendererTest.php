@@ -175,4 +175,21 @@ class StoryRendererTest extends KernelTestCase
 
         $this->assertEquals('bar', $content);
     }
+
+    /**
+     * This is a known bug in TwigComponent v2.17, to be removed when fixed.
+     *
+     * @see https://github.com/symfony/ux/pull/1820
+     */
+    public function testPassingPropsFromContextVariableWithSameName()
+    {
+        self::bootKernel();
+
+        $renderer = static::getContainer()->get('storybook.story_renderer');
+
+        $storyWithFunction = new Story('story', '<twig:AnonymousComponent :prop1="prop1"/>', new Args(['prop1' => 'foo']));
+        $storyWithTag = new Story('story', '<twig:AnonymousComponent :prop1="prop1"></twig:AnonymousComponent>', new Args(['prop1' => 'foo']));
+
+        $this->assertEquals($renderer->render($storyWithFunction), $renderer->render($storyWithTag));
+    }
 }

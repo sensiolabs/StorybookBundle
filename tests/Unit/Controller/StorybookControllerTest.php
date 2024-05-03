@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Twig\Environment;
-use Twig\Sandbox\SecurityPolicyInterface;
 
 class StorybookControllerTest extends TestCase
 {
@@ -50,10 +49,6 @@ class StorybookControllerTest extends TestCase
 
     private function createRenderer(): StoryRenderer
     {
-        return new StoryRenderer(
-            $this->createMock(Environment::class),
-            $this->createMock(SecurityPolicyInterface::class),
-            false
-        );
+        return new StoryRenderer($this->createMock(Environment::class));
     }
 }

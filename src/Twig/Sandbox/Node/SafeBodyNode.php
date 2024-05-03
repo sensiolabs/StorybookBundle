@@ -2,7 +2,6 @@
 
 namespace Storybook\Twig\Sandbox\Node;
 
-use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\BodyNode;
 
@@ -13,7 +12,7 @@ use Twig\Node\BodyNode;
  *
  * @internal
  */
-#[YieldReady]
+// #[YieldReady]
 class SafeBodyNode extends BodyNode
 {
     public function __construct(BodyNode $body)

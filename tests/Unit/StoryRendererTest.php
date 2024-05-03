@@ -11,15 +11,13 @@ use Storybook\StoryRenderer;
 use Twig\Environment;
 use Twig\Error\Error;
 use Twig\Sandbox\SecurityError;
-use Twig\Sandbox\SecurityPolicyInterface;
 
 class StoryRendererTest extends TestCase
 {
     public function testRender()
     {
         $twig = $this->createMock(Environment::class);
-        $policy = $this->createMock(SecurityPolicyInterface::class);
-        $renderer = new StoryRenderer($twig, $policy, false);
+        $renderer = new StoryRenderer($twig);
 
         $twig
             ->expects($this->once())
@@ -46,8 +44,7 @@ class StoryRendererTest extends TestCase
     public function testExceptions(Error $twigError, string $expectedException)
     {
         $twig = $this->createMock(Environment::class);
-        $policy = $this->createMock(SecurityPolicyInterface::class);
-        $renderer = new StoryRenderer($twig, $policy, false);
+        $renderer = new StoryRenderer($twig);
 
         $twig->expects($this->once())->method('render')
             ->willThrowException($twigError);
