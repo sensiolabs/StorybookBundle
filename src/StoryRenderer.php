@@ -37,6 +37,7 @@ final class StoryRenderer
         try {
             return $this->twig->render($storyTemplateName, $story->getArgs()->toArray());
         } catch (SecurityError $th) {
+            // SecurityError can actually be raised
             throw new UnauthorizedStoryException('Story contains unauthorized content', $th);
         } catch (Error $th) {
             throw new RenderException(sprintf('Unable to render story "%s".', $story->getId()), $th);

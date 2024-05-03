@@ -9,15 +9,27 @@ import { twig } from '../lib/twig';
 
 const { fetch, Node } = global;
 
+const sanitizeArgs = (args: any) => {
+    const sanitized: any = {};
+    for (const name in args) {
+        if (args[name]._sfActionId !== undefined) {
+            // Modify action args to pass action id instead of the handler
+            sanitized[name] = args[name]._sfActionId;
+        } else if (typeof args[name] === 'object') {
+            // Deep sanitize args, e.g. when using args composition
+            sanitized[name] = sanitizeArgs(args[name]);
+        } else {
+            sanitized[name] = args[name];
+        }
+    }
+
+    return sanitized;
+};
+
 const fetchStoryHtml: FetchStoryHtmlType = async (url, path, params, storyContext, template) => {
     const fetchUrl = new URL(`${url}/${path}`);
 
-    // Modify action args to pass action id instead of the handler
-    for (const name in params) {
-        if (params[name]._sfActionId !== undefined) {
-            params[name] = params[name]._sfActionId;
-        }
-    }
+    params = sanitizeArgs(params);
 
     const body = {
         args: { ...storyContext.globals, ...params },
@@ -61,7 +73,7 @@ const createComponent = (name: string, args: Args) => {
             if (value._sfActionId !== undefined) {
                 return `:data-storybook-action="_context['${name}']"`;
             }
-            return `:${name}="_context['${name}']"`;
+            return `:${name}="${name}"`;
         })
         .join(' ');
 

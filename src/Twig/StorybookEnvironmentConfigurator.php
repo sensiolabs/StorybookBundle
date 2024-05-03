@@ -2,7 +2,6 @@
 
 namespace Storybook\Twig;
 
-use Storybook\Twig\Sandbox\StoryExtension;
 use Twig\Environment;
 use Twig\Extension\SandboxExtension;
 use Twig\Sandbox\SecurityPolicyInterface;

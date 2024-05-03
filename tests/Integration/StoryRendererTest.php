@@ -66,7 +66,7 @@ class StoryRendererTest extends KernelTestCase
             {% component "AnonymousComponent" %}{% endcomponent %}
         '];
 
-        yield 'unauthorized after before tag-style component' => ['
+        yield 'unauthorized after tag-style component' => ['
             {% component "AnonymousComponent" %}{% endcomponent %}
             {{ unauthorized() }}
         '];

@@ -4,7 +4,7 @@ import { SNIPPET_RENDERED, SourceType } from '@storybook/docs-tools';
 import { addons, useEffect } from '@storybook/preview-api';
 import type { DecoratorFunction } from '@storybook/types';
 
-import { prependArgsToStorySource } from './prependArgsToStorySource';
+import { buildVariableDeclarations } from './buildVariableDeclarations';
 import { sanitize } from './sourceSanitizer';
 import { SymfonyRenderer } from '../../types';
 
@@ -39,7 +39,9 @@ export const sourceDecorator: DecoratorFunction<SymfonyRenderer> = (storyFn, con
             // If there is a setup function we should call it to resolve real args
             const args = setup ? setup() : unmappedArgs;
 
-            source = prependArgsToStorySource(source, args);
+            const preamble = buildVariableDeclarations(args);
+
+            source = `${preamble}\n\n${source}`;
             addons.getChannel().emit(SNIPPET_RENDERED, { id, args: unmappedArgs, source: source });
         }
     });

@@ -1,7 +1,8 @@
 <?php
 
-namespace Storybook\Twig\Sandbox;
+namespace Storybook\Twig;
 
+use Storybook\Twig\Sandbox\SandboxNodeVisitor;
 use Twig\Extension\AbstractExtension;
 
 /**
