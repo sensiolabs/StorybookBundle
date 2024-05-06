@@ -1,6 +1,5 @@
 {
     "name": "@sensiolabs/storybook-symfony-webpack5",
-    "version": "0.0.1-beta",
     "description": "Storybook for Symfony",
     "keywords": [
         "storybook",

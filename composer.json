@@ -2,7 +2,7 @@
     "name": "sensiolabs/storybook-bundle",
     "type": "library",
     "license": "MIT",
-    "description": "Symfony bundle to generate a static storybook",
+    "description": "Bundle to use Storybook with Symfony UX packages.",
     "authors": [
         {
             "name": "Nicolas Rigaud",
@@ -26,7 +26,6 @@
         "symfony/twig-bundle": "^7.0"
     },
     "require-dev": {
-        "nelmio/cors-bundle": "^2.4",
         "phpstan/phpstan": "^1.10",
         "symfony/asset-mapper": "^7.0",
         "symfony/browser-kit": "^7.0",
