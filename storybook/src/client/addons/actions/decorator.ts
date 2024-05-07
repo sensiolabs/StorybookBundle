@@ -40,14 +40,14 @@ export const setupActionListeners: DecoratorFunction<SymfonyRenderer> = (StoryFn
             Object.entries(args)
                 .filter(([, arg]) => typeof arg === 'function' && arg._sfActionId !== undefined)
                 .forEach(([name, arg]) => {
-                    const el = root.querySelector(`[${ACTION_ATTRIBUTE}='${arg._sfActionId}']`);
+                    const el = root.querySelector(`[${ACTION_ATTRIBUTE}~='${arg._sfActionId}']`);
                     if (null !== el) {
                         el.addEventListener(name, (...eventArgs) => {
                             arg(...eventArgs.map(proxifyEvent));
                         });
                     } else {
                         console.warn(dedent`
-                        Action arg "${name} is not bound to any DOM element."
+                        Action arg "${name}" is not bound to any DOM element.
                     `);
                     }
                 });

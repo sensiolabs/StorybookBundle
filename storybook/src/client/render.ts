@@ -6,6 +6,7 @@ import { simulatePageLoad, simulateDOMContentLoaded } from '@storybook/preview-a
 import type { Args, ArgTypes } from './public-types';
 import type { FetchStoryHtmlType, SymfonyRenderer } from './types';
 import { twig } from '../lib/twig';
+import { createComponent } from './lib/createComponent';
 
 const { fetch, Node } = global;
 
@@ -65,21 +66,6 @@ const buildStoryArgs = (args: Args, argTypes: ArgTypes) => {
     });
 
     return storyArgs;
-};
-
-const createComponent = (name: string, args: Args) => {
-    const argsString = Object.entries(args)
-        .map(([name, value]) => {
-            if (value._sfActionId !== undefined) {
-                return `:data-storybook-action="_context['${name}']"`;
-            }
-            return `:${name}="${name}"`;
-        })
-        .join(' ');
-
-    return twig`
-        <twig:${name} ${argsString} />
-    `;
 };
 
 export const render: ArgsStoryFn<SymfonyRenderer> = (args, context) => {
