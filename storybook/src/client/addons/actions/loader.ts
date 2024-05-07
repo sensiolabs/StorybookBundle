@@ -6,6 +6,7 @@ const isAction = (arg: any): boolean => {
         (('_isMockFunction' in arg && arg._isMockFunction) || ('isAction' in arg && arg.isAction))
     );
 };
+
 export const actionLoader: LoaderFunction = (context) => {
     const { args } = context;
 
