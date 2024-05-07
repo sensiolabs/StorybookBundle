@@ -27,6 +27,14 @@
     "overrides": [
         {
             "files": ["test/**/*.ts"]
+        },
+        {
+            "files": ["**/*.d.ts"],
+            "rules": {
+                "vars-on-top": "off",
+                "no-var": "off", // this is how typescript works
+                "spaced-comment": "off"
+            }
         }
     ]
 }

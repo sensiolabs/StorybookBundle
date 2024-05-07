@@ -13,7 +13,8 @@ use Storybook\EventListener\ComponentMockSubscriber;
 use Storybook\EventListener\ExceptionListener;
 use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Mock\ComponentProxyFactory;
-use Storybook\Twig\StoryTemplateLoader;
+use Storybook\StoryRenderer;
+use Storybook\Twig\StorybookEnvironmentConfigurator;
 use Storybook\Twig\TwigComponentSubscriber;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -24,6 +25,7 @@ use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
+use Twig\Sandbox\SecurityPolicy;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
@@ -63,9 +65,42 @@ class StorybookExtension extends Extension implements ConfigurationInterface
 
         // Main controller
         $container->register('storybook.controller.render_story', StorybookController::class)
-            ->setArgument(0, new Reference('twig'))
+            ->setArgument(0, new Reference('storybook.story_renderer'))
             ->setArgument(1, new Reference('storybook.args_processor'))
             ->addTag('controller.service_arguments')
+        ;
+
+        // Story renderer
+        $defaultSandboxConfig = [
+            'allowedTags' => ['component'],
+            'allowedFunctions' => ['component'],
+            'allowedFilters' => ['escape'],
+            'allowedMethods' => [],
+            'allowedProperties' => [],
+        ];
+
+        $sandboxConfig = array_merge_recursive($defaultSandboxConfig, $config['sandbox']);
+
+        $container->register('storybook.twig.security_policy', SecurityPolicy::class)
+            ->setArgument(0, $sandboxConfig['allowedTags'])
+            ->setArgument(1, $sandboxConfig['allowedFilters'])
+            ->setArgument(2, $sandboxConfig['allowedMethods'])
+            ->setArgument(3, $sandboxConfig['allowedProperties'])
+            ->setArgument(4, $sandboxConfig['allowedFunctions'])
+        ;
+
+        $container->register('storybook.twig.environment_configurator', StorybookEnvironmentConfigurator::class)
+            ->setArgument(0, new Reference('twig.configurator.environment'))
+            ->setArgument(1, new Reference('storybook.twig.security_policy'))
+            ->setArgument(2, $config['cache'] ?? false)
+        ;
+
+        $container->setDefinition('storybook.twig', new ChildDefinition('twig'))
+            ->setConfigurator([new Reference('storybook.twig.environment_configurator'), 'configure'])
+        ;
+
+        $container->register('storybook.story_renderer', StoryRenderer::class)
+            ->setArgument(0, new Reference('storybook.twig'))
         ;
 
         // Args processors
@@ -74,11 +109,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface
         // Proxy factory
         $container->register('storybook.component_proxy_factory', ComponentProxyFactory::class)
             ->setArgument(0, new AbstractArgument(sprintf('Provided in "%s".', ComponentMockPass::class)));
-
-        // Twig template loader
-        $container->register('storybook.twig.loader', StoryTemplateLoader::class)
-            ->setArgument(0, $config['runtime_dir'])
-            ->addTag('twig.loader');
 
         // Internal commands
         $container->register('storybook.generate_preview_command', GeneratePreviewCommand::class)
@@ -111,10 +141,42 @@ class StorybookExtension extends Extension implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->scalarNode('runtime_dir')
-                    ->info('Location of storybook runtime files')
-                    ->cannotBeEmpty()
-                    ->defaultValue('%kernel.project_dir%/var/storybook')
+                ->scalarNode('cache')
+                    ->defaultValue('%kernel.cache_dir%/storybook/twig')
+                ->end()
+                ->arrayNode('sandbox')
+                    ->info('Configure the sandbox for Twig rendering.')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->arrayNode('allowedFunctions')
+                            ->info('Functions that are allowed in stories.')
+                            ->scalarPrototype()->end()
+                        ->end()
+                        ->arrayNode('allowedTags')
+                            ->info('Tags that are allowed in stories.')
+                            ->scalarPrototype()->end()
+                        ->end()
+                        ->arrayNode('allowedFilters')
+                            ->info('Filters that are allowed in stories.')
+                            ->scalarPrototype()->end()
+                        ->end()
+                        ->arrayNode('allowedProperties')
+                            ->info('Properties that are allowed in stories.')
+                            ->arrayPrototype()
+                                ->info('Map class FQCN to properties.')
+                                ->useAttributeAsKey('class')
+                                ->scalarPrototype()->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('allowedMethods')
+                            ->info('Methods that are allowed in stories.')
+                            ->arrayPrototype()
+                                ->info('Map class FQCN to methods.')
+                                ->useAttributeAsKey('class')
+                                ->scalarPrototype()->end()
+                            ->end()
+                        ->end()
+                    ->end()
                 ->end()
             ->end();
 

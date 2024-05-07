@@ -4,6 +4,7 @@ namespace Storybook\Tests\Fixtures;
 
 use Psr\Log\NullLogger;
 use Storybook\StorybookBundle;
+use Storybook\Tests\Fixtures\SandboxTest\DummyVariable;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
@@ -51,6 +52,9 @@ class Kernel extends BaseKernel
 
         $container->extension('twig', [
             'default_path' => '%kernel.project_dir%/templates',
+            'globals' => [
+                'dummy_global' => '@Storybook\\Tests\\Fixtures\\SandboxTest\\DummyVariable',
+            ],
         ]);
 
         $container->extension('twig_component', [
@@ -61,7 +65,17 @@ class Kernel extends BaseKernel
         ]);
 
         $container->extension('storybook', [
-            'runtime_dir' => '%kernel.project_dir%/storybook',
+            'sandbox' => [
+                'allowedProperties' => [
+                    DummyVariable::class => ['authorizedProperty'],
+                ],
+                'allowedMethods' => [
+                    DummyVariable::class => ['authorizedMethod', 'getAuthorizedPrivateProperty'],
+                ],
+                'allowedFunctions' => ['authorized'],
+                'allowedTags' => ['authorized'],
+                'allowedFilters' => ['authorized'],
+            ],
         ]);
 
         $container->services()

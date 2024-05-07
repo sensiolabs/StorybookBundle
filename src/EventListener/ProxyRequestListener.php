@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
  *
  * @internal
  */
-class ProxyRequestListener implements EventSubscriberInterface
+final class ProxyRequestListener implements EventSubscriberInterface
 {
     public function __construct()
     {

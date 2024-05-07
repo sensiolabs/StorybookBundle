@@ -8,6 +8,9 @@ use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
+/**
+ * @author Nicolas Rigaud <squrious@protonmail.com>
+ */
 final class ComponentMockPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void

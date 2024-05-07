@@ -5,66 +5,50 @@ namespace Storybook\Tests\Unit\Controller;
 use PHPUnit\Framework\TestCase;
 use Storybook\ArgsProcessor\StorybookArgsProcessor;
 use Storybook\Controller\StorybookController;
-use Storybook\Exception\RenderException;
-use Storybook\Exception\TemplateNotFoundException;
+use Storybook\StoryRenderer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Twig\Environment;
-use Twig\Error\Error;
-use Twig\Error\LoaderError;
 
 class StorybookControllerTest extends TestCase
 {
     public function testControllerReturnsResponse()
     {
-        $twig = $this->createMock(Environment::class);
+        $renderer = $this->createRenderer();
         $argsProcessor = new StorybookArgsProcessor();
 
-        $controller = new StorybookController($twig, $argsProcessor);
+        $controller = new StorybookController($renderer, $argsProcessor);
 
-        $request = new Request();
+        $request = new Request(request: [
+            'template' => '',
+        ]);
+
         $id = 'story-id';
-
-        $twig->expects($this->once())->method('render')
-            ->with(sprintf('@Stories/%s.html.twig', $id), $this->arrayHasKey('args'))
-            ->willReturn('');
 
         $response = $controller($request, $id);
 
         $this->assertInstanceOf(Response::class, $response);
     }
 
-    public function testTemplateNotFoundIsThrownIfTemplateCantBeLoaded()
+    public function testBadRequestIsThrownWhenNoTemplateIsProvided()
     {
-        $twig = $this->createMock(Environment::class);
+        $renderer = $this->createRenderer();
         $argsProcessor = new StorybookArgsProcessor();
 
-        $controller = new StorybookController($twig, $argsProcessor);
+        $controller = new StorybookController($renderer, $argsProcessor);
 
         $request = new Request();
+
         $id = 'story-id';
 
-        $twig->expects($this->once())->method('render')
-            ->willThrowException(new LoaderError(''));
+        $this->expectException(BadRequestHttpException::class);
 
-        $this->expectException(TemplateNotFoundException::class);
         $controller($request, $id);
     }
 
-    public function testRenderExceptionIsThrownIfTemplateCantBeRendered()
+    private function createRenderer(): StoryRenderer
     {
-        $twig = $this->createMock(Environment::class);
-        $argsProcessor = new StorybookArgsProcessor();
-
-        $controller = new StorybookController($twig, $argsProcessor);
-
-        $request = new Request();
-        $id = 'story-id';
-
-        $twig->expects($this->once())->method('render')
-            ->willThrowException(new Error(''));
-
-        $this->expectException(RenderException::class);
-        $controller($request, $id);
+        return new StoryRenderer($this->createMock(Environment::class));
     }
 }

@@ -1,14 +1,15 @@
+export type { BuilderResult, TypescriptOptions } from '@storybook/core-webpack';
+
 import type {
     StorybookConfig as StorybookConfigBase,
     TypescriptOptions as TypescriptOptionsReact,
-} from '@storybook/preset-server-webpack';
+} from '@storybook/core-webpack';
 
 import type {
     StorybookConfigWebpack,
     BuilderOptions,
     TypescriptOptions as TypescriptOptionsBuilder,
 } from '@storybook/builder-webpack5';
-import { TwigComponentConfiguration } from './utils/symfony';
 
 type FrameworkName = '@sensiolabs/storybook-symfony-webpack5';
 type BuilderName = '@storybook/builder-webpack5';
@@ -22,11 +23,6 @@ export type SymfonyOptions = {
     server?: string;
 
     /**
-     * Location of Storybook generated assets for Symfony renderer.
-     */
-    runtimePath?: string;
-
-    /**
      * Paths to proxy to the Symfony server. This is useful to resolve assets (i.e. with '/assets').
      */
     proxyPaths?: ProxyPaths;
@@ -36,13 +32,6 @@ export type SymfonyOptions = {
      */
     additionalWatchPaths?: string[];
 };
-
-type InternalSymfonyOptions = {
-    projectDir: string;
-    twigComponent: TwigComponentConfiguration;
-};
-
-export type ResolvedSymfonyOptions = Required<SymfonyOptions> & InternalSymfonyOptions;
 
 export type FrameworkOptions = {
     builder?: BuilderOptions;

@@ -2,6 +2,9 @@
 
 namespace Storybook\Event;
 
+/**
+ * @author Nicolas Rigaud <squrious@protonmail.com>
+ */
 final class ComponentRenderEvent
 {
     public function __construct(

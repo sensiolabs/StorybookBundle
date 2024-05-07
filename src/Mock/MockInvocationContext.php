@@ -8,7 +8,7 @@ namespace Storybook\Mock;
  *
  * @author Nicolas Rigaud <squrious@protonmail.com>
  */
-class MockInvocationContext
+final class MockInvocationContext
 {
     public function __construct(
         public readonly object $component,

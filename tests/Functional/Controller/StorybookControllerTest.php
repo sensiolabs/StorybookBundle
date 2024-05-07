@@ -2,29 +2,32 @@
 
 namespace Storybook\Tests\Functional\Controller;
 
-use Storybook\Util\StorybookAttributes;
+use Storybook\Tests\StoryTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class StorybookControllerTest extends WebTestCase
 {
+    use StoryTestTrait;
+
     public function testRenderStory()
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '_storybook/render/story?prop1=Prop1+value');
+        $crawler = $this->renderStory($client, 'story', [
+            'prop1' => 'Prop1 value',
+        ]);
 
         $this->assertResponseIsSuccessful();
-
-        // Useful?
-        $this->assertInstanceOf(StorybookAttributes::class, $client->getRequest()->attributes->get('_storybook'));
 
         $this->assertStringContainsString('Prop1: Prop1 value', $crawler->text());
     }
 
-    public function testUnknownStoryThrowsNotFound()
+    public function testRenderInvalidStoryThrowsBadRequest()
     {
         $client = static::createClient();
-        $client->request('GET', '_storybook/render/unknown');
+        $this->renderStory($client, 'invalid-story', [
+            'prop1' => 'Prop1 value',
+        ]);
 
-        $this->assertResponseStatusCodeSame(404, 'Not found stories must return HTTP 404');
+        $this->assertResponseStatusCodeSame(400);
     }
 }

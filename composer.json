@@ -2,7 +2,7 @@
     "name": "sensiolabs/storybook-bundle",
     "type": "library",
     "license": "MIT",
-    "description": "Symfony bundle to generate a static storybook",
+    "description": "Bundle to use Storybook with Symfony UX packages.",
     "authors": [
         {
             "name": "Nicolas Rigaud",
@@ -26,17 +26,19 @@
         "symfony/twig-bundle": "^7.0"
     },
     "require-dev": {
-        "nelmio/cors-bundle": "^2.4",
         "phpstan/phpstan": "^1.10",
         "symfony/asset-mapper": "^7.0",
         "symfony/browser-kit": "^7.0",
+        "symfony/css-selector": "^7.0",
         "symfony/framework-bundle": "^7.0",
         "symfony/phpunit-bridge": "^7.0",
-        "symfony/ux-twig-component": "^2.13",
-        "symfony/css-selector": "^7.0",
-        "symfony/ux-live-component": "^2.13",
-        "symfonycasts/tailwind-bundle": "^0.5.0",
+        "symfony/stimulus-bundle": "^2.16",
+        "symfony/ux-live-component": "^2.16",
+        "symfony/ux-twig-component": "2.16",
         "symfonycasts/sass-bundle": "^0.5.1",
-        "symfony/stimulus-bundle": "^2.16"
+        "symfonycasts/tailwind-bundle": "^0.5.0"
+    },
+    "conflict": {
+        "symfony/ux-twig-component": "2.17"
     }
 }

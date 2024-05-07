@@ -1,10 +1,10 @@
 import type { ArgTypesEnhancer, DecoratorFunction } from '@storybook/types';
 import { SourceType, enhanceArgTypes } from '@storybook/docs-tools';
 
-import { sourceDecorator } from './addons/docs/sourceDecorator';
-import type { ServerRenderer } from '@storybook/server';
+import { sourceDecorator } from './client/addons/docs/sourceDecorator';
+import { SymfonyRenderer } from './client';
 
-export const decorators: DecoratorFunction<ServerRenderer>[] = [sourceDecorator];
+export const decorators: DecoratorFunction<SymfonyRenderer>[] = [sourceDecorator];
 
 export const parameters = {
     docs: {

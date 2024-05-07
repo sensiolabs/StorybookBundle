@@ -116,7 +116,7 @@ HELP
         $this->io->note('Generating Storybook configuration files');
 
         $previewFile = <<<TS
-import { Preview } from '@storybook/server';
+import { Preview } from '@sensiolabs/storybook-symfony-webpack5';
 
 const preview: Preview = {
     parameters: {
@@ -194,6 +194,12 @@ TS;
         $content = <<<YAML
 storybook: ~
 
+when@dev:
+  storybook:
+    sandbox:
+      allowedFunctions:
+        - 'dump'
+
 YAML;
         $this->writeFileWithConfirmation($configFile, $content);
     }
@@ -242,8 +248,7 @@ TWIG;
 import {twig} from "@sensiolabs/storybook-symfony-webpack5";
 
 export default {
-    component: 'Sample',
-    template: twig`
+    component: twig`
         <div>Hello {{ args.name }}!</div>
     `,
     args: {
