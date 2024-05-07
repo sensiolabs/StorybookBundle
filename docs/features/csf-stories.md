@@ -98,7 +98,7 @@ Finally, you can also provide a raw Twig template as a component, for example if
 import { twig } from '@sensiolabs/storybook-symfony-webpack5';
 
 export default {
-    component: twig`button type="button">{{ label }}</button>`
+    component: twig`<button type="button">{{ label }}</button>`
 };
 
 export const Default = {
