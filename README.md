@@ -27,7 +27,11 @@ This bundle provides a basic integration for Storybook into a Symfony applicatio
 
 ## Installation
 
-Clone this repo and install the bundle in your project.
+To install the bundle into your project run:
+
+```shell
+composer require sensiolabs/storybook-bundle
+```
 
 Initialize Storybook in your project:
 
