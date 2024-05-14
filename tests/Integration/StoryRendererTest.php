@@ -192,4 +192,15 @@ class StoryRendererTest extends KernelTestCase
 
         $this->assertEquals($renderer->render($storyWithFunction), $renderer->render($storyWithTag));
     }
+
+    public function testComponentAttributeRendering()
+    {
+        self::bootKernel();
+
+        $renderer = static::getContainer()->get('storybook.story_renderer');
+
+        $story = new Story('story', '<twig:AnonymousComponent foo="bar"></twig:AnonymousComponent>', new Args());
+
+        $this->assertStringContainsString('foo="bar"', $renderer->render($story));
+    }
 }
