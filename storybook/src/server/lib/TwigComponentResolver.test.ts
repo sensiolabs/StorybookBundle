@@ -1,6 +1,6 @@
 import { TwigComponentResolver } from './TwigComponentResolver';
 
-const fixturesDir = `${__dirname}/__fixtures__`;
+const fixturesDir = `${__dirname}/__fixtures__/templates`;
 
 const twigComponentConfig = {
     anonymousTemplateDirectory: `${fixturesDir}/anonymous`,

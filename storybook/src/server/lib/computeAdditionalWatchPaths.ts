@@ -20,8 +20,8 @@ export const computeAdditionalWatchPaths = (paths: string[], baseDir: string) =>
         .map((v) => join(baseDir, v))
         .forEach((watchPath) => {
             if (isGlob(watchPath)) {
-                result.files.concat(
-                    glob.sync(watchPath, {
+                result.files.push(
+                    ...glob.sync(watchPath, {
                         dot: true,
                         absolute: true,
                     })
