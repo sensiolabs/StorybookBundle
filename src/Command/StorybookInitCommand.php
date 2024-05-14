@@ -249,7 +249,7 @@ import {twig} from "@sensiolabs/storybook-symfony-webpack5";
 
 export default {
     component: twig`
-        <div>Hello {{ args.name }}!</div>
+        <div>Hello {{ name }}!</div>
     `,
     args: {
         name: 'World'
