@@ -2,7 +2,9 @@
 
 namespace Storybook\Twig;
 
+use Symfony\UX\TwigComponent\ComponentAttributes;
 use Twig\Environment;
+use Twig\Extension\EscaperExtension;
 use Twig\Extension\SandboxExtension;
 use Twig\Sandbox\SecurityPolicyInterface;
 
@@ -21,6 +23,8 @@ class StorybookEnvironmentConfigurator
     public function configure(Environment $environment): void
     {
         $this->inner->configure($environment);
+
+        $environment->getExtension(EscaperExtension::class)->addSafeClass(ComponentAttributes::class, ['html']);
 
         $environment->setExtensions([
             new SandboxExtension($this->securityPolicy),
