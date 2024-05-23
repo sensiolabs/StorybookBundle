@@ -10,8 +10,8 @@ use Storybook\Command\StorybookInitCommand;
 use Storybook\Controller\StorybookController;
 use Storybook\DependencyInjection\Compiler\ComponentMockPass;
 use Storybook\EventListener\ComponentMockSubscriber;
-use Storybook\EventListener\ExceptionListener;
 use Storybook\EventListener\ProxyRequestListener;
+use Storybook\Exception\UnauthorizedStoryException;
 use Storybook\Mock\ComponentProxyFactory;
 use Storybook\StoryRenderer;
 use Storybook\Twig\StorybookEnvironmentConfigurator;
@@ -24,14 +24,26 @@ use Symfony\Component\DependencyInjection\Argument\AbstractArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Reference;
 use Twig\Sandbox\SecurityPolicy;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
  */
-class StorybookExtension extends Extension implements ConfigurationInterface
+class StorybookExtension extends Extension implements ConfigurationInterface, PrependExtensionInterface
 {
+    public function prepend(ContainerBuilder $container): void
+    {
+        $container->prependExtensionConfig('framework', [
+            'exceptions' => [
+                UnauthorizedStoryException::class => [
+                    'status_code' => 400,
+                ],
+            ],
+        ]);
+    }
+
     public function load(array $configs, ContainerBuilder $container): void
     {
         $container->registerAttributeForAutoconfiguration(
@@ -54,10 +66,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface
         );
 
         $config = (new Processor())->processConfiguration($this, $configs);
-
-        // Exception listener
-        $container->register('storybook.listener.exception', ExceptionListener::class)
-            ->addTag('kernel.event_listener');
 
         // Proxy listener
         $container->register('storybook.listener.proxy_request', ProxyRequestListener::class)
