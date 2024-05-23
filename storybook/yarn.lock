@@ -819,6 +819,7 @@ __metadata:
     "@storybook/node-logger": "npm:^8.0.4"
     "@storybook/preview-api": "npm:^8.0.4"
     "@storybook/types": "npm:^8.0.4"
+    "@types/he": "npm:^1.2.3"
     "@types/is-glob": "npm:^4.0.4"
     "@types/jest": "npm:^29.5.11"
     "@types/jsdom": "npm:^21.1.6"
@@ -831,6 +832,7 @@ __metadata:
     eslint-config-prettier: "npm:^9.1.0"
     fast-xml-parser: "npm:^4.3.2"
     glob: "npm:^10.3.10"
+    he: "npm:^1.2.0"
     html-webpack-plugin: "npm:^5.6.0"
     http-proxy-middleware: "npm:^2.0.6"
     is-glob: "npm:^4.0.3"
@@ -1203,6 +1205,13 @@ __metadata:
     "@types/qs": "npm:*"
     "@types/serve-static": "npm:*"
   checksum: 10c0/12e562c4571da50c7d239e117e688dc434db1bac8be55613294762f84fd77fbd0658ccd553c7d3ab02408f385bc93980992369dd30e2ecd2c68c358e6af8fabf
+  languageName: node
+  linkType: hard
+
+"@types/he@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "@types/he@npm:1.2.3"
+  checksum: 10c0/562e4ec00e31e3d464e79e6da4b8a5c21999d38ceca6a8facaa96e89c2d646f410bb58bb81f48a7472aeb4655ce40d27b7d77e5a4fa5a2d9caa0f3037caab5b7
   languageName: node
   linkType: hard
 

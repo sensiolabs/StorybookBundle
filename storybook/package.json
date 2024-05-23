@@ -60,6 +60,7 @@
     },
     "devDependencies": {
         "@storybook/manager": "^8.0.4",
+        "@types/he": "^1.2.3",
         "@types/is-glob": "^4.0.4",
         "@types/jest": "^29.5.11",
         "@types/jsdom": "^21.1.6",
@@ -71,6 +72,7 @@
         "eslint-config-prettier": "^9.1.0",
         "fast-xml-parser": "^4.3.2",
         "glob": "^10.3.10",
+        "he": "^1.2.0",
         "is-glob": "^4.0.3",
         "prettier": "^3.2.4",
         "rimraf": "^5.0.5",

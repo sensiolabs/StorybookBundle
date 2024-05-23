@@ -40,7 +40,7 @@ final class StoryRenderer
             // SecurityError can actually be raised
             throw new UnauthorizedStoryException('Story contains unauthorized content', $th);
         } catch (Error $th) {
-            throw new RenderException(sprintf('Unable to render story "%s".', $story->getId()), $th);
+            throw new RenderException(sprintf('Story render failed: %s', $th->getMessage()), $th);
         } finally {
             // Restore original loader
             $this->twig->setLoader($originalLoader);

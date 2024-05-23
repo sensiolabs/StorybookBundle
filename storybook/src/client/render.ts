@@ -1,14 +1,25 @@
 import { global } from '@storybook/global';
-
+import { logger } from '@storybook/client-logger';
 import { dedent } from 'ts-dedent';
-import type { ArgsStoryFn, RenderContext } from '@storybook/types';
-import { simulatePageLoad, simulateDOMContentLoaded } from '@storybook/preview-api';
+import type { ArgsStoryFn, RenderContext, StoryId } from '@storybook/types';
+import { simulatePageLoad, simulateDOMContentLoaded, addons } from '@storybook/preview-api';
+import { STORY_ERRORED, STORY_RENDER_PHASE_CHANGED } from '@storybook/core-events';
 import type { Args, ArgTypes } from './public-types';
 import type { FetchStoryHtmlType, SymfonyRenderer } from './types';
 import { twig } from '../lib/twig';
 import { createComponent } from './lib/createComponent';
+import { extractErrorTitle } from './lib/extractErrorTitle';
 
 const { fetch, Node } = global;
+
+class SymfonyRenderingError extends Error {
+    constructor(
+        public readonly title: string,
+        public readonly errorPage: string
+    ) {
+        super(title);
+    }
+}
 
 const sanitizeArgs = (args: any) => {
     const sanitized: any = {};
@@ -41,11 +52,19 @@ const fetchStoryHtml: FetchStoryHtmlType = async (url, path, params, storyContex
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            Accept: 'text/html',
         },
         body: JSON.stringify(body),
     });
 
-    return response.text();
+    const html = await response.text();
+
+    if (!response.ok) {
+        const errorTitle = extractErrorTitle(html, response.statusText);
+        throw new SymfonyRenderingError(errorTitle, html);
+    }
+
+    return html;
 };
 
 const buildStoryArgs = (args: Args, argTypes: ArgTypes) => {
@@ -134,28 +153,88 @@ export async function renderToCanvas(
     const url = `${window.location.origin}/_storybook/render`;
     const fetchId = storyId || id;
     const storyParams = { ...params, ...storyArgs };
-    const element = await fetchStoryHtml(url, fetchId, storyParams, storyContext, template);
 
-    showMain();
-    if (typeof element === 'string') {
-        canvasElement.innerHTML = element;
-        simulatePageLoad(canvasElement);
-    } else if (element instanceof Node) {
-        // Don't re-mount the element if it didn't change and neither did the story
-        if (canvasElement.firstChild === element && !forceRemount) {
-            return;
+    try {
+        showMain();
+        const element = await fetchStoryHtml(url, fetchId, storyParams, storyContext, template);
+
+        if (typeof element === 'string') {
+            canvasElement.innerHTML = element;
+            configureLiveComponentErrorCatcher(id, canvasElement);
+            simulatePageLoad(canvasElement);
+        } else if (element instanceof Node) {
+            // Don't re-mount the element if it didn't change and neither did the story
+            if (canvasElement.firstChild === element && !forceRemount) {
+                return;
+            }
+
+            canvasElement.innerHTML = '';
+            canvasElement.appendChild(element);
+            configureLiveComponentErrorCatcher(id, canvasElement);
+            simulateDOMContentLoaded();
+        } else {
+            showError({
+                title: `Expecting an HTML snippet or DOM node from the story: "${name}" of "${title}".`,
+                description: dedent`
+            Did you forget to return the HTML snippet from the story?
+            Use "() => <your snippet or node>" or when defining the story.
+          `,
+            });
         }
-
-        canvasElement.innerHTML = '';
-        canvasElement.appendChild(element);
-        simulateDOMContentLoaded();
-    } else {
-        showError({
-            title: `Expecting an HTML snippet or DOM node from the story: "${name}" of "${title}".`,
-            description: dedent`
-        Did you forget to return the HTML snippet from the story?
-        Use "() => <your snippet or node>" or when defining the story.
-      `,
-        });
+    } catch (err) {
+        if (err instanceof SymfonyRenderingError) {
+            showSymfonyError(id, canvasElement, err);
+        } else {
+            throw err;
+        }
     }
 }
+
+/**
+ * Marks story rendered as failed and display Symfony error page in main view.
+ */
+const showSymfonyError = (storyId: StoryId, canvasElement: HTMLElement, error: SymfonyRenderingError) => {
+    const { title, errorPage } = error;
+    logger.error(`Error rendering story ${storyId}: ${title}`);
+    const channel = addons.getChannel();
+    channel.emit(STORY_ERRORED, { title: storyId, description: `Server failed to render story:\n${title}` });
+    channel.emit(STORY_RENDER_PHASE_CHANGED, { newPhase: 'errored', storyId });
+    canvasElement.innerHTML = errorPage;
+    simulatePageLoad(canvasElement);
+};
+
+type LiveComponentBackendResponse = {
+    getBody(): Promise<string>;
+};
+
+type LiveComponent = {
+    on(hookName: string, callback: (...args: any[]) => any): void;
+};
+
+/**
+ * Configure callback for response errors in LiveComponent, so re-render errors are caught and dispatched to Storybook.
+ */
+const configureLiveComponentErrorCatcher = (storyId: StoryId, canvasElement: HTMLElement) => {
+    const liveComponentHosts = canvasElement.querySelectorAll('[data-controller~=live]');
+    const errorHandler = async (response: LiveComponentBackendResponse) => {
+        const title = extractErrorTitle(await response.getBody());
+        logger.error(`Live component failed to re-render in story ${storyId}: ${title}`);
+        const channel = addons.getChannel();
+        channel.emit(STORY_ERRORED, { title: storyId, description: `Live component failed to re-render:\n${title}` });
+    };
+
+    liveComponentHosts.forEach((el) =>
+        el.addEventListener('live:connect', () => {
+            if ('__component' in el) {
+                const component = el.__component as LiveComponent;
+                component.on('response:error', errorHandler);
+            } else {
+                logger.warn(dedent`
+                    Failed to configure error handler for LiveComponent. The "__component" property is missing from the element. 
+                    It's likely to be an issue with the Symfony Storybook framework. Check the concerned element below:
+                    `);
+                logger.warn(el);
+            }
+        })
+    );
+};
