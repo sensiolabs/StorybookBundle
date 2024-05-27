@@ -13,14 +13,14 @@ describe('createComponent', () => {
         `);
     });
 
-    it('bind actions in data-storybook-action attribute', () => {
+    it('bind actions in data-storybook-callback attribute', () => {
         const args = {
-            click: { _sfActionId: 'click' },
-            hover: { _sfActionId: 'hover' },
+            click: () => {},
+            hover: () => {},
         };
 
         expect(createComponent('Component', args).getSource()).toEqual(dedent`
-            <twig:Component data-storybook-action="{{ _context['click'] }} {{ _context['hover'] }}" />
+            <twig:Component data-storybook-callbacks="{{ _context['click'] }} {{ _context['hover'] }}" />
         `);
     });
 });

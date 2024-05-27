@@ -1,4 +1,5 @@
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
+import { CALLBACK_ATTRIBUTE, ACTION_ATTRIBUTE } from '../../lib/eventCallbacks';
 
 type TextNodeName = `#${string}`;
 type LitAttributeNodeName = `@_${string}`;
@@ -14,7 +15,7 @@ type XmlNode =
           [key: ChildNodeName]: XmlNode;
       };
 
-const STRIPPED_ATTRIBUTES = ['data-storybook-action'];
+const STRIPPED_ATTRIBUTES = [CALLBACK_ATTRIBUTE, ACTION_ATTRIBUTE];
 
 const isAttributeName = (name: string): name is AttributeNodeName => {
     return isLitAttributeName(name) || isExprAttributeName(name);

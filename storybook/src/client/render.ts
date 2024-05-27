@@ -4,11 +4,12 @@ import { dedent } from 'ts-dedent';
 import type { ArgsStoryFn, RenderContext, StoryId } from '@storybook/types';
 import { simulatePageLoad, simulateDOMContentLoaded, addons } from '@storybook/preview-api';
 import { STORY_ERRORED, STORY_RENDER_PHASE_CHANGED } from '@storybook/core-events';
-import type { Args, ArgTypes } from './public-types';
 import type { FetchStoryHtmlType, SymfonyRenderer } from './types';
 import { twig } from '../lib/twig';
 import { createComponent } from './lib/createComponent';
 import { extractErrorTitle } from './lib/extractErrorTitle';
+import { buildStoryArgs } from './lib/buildStoryArgs';
+import { setupEventCallbacks } from './lib/eventCallbacks';
 
 const { fetch, Node } = global;
 
@@ -21,27 +22,8 @@ class SymfonyRenderingError extends Error {
     }
 }
 
-const sanitizeArgs = (args: any) => {
-    const sanitized: any = {};
-    for (const name in args) {
-        if (args[name]._sfActionId !== undefined) {
-            // Modify action args to pass action id instead of the handler
-            sanitized[name] = args[name]._sfActionId;
-        } else if (typeof args[name] === 'object') {
-            // Deep sanitize args, e.g. when using args composition
-            sanitized[name] = sanitizeArgs(args[name]);
-        } else {
-            sanitized[name] = args[name];
-        }
-    }
-
-    return sanitized;
-};
-
 const fetchStoryHtml: FetchStoryHtmlType = async (url, path, params, storyContext, template) => {
     const fetchUrl = new URL(`${url}/${path}`);
-
-    params = sanitizeArgs(params);
 
     const body = {
         args: { ...storyContext.globals, ...params },
@@ -67,32 +49,12 @@ const fetchStoryHtml: FetchStoryHtmlType = async (url, path, params, storyContex
     return html;
 };
 
-const buildStoryArgs = (args: Args, argTypes: ArgTypes) => {
-    const storyArgs = { ...args };
-
-    Object.keys(argTypes).forEach((key: string) => {
-        const argType = argTypes[key];
-        const { control } = argType;
-        const controlType = control && control.type.toLowerCase();
-        const argValue = storyArgs[key];
-        switch (controlType) {
-            case 'date':
-                // For cross framework & language support we pick a consistent representation of Dates as strings
-                storyArgs[key] = new Date(argValue).toISOString();
-                break;
-            default:
-        }
-    });
-
-    return storyArgs;
-};
-
 export const render: ArgsStoryFn<SymfonyRenderer> = (args, context) => {
     const { id, component } = context;
-
     if (typeof component === 'string') {
         return {
             template: twig(component),
+            setup: () => args,
         };
     }
 
@@ -100,11 +62,13 @@ export const render: ArgsStoryFn<SymfonyRenderer> = (args, context) => {
         if ('getSource' in component && typeof component.getSource === 'function') {
             return {
                 template: component,
+                setup: () => args,
             };
         } else if ('name' in component) {
             return {
                 template: createComponent(component.name, args),
                 components: [component],
+                setup: () => args,
             };
         }
     }
@@ -113,7 +77,7 @@ export const render: ArgsStoryFn<SymfonyRenderer> = (args, context) => {
         return component(args, context);
     }
 
-    console.warn(dedent`
+    logger.warn(dedent`
     Symfony renderer only supports rendering Twig templates. Either:
     - Create a "render" function in your story export
     - Set the "component" story's property to a string or a template created with the "twig" helper
@@ -138,7 +102,7 @@ export async function renderToCanvas(
     }: RenderContext<SymfonyRenderer>,
     canvasElement: SymfonyRenderer['canvasElement']
 ) {
-    const { template, setup } = storyFn();
+    const { template, setup } = storyFn(storyContext);
 
     if (typeof setup === 'function') {
         args = setup();
@@ -154,9 +118,11 @@ export async function renderToCanvas(
     const fetchId = storyId || id;
     const storyParams = { ...params, ...storyArgs };
 
+    showMain();
     try {
-        showMain();
         const element = await fetchStoryHtml(url, fetchId, storyParams, storyContext, template);
+
+        setupEventCallbacks(args, canvasElement);
 
         if (typeof element === 'string') {
             canvasElement.innerHTML = element;

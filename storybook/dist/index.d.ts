@@ -78,8 +78,19 @@ declare class TwigTemplate {
 declare function twig(source: TemplateStringsArray | string, ...values: any[]): TwigTemplate;
 
 type StoryFnSymfonyReturnType = {
+    /**
+     * The Twig template to render.
+     */
     template: TwigTemplate;
+    /**
+     * A function that returns args for the story.
+     * May be used to pre-process args using loaders.
+     */
     setup?: () => any;
+    /**
+     * A list of components used in this story.
+     * Providing components here enables HMR in dev.
+     */
     components?: TwigComponent[];
 };
 type TwigComponent = {

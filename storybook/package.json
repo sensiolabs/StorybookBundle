@@ -46,6 +46,7 @@
         "@storybook/builder-webpack5": "^8.0.4",
         "@storybook/csf-tools": "^8.0.4",
         "@storybook/docs-tools": "^8.0.4",
+        "@storybook/global": "^5.0.0",
         "@storybook/node-logger": "^8.0.4",
         "@storybook/preview-api": "^8.0.4",
         "@storybook/types": "^8.0.4",
