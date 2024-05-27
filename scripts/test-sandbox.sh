@@ -18,13 +18,13 @@ declare -rA SYMFONY_SERVER=(
 declare -rA STORYBOOK=(
   ["color"]="blue"
   ["name"]="Storybook"
-  ["command"]="npm run build-storybook -- --quiet && npx http-server storybook-static -P http://localhost:8000 --port 6006 --silent"
+  ["command"]="npm run build-storybook -- --quiet && npx http-server storybook-static --proxy http://localhost:8000 --port 6006 --silent"
 )
 
 declare -rA TEST_RUNNER=(
   ["color"]="green"
   ["name"]="Test Runner"
-  ["command"]="npx wait-on tcp:8000 tcp:6006 && npm run test-storybook -- --stories-json --excludeTags will-fail"
+  ["command"]="npx wait-on --timeout 60000 tcp:localhost:8000 tcp:127.0.0.1:6006 && npm run test-storybook -- --stories-json --excludeTags will-fail"
 )
 
 npx concurrently -k -s first \

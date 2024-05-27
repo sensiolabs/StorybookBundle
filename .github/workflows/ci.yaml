@@ -33,7 +33,7 @@ jobs:
             php-version: 8.2
             tools: php-cs-fixer
         - name: Run PHP-CS-Fixer
-          run: php-cs-fixer fix . --dry-run --diff
+          run: php-cs-fixer fix --dry-run --diff
   sca-php:
     name: PHPStan
     runs-on: ubuntu-latest
@@ -156,6 +156,9 @@ jobs:
         with:
           php-version: 8.2
       - name: Configure sandbox app
-        run: ./.app/bin/setup-standalone
+        run: ./sandbox/bin/setup-standalone
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+        working-directory: sandbox
       - name: Run Storybook test suite
-        run: ./scripts/test-app.sh
+        run: ./scripts/test-sandbox.sh

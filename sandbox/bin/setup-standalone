@@ -54,7 +54,8 @@ chdir($APP_DIR);
 
 exec(sprintf('rm -rf %1$s/vendor %1$s/node_modules', $APP_DIR));
 putenv('COMPOSER=composer-standalone.json');
-exec('composer update -n --no-scripts');
+exec('composer require sensiolabs/storybook-bundle:dev-$(git rev-parse HEAD)');
+exec('composer install -n --no-scripts');
 exec('npm install --no-package-lock');
 
 exit(0);

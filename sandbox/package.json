@@ -12,6 +12,7 @@
         "@storybook/test-runner": "^0.18.2",
         "esbuild-loader": "^4.1.0",
         "typescript": "^5.4.2",
+        "wait-on": "^7.2.0",
         "webpack": "^5.90.3"
     },
     "scripts": {
