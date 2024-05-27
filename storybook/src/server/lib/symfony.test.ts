@@ -25,7 +25,7 @@ describe('Symfony utils', () => {
 
             await runSymfonyCommand('command');
 
-            expect(exec).toHaveBeenCalledWith("'php' 'bin/console' 'command'", expect.any(Function));
+            expect(exec).toHaveBeenCalledWith("'php' 'bin/console' 'command' '-v'", expect.any(Function));
         });
 
         it('with custom options', async () => {
@@ -38,7 +38,10 @@ describe('Symfony utils', () => {
 
             await expect(runSymfonyCommand('command', [], options)).resolves.toBe('');
 
-            expect(exec).toHaveBeenCalledWith("'/usr/bin/php' 'custom/bin/console' 'command'", expect.any(Function));
+            expect(exec).toHaveBeenCalledWith(
+                "'/usr/bin/php' 'custom/bin/console' 'command' '-v'",
+                expect.any(Function)
+            );
         });
 
         it('rejects on exec failure', async () => {
@@ -46,7 +49,7 @@ describe('Symfony utils', () => {
 
             await expect(runSymfonyCommand('command')).rejects.toThrow();
 
-            expect(exec).toHaveBeenCalledWith("'php' 'bin/console' 'command'", expect.any(Function));
+            expect(exec).toHaveBeenCalledWith("'php' 'bin/console' 'command' '-v'", expect.any(Function));
         });
 
         it('accepts input arguments and options', async () => {
@@ -55,7 +58,7 @@ describe('Symfony utils', () => {
             await runSymfonyCommand('command', ['arg1', '-o', '--option=foo']);
 
             expect(exec).toHaveBeenCalledWith(
-                "'php' 'bin/console' 'command' 'arg1' '-o' '--option=foo'",
+                "'php' 'bin/console' 'command' 'arg1' '-o' '--option=foo' '-v'",
                 expect.any(Function)
             );
         });

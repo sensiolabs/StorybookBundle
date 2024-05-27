@@ -1,0 +1,14 @@
+<div {{ attributes.defaults(stimulus_controller('form')) }}>
+    <form
+            id="interaction-test-form"
+            {{ stimulus_target('form', 'form') }}
+            {{ stimulus_action('form', 'submitForm', 'submit') }}
+    >
+        <label>
+            Enter value
+            <input type="text" data-testid="value" value="{{ value }}" required />
+        </label>
+        <button type="submit">Submit</button>
+        {% if complete %}<p>Completed!!</p>{% endif %}
+    </form>
+</div>

@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+
+$APP_DIR = realpath(__DIR__.'/..');
+$ROOT_DIR = $APP_DIR.'/..';
+
+chdir($APP_DIR);
+
+exec(sprintf('rm -rf %1$s/vendor %1$s/node_modules', $APP_DIR));
+
+exec('composer update -n');
+exec('npm install');
+
+exit(0);

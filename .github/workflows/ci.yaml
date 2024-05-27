@@ -112,3 +112,50 @@ jobs:
         run: yarn install --immutable
       - working-directory: ./storybook
         run: yarn test
+  js-dist-current:
+    name: Check for un-built JS dist files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Get yarn cache directory path
+        working-directory: ./storybook
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - working-directory: ./storybook
+        run: yarn install --immutable && yarn build
+      - name: Check if JS dist files are current
+        id: changes
+        run: |
+          echo "STATUS=$(git status --porcelain)" >> $GITHUB_OUTPUT
+      - name: No changes found
+        if: steps.changes.outputs.STATUS == ''
+        run: |
+          echo "git status is clean"
+      - name: Changes were found
+        if: steps.changes.outputs.STATUS != ''
+        run: |
+          echo "JS dist files need to be rebuilt"
+          echo "${{ steps.changes.outputs.STATUS }}"
+          exit 1
+  tests-integration:
+    name: Storybook Test Runner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+      - name: Configure sandbox app
+        run: ./.app/bin/setup-standalone
+      - name: Run Storybook test suite
+        run: ./scripts/test-app.sh
