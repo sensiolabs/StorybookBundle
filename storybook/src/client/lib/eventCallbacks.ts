@@ -53,9 +53,8 @@ export const setupEventCallbacks = (args: Args, root: HTMLElement) => {
                             Usage of attribute "${ACTION_ATTRIBUTE}" is deprecated. Use "${CALLBACK_ATTRIBUTE}" instead.
                             `);
                         }
-                        el.addEventListener(name, (...eventArgs) => {
-                            arg(...eventArgs.map(proxifyEvent));
-                        });
+
+                        el.addEventListener(name, (event: Event) => arg(proxifyEvent(event)));
                     } else {
                         logger.warn(dedent`
                         Callback arg "${name}" is not bound to any DOM element.

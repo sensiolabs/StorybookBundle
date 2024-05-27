@@ -18,7 +18,7 @@ use Symfonycasts\TailwindBundle\SymfonycastsTailwindBundle;
 #[AsCommand(name: 'storybook:init', description: 'Initialize Storybook with basic configuration files.')]
 class StorybookInitCommand extends Command
 {
-    public const STORYBOOK_VERSION = '^8.0.0';
+    public const STORYBOOK_VERSION = '^8.1.3';
     private SymfonyStyle $io;
 
     public function __construct(private readonly string $projectDir)
