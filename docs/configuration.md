@@ -100,7 +100,7 @@ const config: StorybookConfig = {
                 proxyPaths: [
                     // ...
                     // 👇 This is the live component route prefix usually set in config/routes/ux_live_component.yaml
-                    '_components/',
+                    '/_components',
                 ],
             },
         },
