@@ -24,7 +24,7 @@ export const Default = {
 }
 ```
 
-When providing a template for the story, you have to reference your action arg in the template using the `data-storybook-action` attribue:
+When providing a template for the story, you have to reference your action arg in the template using the `data-storybook-callbacks` attribute:
 
 ```js
 // stories/Button.stories.js
@@ -36,7 +36,7 @@ export default {
     component: (args) => ({
         components: {Button},
         template: twig`
-        <twig:Button :data-storybook-action="click">
+        <twig:Button :data-storybook-callbacks="click">
             Click me!
         </twig:Button>
         `
@@ -66,7 +66,7 @@ export default {
     render: (args) => ({
         components: {Counter},
         template: twig`
-        <twig:Counter :data-storybook-action="_context['counter:increment']">
+        <twig:Counter :data-storybook-callbacks="_context['counter:increment']">
             Increase count
         </twig:Counter>
         `
@@ -87,7 +87,7 @@ Note that even if it works for any kind of arg, it's not recommended to use arg 
 
 Using multiple actions on the same element works fine with the short component syntax (i.e. `component: Button`).
 
-But when using a custom template, things get a bit more complex. You have to output the action args in the `data-storybook-action` attribute using multiple print nodes:
+But when using a custom template, things get a bit more complex. You have to output the action args in the `data-storybook-callbacks` attribute using multiple print nodes:
 
 ```js
 import Toggle from '../templates/components/Toggle.html.twig';
@@ -98,7 +98,7 @@ export default {
     render: (args) => ({
         components: {Toggle},
         template: twig`
-        <twig:Toggle data-storybook-action="{{ _context['toggle:enable'] }} {{ _context['toggle:disable'] }}" />
+        <twig:Toggle data-storybook-callbacks="{{ _context['toggle:enable'] }} {{ _context['toggle:disable'] }}" />
         `
     })
 }

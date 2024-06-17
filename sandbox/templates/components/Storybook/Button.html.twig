@@ -1,0 +1,10 @@
+{% props
+    label = ''
+%}
+
+<button {{ attributes.defaults({
+    ...stimulus_controller('button'),
+    ...stimulus_action('button', 'onClick')
+}) }}>
+    {{ label }}
+</button>

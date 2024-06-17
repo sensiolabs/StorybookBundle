@@ -15,9 +15,9 @@
 | [CSF Stories](features/csf-stories.md)     | ✅️     | Needs specific syntax for Symfony |
 | CSF Stories TypeScript                     | ❌️     | TODO                              |
 | [Play function](features/play-function.md) | ✅️     |                                   |
-| Loaders                                    | ⚠️     | Not tested                        |
+| Loaders                                    | ✅️     |                                   |
 | [Docs](features/docs.md)                   | ✅️     |                                   |
-| Testing                                    | ⚠️     | Not tested                        |
+| Testing                                    | ✅️     | Test runner for interactions      |
 
 ## Essentials Addons integrations
 

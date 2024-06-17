@@ -1,0 +1,61 @@
+#!/usr/bin/env php
+<?php
+
+$APP_DIR = realpath(__DIR__.'/..');
+$ROOT_DIR = $APP_DIR.'/..';
+
+chdir($APP_DIR);
+
+/*
+ * 1/ Prepare standalone composer json file
+ */
+
+$composerJsonPath = $APP_DIR.'/composer.json';
+$composerJsonStandalonePath = $APP_DIR.'/composer-standalone.json';
+
+
+if (is_file($composerJsonStandalonePath)) {
+    unlink($composerJsonStandalonePath);
+}
+
+$packages = json_decode(file_get_contents($composerJsonPath), associative: true);
+$standalonePackages = $packages;
+
+$standalonePackages['config'] += ['lock' => false];
+$standalonePackages['repositories'] = [
+    [
+        'type' => 'path',
+        'url' => './.bundle',
+        'options' => [
+            'symlink' => false,
+        ],
+    ],
+];
+
+file_put_contents($composerJsonStandalonePath, json_encode($standalonePackages, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE));
+
+/*
+ * 2/ Export current HEAD archive to .bundle
+ */
+
+$BUNDLE_DIR = $APP_DIR.'/.bundle';
+
+exec(sprintf('rm -rf "%s"', $BUNDLE_DIR));
+mkdir($BUNDLE_DIR);
+
+chdir($ROOT_DIR);
+exec(sprintf('(git archive --format=tar HEAD | tar -xC "%s")', $BUNDLE_DIR));
+chdir($APP_DIR);
+
+
+/*
+ * 3/ Install dependencies with standalone bundle
+ */
+
+exec(sprintf('rm -rf %1$s/vendor %1$s/node_modules', $APP_DIR));
+putenv('COMPOSER=composer-standalone.json');
+exec('composer require sensiolabs/storybook-bundle:dev-$(git rev-parse HEAD)');
+exec('composer install -n --no-scripts');
+exec('npm install --no-package-lock');
+
+exit(0);

@@ -1,0 +1,32 @@
+{% props
+    label = '',
+    variant = 'primary',
+    size = 'md',
+    backgroundColor = null,
+%}
+
+{% set button = cva({
+    base: 'btn',
+    variants: {
+        variant: {
+            primary: 'btn--primary',
+            secondary: 'btn--secondary'
+        },
+        size: {
+            sm: 'btn--small',
+            md: 'btn--medium',
+            lg: 'btn--large',
+        }
+    }
+}) %}
+
+<button
+        class="{{ button.apply({variant, size}, attributes.render('class')|default('')) }}"
+        style="{{ attributes.render('style') }} {{ backgroundColor ? ';background-color:' ~ backgroundColor : '' }}"
+        {{ attributes.defaults({
+            ...stimulus_controller('button'),
+            ...stimulus_action('button', 'onClick')
+        }) }}
+>
+    {{ label }}
+</button>

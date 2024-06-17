@@ -1,0 +1,19 @@
+{% props
+    style = {},
+    object = null,
+    text = '',
+%}
+
+<pre data-testid="pre"
+    {{ attributes.defaults({
+        ...stimulus_controller('pre', {
+            style: style|json_encode(constant('JSON_FORCE_OBJECT'))|escape('html')
+        })
+    }) }}
+>
+    {%- if object is defined and object is not same as null -%}
+        {{ object|json_encode }}
+    {%- else -%}
+        {{ text }}
+    {%- endif -%}
+</pre>

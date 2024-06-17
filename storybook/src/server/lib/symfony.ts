@@ -19,20 +19,19 @@ const defaultOptions: CommandOptions = {
     script: 'bin/console',
 };
 
-/**
- * Run a Symfony command.
- */
-export const runSymfonyCommand = async (command: string, inputs: string[] = [], options: CommandOptions = {}) => {
+const prepareSymfonyCommand = (command: string, inputs: string[] = [], options: CommandOptions = {}) => {
     const finalOptions = {
         ...defaultOptions,
         ...options,
     };
 
-    const finalCommand = [finalOptions.php, finalOptions.script, command]
-        .concat(inputs)
+    return [finalOptions.php, finalOptions.script, command]
+        .concat([...inputs, '-v'])
         .map((part) => `'${part}'`)
         .join(' ');
+};
 
+const execSymfonyCommand = async (finalCommand: string) => {
     return new Promise<string>((resolve, reject) => {
         exec(finalCommand, (error, stdout, stderr) => {
             if (error) {
@@ -52,6 +51,15 @@ export const runSymfonyCommand = async (command: string, inputs: string[] = [], 
 };
 
 /**
+ * Run a Symfony command.
+ */
+export const runSymfonyCommand = async (command: string, inputs: string[] = [], options: CommandOptions = {}) => {
+    const finalCommand = prepareSymfonyCommand(command, inputs, options);
+
+    return execSymfonyCommand(finalCommand);
+};
+
+/**
  * Run a Symfony command with JSON formatted output and get the result as a JS object.
  */
 export const runSymfonyCommandJson = async <T = any>(
@@ -59,8 +67,18 @@ export const runSymfonyCommandJson = async <T = any>(
     inputs: string[] = [],
     options: CommandOptions = {}
 ): Promise<T> => {
-    const result = await runSymfonyCommand(command, [...inputs, '--format=json'], options);
-    return JSON.parse(result);
+    const finalCommand = prepareSymfonyCommand(command, [...inputs, '--format=json'], options);
+    const result = await execSymfonyCommand(finalCommand);
+
+    try {
+        return JSON.parse(result);
+    } catch (err) {
+        throw new Error(dedent`
+        Failed to process JSON output for Symfony command.
+        CMD: ${finalCommand}
+        Raw output: ${result}
+        `);
+    }
 };
 
 export const getKernelProjectDir = async () => {

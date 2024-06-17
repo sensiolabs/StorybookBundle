@@ -1,0 +1,9 @@
+/src export-ignore
+/.eslintrc export-ignore
+/.prettier* export-ignore
+/.yarnrc.yaml export-ignore
+/tsconfig.json export-ignore
+/tsup.config.ts export-ignore
+/vitest.config.mjs export-ignore
+/yarn.lock export-ignore
+/.git* export-ignore

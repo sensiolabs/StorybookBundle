@@ -1,0 +1,12 @@
+<div {{ attributes }}>
+    <label>
+        Input:
+        <input type="text" data-model="message">
+    </label>
+    <span>Output: {{ message }}</span>
+    <div>
+        <button type='button' {{ stimulus_action('live', 'action', 'click', {action: 'handleButton'}) }}>
+            Click
+        </button>
+    </div>
+</div>

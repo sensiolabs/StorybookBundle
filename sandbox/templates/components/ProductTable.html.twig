@@ -1,0 +1,5 @@
+<div {{ attributes }}>
+    {% set cols = ['Name', 'Color'] %}
+    {% set rows = this.products|map(p => [p.name, p.color]) %}
+    <twig:Table :cols="cols" :rows="rows"/>
+</div>

@@ -4,8 +4,19 @@ import { TwigTemplate } from '../lib/twig';
 export type { RenderContext } from '@storybook/types';
 
 export type StoryFnSymfonyReturnType = {
+    /**
+     * The Twig template to render.
+     */
     template: TwigTemplate;
+    /**
+     * A function that returns args for the story.
+     * May be used to pre-process args using loaders.
+     */
     setup?: () => any;
+    /**
+     * A list of components used in this story.
+     * Providing components here enables HMR in dev.
+     */
     components?: TwigComponent[];
 };
 

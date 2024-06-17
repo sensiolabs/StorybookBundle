@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 /**
- * Catch requests proxied from Storybook to apply Storybook attributes.
+ * Catch requests proxified from Storybook to apply Storybook attributes.
  *
  * @author Nicolas Rigaud <squrious@protonmail.com>
  *
