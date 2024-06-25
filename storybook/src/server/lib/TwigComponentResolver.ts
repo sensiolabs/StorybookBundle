@@ -7,7 +7,7 @@ export class TwigComponentResolver {
 
     resolveNameFromFile(file: string) {
         const stripDirectory = (file: string, dir: string) => {
-            return file.replace(dir, '').replace(/^\//, '').replace('/', ':').replace('.html.twig', '');
+            return file.replace(dir, '').replace(/^\//, '').replaceAll('/', ':').replace('.html.twig', '');
         };
 
         for (const namespace in this.config.namespaces) {
