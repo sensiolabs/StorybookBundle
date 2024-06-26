@@ -52,10 +52,12 @@ chdir($APP_DIR);
  * 3/ Install dependencies with standalone bundle
  */
 
+$branchOrRev = exec('git branch --show-current') ?: exec('git rev-parse HEAD');
+
 exec(sprintf('rm -rf %1$s/vendor %1$s/node_modules', $APP_DIR));
 putenv('COMPOSER=composer-standalone.json');
-exec('composer require sensiolabs/storybook-bundle:dev-$(git rev-parse HEAD)');
-exec('composer install -n --no-scripts');
+exec(sprintf('composer require --no-update sensiolabs/storybook-bundle:dev-%s', $branchOrRev));
+exec('composer install -n');
 exec('npm install --no-package-lock');
 
 exit(0);
