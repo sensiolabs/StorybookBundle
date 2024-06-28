@@ -67,4 +67,9 @@ describe('resolveNameFromFile', () => {
 
         expect(resolved).toEqual('Custom:NotInCustomNamespace');
     });
+    it('handle multiple nested levels of namespaces', () => {
+        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/anonymous/Foo/Bar/Baz.html.twig`);
+
+        expect(resolved).toEqual('Foo:Bar:Baz');
+    });
 });
