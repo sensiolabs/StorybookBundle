@@ -119,10 +119,26 @@ export const getTwigComponentConfiguration = async () => {
 };
 
 export type TwigComponentConfiguration = {
-    anonymousTemplateDirectory: string;
+    anonymousTemplateDirectory: [string];
     namespaces: {
-        [p: string]: string;
+        [p: string]: [string];
     };
+};
+
+type SymfonyTwigConfiguration = {
+    twig: {
+        paths: {
+            [p: string]: string;
+        };
+    };
+};
+
+export const getTwigConfiguration = async () => {
+    return (await runSymfonyCommandJson<SymfonyTwigConfiguration>('debug:config', ['twig', '--resolve-env']))['twig'];
+};
+
+export type TwigConfiguration = {
+    paths: string[];
 };
 
 /**
@@ -130,23 +146,26 @@ export type TwigComponentConfiguration = {
  */
 export function resolveTwigComponentFile(componentName: string, config: TwigComponentConfiguration) {
     const nameParts = componentName.split(':');
+    const namespace = nameParts.length > 1 ? nameParts[0] : '';
     const dirParts = nameParts.slice(0, -1);
     const filename = `${nameParts.slice(-1)}.html.twig`;
 
     const lookupPaths: string[] = [];
 
-    for (const namespace in config.namespaces) {
-        if ('' !== namespace && 0 === componentName.indexOf(namespace)) {
-            lookupPaths.push(path.join(config.namespaces[namespace], dirParts.slice(1).join('/')));
-            break;
+    if (namespace && config.namespaces[namespace]) {
+        const namespacePaths = config.namespaces[namespace];
+        if (namespacePaths.length > 0) {
+            lookupPaths.push(path.join(namespacePaths[0], dirParts.slice(1).join('/')));
         }
     }
 
-    if (config.namespaces[''] !== undefined) {
-        lookupPaths.push(path.join(config.namespaces[''], dirParts.join('/')));
+    if (config.namespaces[''] && config.namespaces[''].length > 0) {
+        lookupPaths.push(path.join(config.namespaces[''][0], dirParts.join('/')));
     }
 
-    lookupPaths.push(path.join(config.anonymousTemplateDirectory, dirParts.join('/')));
+    if (config.anonymousTemplateDirectory.length > 0) {
+        lookupPaths.push(path.join(config.anonymousTemplateDirectory[0], dirParts.join('/')));
+    }
 
     try {
         return require.resolve(`./${filename}`, { paths: lookupPaths });
