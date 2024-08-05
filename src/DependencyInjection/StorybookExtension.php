@@ -116,7 +116,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
 
         // Proxy factory
         $container->register('storybook.component_proxy_factory', ComponentProxyFactory::class)
-            ->setArgument(0, new AbstractArgument(sprintf('Provided in "%s".', ComponentMockPass::class)));
+            ->setArgument(0, new AbstractArgument(\sprintf('Provided in "%s".', ComponentMockPass::class)));
 
         // Internal commands
         $container->register('storybook.generate_preview_command', GeneratePreviewCommand::class)

@@ -298,7 +298,7 @@ JS;
 
         $shouldOverride = true;
         if (file_exists($filePath) && md5_file($filePath) !== md5($content)) {
-            $shouldOverride = $this->io->confirm(sprintf('File "%s" already exists, do you want to override it?', $filePath), false);
+            $shouldOverride = $this->io->confirm(\sprintf('File "%s" already exists, do you want to override it?', $filePath), false);
         }
 
         if ($shouldOverride) {

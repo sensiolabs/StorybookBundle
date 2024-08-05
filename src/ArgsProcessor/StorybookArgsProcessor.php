@@ -34,7 +34,7 @@ final class StorybookArgsProcessor
         foreach ($this->processors as ['story' => $story, 'processor' => $processor]) {
             if ($this->match($story, $storybookAttributes)) {
                 if (!$processor instanceof ArgsProcessorInterface) {
-                    throw new \LogicException(sprintf('Args processor "%s" must implement "%s".', get_debug_type($processor), ArgsProcessorInterface::class));
+                    throw new \LogicException(\sprintf('Args processor "%s" must implement "%s".', get_debug_type($processor), ArgsProcessorInterface::class));
                 }
 
                 $processor($args);

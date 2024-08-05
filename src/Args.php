@@ -50,7 +50,7 @@ final class Args implements \ArrayAccess, \Countable, \IteratorAggregate
         self::assertKeyIsString($offset);
 
         if (!$this->offsetExists($offset)) {
-            throw new \LogicException(sprintf('Undefined key "%s".', $offset));
+            throw new \LogicException(\sprintf('Undefined key "%s".', $offset));
         }
 
         return $this->storage[$offset];
@@ -78,7 +78,7 @@ final class Args implements \ArrayAccess, \Countable, \IteratorAggregate
     private static function assertKeyIsString($key): void
     {
         if (!\is_string($key)) {
-            throw new \InvalidArgumentException(sprintf('Only string keys are allowed in "%s".', self::class));
+            throw new \InvalidArgumentException(\sprintf('Only string keys are allowed in "%s".', self::class));
         }
     }
 

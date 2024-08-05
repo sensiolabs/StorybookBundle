@@ -19,15 +19,15 @@ final class StoryRenderer
 
     public function render(Story $story): string
     {
-        $storyTemplateName = sprintf('story_%s.html.twig', $story->getId());
+        $storyTemplateName = \sprintf('story_%s.html.twig', $story->getId());
 
         // Name included template with a hash to avoid reusing an already loaded template class
-        $templateName = sprintf('%s.html.twig', hash('xxh128', $story->getTemplate()));
+        $templateName = \sprintf('%s.html.twig', hash('xxh128', $story->getTemplate()));
 
         $loader = new ChainLoader([
             new ArrayLoader([
                 $templateName => $story->getTemplate(),
-                $storyTemplateName => sprintf("{%% sandbox %%} {%%- include '%s' -%%} {%% endsandbox %%}", $templateName),
+                $storyTemplateName => \sprintf("{%% sandbox %%} {%%- include '%s' -%%} {%% endsandbox %%}", $templateName),
             ]),
             $originalLoader = $this->twig->getLoader(),
         ]);
@@ -40,7 +40,7 @@ final class StoryRenderer
             // SecurityError can actually be raised
             throw new UnauthorizedStoryException('Story contains unauthorized content', $th);
         } catch (Error $th) {
-            throw new RenderException(sprintf('Story render failed: %s', $th->getMessage()), $th);
+            throw new RenderException(\sprintf('Story render failed: %s', $th->getMessage()), $th);
         } finally {
             // Restore original loader
             $this->twig->setLoader($originalLoader);
