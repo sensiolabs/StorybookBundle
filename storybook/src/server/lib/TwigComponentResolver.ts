@@ -38,16 +38,22 @@ export class TwigComponentResolver {
         if (namespace && this.config.namespaces[namespace]) {
             const namespacePaths = this.config.namespaces[namespace];
             if (namespacePaths.length > 0) {
-                lookupPaths.push(path.join(namespacePaths[0], dirParts.slice(1).join('/')));
+                for (const namespacePath of this.config.namespaces[namespace]) {
+                    lookupPaths.push(path.join(namespacePath, dirParts.slice(1).join('/')));
+                }
             }
         }
 
         if (this.config.namespaces[''] && this.config.namespaces[''].length > 0) {
-            lookupPaths.push(path.join(this.config.namespaces[''][0], dirParts.join('/')));
+            for (const namespacePath of this.config.namespaces['']) {
+                lookupPaths.push(path.join(namespacePath, dirParts.join('/')));
+            }
         }
 
         if (this.config.anonymousTemplateDirectory.length > 0) {
-            lookupPaths.push(path.join(this.config.anonymousTemplateDirectory[0], dirParts.join('/')));
+            for (const namespacePath of this.config.anonymousTemplateDirectory) {
+                lookupPaths.push(path.join(namespacePath, dirParts.join('/')));
+            }
         }
 
         try {

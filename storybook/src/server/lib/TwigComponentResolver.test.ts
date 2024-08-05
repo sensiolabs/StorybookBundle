@@ -3,10 +3,10 @@ import { TwigComponentResolver } from './TwigComponentResolver';
 const fixturesDir = `${__dirname}/__fixtures__/templates`;
 
 const twigComponentConfig = {
-    anonymousTemplateDirectory: `${fixturesDir}/anonymous`,
+    anonymousTemplateDirectory: [`${fixturesDir}/anonymous`, `${fixturesDir}/twig_path/anonymous`],
     namespaces: {
-        '': `${fixturesDir}/components`,
-        Custom: `${fixturesDir}/custom`,
+        '': [`${fixturesDir}/components`, `${fixturesDir}/twig_path`],
+        Custom: [`${fixturesDir}/custom`],
     },
 };
 const resolver = new TwigComponentResolver(twigComponentConfig);
@@ -36,6 +36,21 @@ describe('resolveFileFromName', () => {
         const resolved = resolver.resolveFileFromName('Anonymous');
 
         expect(resolved).toEqual(`${fixturesDir}/anonymous/Anonymous.html.twig`);
+    });
+    it('fallbacks to next twig path', () => {
+        const resolved = resolver.resolveFileFromName('TwigPath');
+
+        expect(resolved).toEqual(`${fixturesDir}/twig_path/TwigPath.html.twig`);
+    });
+    it('resolves component with auto namespace and fallbacks to next twig path', () => {
+        const resolved = resolver.resolveFileFromName('Foo:Bar');
+
+        expect(resolved).toEqual(`${fixturesDir}/twig_path/Foo/Bar.html.twig`);
+    });
+    it('fallbacks to anonymous component and next twig path', () => {
+        const resolved = resolver.resolveFileFromName('AnonymousTwigPath');
+
+        expect(resolved).toEqual(`${fixturesDir}/twig_path/anonymous/AnonymousTwigPath.html.twig`);
     });
 });
 
@@ -71,5 +86,15 @@ describe('resolveNameFromFile', () => {
         const resolved = resolver.resolveNameFromFile(`${fixturesDir}/anonymous/Foo/Bar/Baz.html.twig`);
 
         expect(resolved).toEqual('Foo:Bar:Baz');
+    });
+    it('fallbacks to next twig path', () => {
+        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/twig_path/TwigPath.html.twig`);
+
+        expect(resolved).toEqual('TwigPath');
+    });
+    it('handle multiple nested levels when fallbacks to next twig path', () => {
+        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/twig_path/Foo/Bar.html.twig`);
+
+        expect(resolved).toEqual('Foo:Bar');
     });
 });
