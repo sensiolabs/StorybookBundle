@@ -1,5 +1,11 @@
 # Storybook For Symfony
 
+[![Latest Version](https://img.shields.io/github/release/sensiolabs/StorybookBundle.svg?style=flat-square)](https://github.com/sensiolabs/StorybookBundle/releases)
+[![Total Downloads](https://poser.pugx.org/sensiolabs/storybook-bundle/downloads)](https://packagist.org/packages/sensiolabs/storybook-bundle)
+[![Monthly Downloads](https://poser.pugx.org/sensiolabs/storybook-bundle/d/monthly.png)](https://packagist.org/packages/sensiolabs/storybook-bundle)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENCE)
+[![CI](https://github.com/sensiolabs/StorybookBundle/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/sensiolabs/StorybookBundle/actions/workflows/ci.yaml?query=branch%3Amain)
+
 This bundle provides a basic integration for Storybook into a Symfony application using Twig Components.
 
 > DISCLAIMER: \
