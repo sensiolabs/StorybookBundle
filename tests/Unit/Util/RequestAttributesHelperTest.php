@@ -62,7 +62,7 @@ class RequestAttributesHelperTest extends TestCase
         $request->attributes->set('_storybook', ['foo' => 'bar']);
 
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessageMatches(sprintf('/Expecting a instance of "%s" in the "_storybook" request attributes, but found ".*"\./', preg_quote(StorybookAttributes::class)));
+        $this->expectExceptionMessageMatches(\sprintf('/Expecting a instance of "%s" in the "_storybook" request attributes, but found ".*"\./', preg_quote(StorybookAttributes::class)));
         RequestAttributesHelper::getStorybookAttributes($request);
     }
 }

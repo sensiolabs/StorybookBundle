@@ -38,9 +38,9 @@ final class RequestAttributesHelper
         $attributes = $request->attributes->get(self::ATTRIBUTE_NAME);
         if (!$attributes instanceof StorybookAttributes) {
             if (!self::isStorybookRequest($request)) {
-                $message = sprintf('Request is missing a "%s" attribute.', self::ATTRIBUTE_NAME);
+                $message = \sprintf('Request is missing a "%s" attribute.', self::ATTRIBUTE_NAME);
             } else {
-                $message = sprintf('Expecting a instance of "%s" in the "%s" request attributes, but found "%s".', StorybookAttributes::class, self::ATTRIBUTE_NAME, get_debug_type($attributes));
+                $message = \sprintf('Expecting a instance of "%s" in the "%s" request attributes, but found "%s".', StorybookAttributes::class, self::ATTRIBUTE_NAME, get_debug_type($attributes));
             }
             throw new \LogicException($message);
         }

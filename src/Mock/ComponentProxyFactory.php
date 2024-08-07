@@ -27,7 +27,7 @@ final class ComponentProxyFactory
     public function addMockConfiguration(string $componentClass, string $service, array $config): void
     {
         if (isset($this->config[$componentClass])) {
-            throw new \LogicException(sprintf('A mock configuration already exists for component "%s".', $componentClass));
+            throw new \LogicException(\sprintf('A mock configuration already exists for component "%s".', $componentClass));
         }
 
         $this->config[$componentClass] = new ComponentMockMetadata($service, $config['globalMocks'] ?? [], $config['storiesMocks'] ?? []);
@@ -48,7 +48,7 @@ final class ComponentProxyFactory
         try {
             $provider = $this->mockProviderLocator->get($mockMetadata->service);
         } catch (NotFoundExceptionInterface $e) {
-            throw new \LogicException(sprintf('No mock provider is registered for component class "%s". Did you forget to use the #[AsComponentMock] attribute?', $componentClass), previous: $e);
+            throw new \LogicException(\sprintf('No mock provider is registered for component class "%s". Did you forget to use the #[AsComponentMock] attribute?', $componentClass), previous: $e);
         }
 
         // Get mocks definitions for this story and append global mocks
