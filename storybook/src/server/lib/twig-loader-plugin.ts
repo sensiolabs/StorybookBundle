@@ -44,11 +44,11 @@ export const TwigLoaderPlugin = createUnplugin<Options>((options) => {
             const name = resolver.resolveNameFromFile(id);
 
             return dedent`
-            ${imports.map((file) => `import '${file}';`).join('\n')}            
-            export default { 
+            ${imports.map((file) => `import '${file}';`).join('\n')}
+            export default {
                 name: \'${name}\',
                 hash: \`${crypto.createHash('sha1').update(code).digest('hex')}\`,
-            }; 
+            };
            `;
         },
     };

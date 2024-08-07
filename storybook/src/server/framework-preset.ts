@@ -2,7 +2,9 @@ import {
     getBundleConfig,
     getKernelProjectDir,
     getTwigComponentConfiguration,
+    getTwigConfiguration,
     TwigComponentConfiguration,
+    TwigConfiguration,
 } from './lib/symfony';
 import { StorybookConfig, SymfonyOptions } from '../types';
 import { join } from 'path';
@@ -14,6 +16,7 @@ import dedent from 'ts-dedent';
 
 type BuildOptions = {
     twigComponent: TwigComponentConfiguration;
+    twig: TwigConfiguration;
     runtimeDir: string;
     projectDir: string;
     additionalWatchPaths: string[];
@@ -22,16 +25,21 @@ type BuildOptions = {
 const getBuildOptions = async (symfonyOptions: SymfonyOptions) => {
     const projectDir = await getKernelProjectDir();
     const twigComponentsConfig = await getTwigComponentConfiguration();
+    const twigConfig = await getTwigConfiguration();
 
-    const componentNamespaces: { [p: string]: string } = {};
+    const componentNamespaces: { [p: string]: string[] } = {};
+
+    const twigPaths: string[] = Object.keys(twigConfig.paths).map((key) => `${projectDir}/${key}/`);
 
     for (const { name_prefix: namePrefix, template_directory: templateDirectory } of Object.values(
         twigComponentsConfig.defaults
     )) {
-        componentNamespaces[namePrefix] = join(projectDir, 'templates', templateDirectory);
+        componentNamespaces[namePrefix] = twigPaths.map((twigPath) => join(twigPath, templateDirectory));
     }
 
-    const anonymousNamespace = join(projectDir, 'templates', twigComponentsConfig['anonymous_template_directory']);
+    const anonymousNamespace: string[] = twigPaths.map((twigPath) =>
+        join(twigPath, twigComponentsConfig['anonymous_template_directory'])
+    );
 
     const runtimeDir = (await getBundleConfig()).runtime_dir;
 
@@ -39,6 +47,9 @@ const getBuildOptions = async (symfonyOptions: SymfonyOptions) => {
         twigComponent: {
             anonymousTemplateDirectory: anonymousNamespace,
             namespaces: componentNamespaces,
+        },
+        twig: {
+            paths: twigPaths,
         },
         runtimeDir,
         projectDir,
@@ -65,7 +76,10 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
                           projectDir: symfonyOptions.projectDir,
                           additionalWatchPaths: symfonyOptions.additionalWatchPaths,
                       }),
-                TwigLoaderPlugin.webpack({ twigComponentConfiguration: symfonyOptions.twigComponent }),
+                TwigLoaderPlugin.webpack({
+                    twigComponentConfiguration: symfonyOptions.twigComponent,
+                    twigConfiguration: symfonyOptions.twig,
+                }),
             ],
         ],
         module: {
