@@ -31,6 +31,10 @@ const getBuildOptions = async (symfonyOptions: SymfonyOptions) => {
 
     const twigPaths: string[] = Object.keys(twigConfig.paths).map((key) => `${projectDir}/${key}/`);
 
+    if (twigPaths.length === 0) {
+        twigPaths.push(`${projectDir}/templates`);
+    }
+
     for (const { name_prefix: namePrefix, template_directory: templateDirectory } of Object.values(
         twigComponentsConfig.defaults
     )) {
