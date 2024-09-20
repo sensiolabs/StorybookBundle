@@ -97,19 +97,19 @@ class StorybookArgsProcessorTest extends TestCase
     public function testMultipleProcessorsAreExecutedInOrder()
     {
         $argsProcessor = new StorybookArgsProcessor();
-        $argsProcessor->addProcessor(new class() implements ArgsProcessorInterface {
+        $argsProcessor->addProcessor(new class implements ArgsProcessorInterface {
             public function __invoke(Args $args): void
             {
                 $args->merge(['foo' => 'first']);
             }
         }, 'story');
-        $argsProcessor->addProcessor(new class() implements ArgsProcessorInterface {
+        $argsProcessor->addProcessor(new class implements ArgsProcessorInterface {
             public function __invoke(Args $args): void
             {
                 $args->merge(['bar' => 'value']);
             }
         }, null);
-        $argsProcessor->addProcessor(new class() implements ArgsProcessorInterface {
+        $argsProcessor->addProcessor(new class implements ArgsProcessorInterface {
             public function __invoke(Args $args): void
             {
                 if (isset($args['bar'])) {
