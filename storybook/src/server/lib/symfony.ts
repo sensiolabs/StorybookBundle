@@ -1,6 +1,5 @@
 import { exec } from 'child_process';
 import dedent from 'ts-dedent';
-import * as path from 'path';
 
 type CommandOptions = {
     /**
@@ -140,36 +139,3 @@ export const getTwigConfiguration = async () => {
 export type TwigConfiguration = {
     paths: string[];
 };
-
-/**
- * Attempt to resolve the Twig template path containing sources for the given TwigComponent.
- */
-export function resolveTwigComponentFile(componentName: string, config: TwigComponentConfiguration) {
-    const nameParts = componentName.split(':');
-    const namespace = nameParts.length > 1 ? nameParts[0] : '';
-    const dirParts = nameParts.slice(0, -1);
-    const filename = `${nameParts.slice(-1)}.html.twig`;
-
-    const lookupPaths: string[] = [];
-
-    if (namespace && config.namespaces[namespace]) {
-        const namespacePaths = config.namespaces[namespace];
-        if (namespacePaths.length > 0) {
-            lookupPaths.push(path.join(namespacePaths[0], dirParts.slice(1).join('/')));
-        }
-    }
-
-    if (config.namespaces[''] && config.namespaces[''].length > 0) {
-        lookupPaths.push(path.join(config.namespaces[''][0], dirParts.join('/')));
-    }
-
-    if (config.anonymousTemplateDirectory.length > 0) {
-        lookupPaths.push(path.join(config.anonymousTemplateDirectory[0], dirParts.join('/')));
-    }
-
-    try {
-        return require.resolve(`./${filename}`, { paths: lookupPaths });
-    } catch (err) {
-        throw new Error(dedent`Unable to find template file for component "${componentName}": ${err}`);
-    }
-}

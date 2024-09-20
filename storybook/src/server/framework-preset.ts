@@ -82,7 +82,6 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
                       }),
                 TwigLoaderPlugin.webpack({
                     twigComponentConfiguration: symfonyOptions.twigComponent,
-                    twigConfiguration: symfonyOptions.twig,
                 }),
             ],
         ],
