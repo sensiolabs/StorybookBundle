@@ -1,6 +1,5 @@
 import { exec } from 'child_process';
 import dedent from 'ts-dedent';
-import * as path from 'path';
 
 type CommandOptions = {
     /**
@@ -119,38 +118,24 @@ export const getTwigComponentConfiguration = async () => {
 };
 
 export type TwigComponentConfiguration = {
-    anonymousTemplateDirectory: string;
+    anonymousTemplateDirectory: [string];
     namespaces: {
-        [p: string]: string;
+        [p: string]: [string];
     };
 };
 
-/**
- * Attempt to resolve the Twig template path containing sources for the given TwigComponent.
- */
-export function resolveTwigComponentFile(componentName: string, config: TwigComponentConfiguration) {
-    const nameParts = componentName.split(':');
-    const dirParts = nameParts.slice(0, -1);
-    const filename = `${nameParts.slice(-1)}.html.twig`;
+type SymfonyTwigConfiguration = {
+    twig: {
+        paths: {
+            [p: string]: string;
+        };
+    };
+};
 
-    const lookupPaths: string[] = [];
+export const getTwigConfiguration = async () => {
+    return (await runSymfonyCommandJson<SymfonyTwigConfiguration>('debug:config', ['twig', '--resolve-env']))['twig'];
+};
 
-    for (const namespace in config.namespaces) {
-        if ('' !== namespace && 0 === componentName.indexOf(namespace)) {
-            lookupPaths.push(path.join(config.namespaces[namespace], dirParts.slice(1).join('/')));
-            break;
-        }
-    }
-
-    if (config.namespaces[''] !== undefined) {
-        lookupPaths.push(path.join(config.namespaces[''], dirParts.join('/')));
-    }
-
-    lookupPaths.push(path.join(config.anonymousTemplateDirectory, dirParts.join('/')));
-
-    try {
-        return require.resolve(`./${filename}`, { paths: lookupPaths });
-    } catch (err) {
-        throw new Error(dedent`Unable to find template file for component "${componentName}": ${err}`);
-    }
-}
+export type TwigConfiguration = {
+    paths: string[];
+};
