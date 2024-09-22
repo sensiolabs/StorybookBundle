@@ -5,6 +5,8 @@ parameters:
         - tests
     bootstrapFiles:
         - vendor/bin/.phpunit/phpunit/vendor/autoload.php
+    excludePaths:
+        - src/Resources/skeleton
     ignoreErrors:
         -
              message: '#^Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface\:\:arrayNode\(\)\.$#'
