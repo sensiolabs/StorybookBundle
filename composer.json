@@ -34,7 +34,7 @@
         "symfony/phpunit-bridge": "^6.4|^7.0",
         "symfony/stimulus-bundle": "^2.16",
         "symfony/ux-live-component": "^2.16",
-        "symfony/ux-twig-component": "2.16",
+        "symfony/ux-twig-component": "^2.16",
         "symfonycasts/sass-bundle": "^0.5.1",
         "symfonycasts/tailwind-bundle": "^0.5.0"
     },
