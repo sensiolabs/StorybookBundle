@@ -29,6 +29,7 @@ class StoryRendererTest extends TestCase
 
         $story = new Story(
             'story',
+            'story.html.twig',
             '',
             new Args()
         );
@@ -51,6 +52,7 @@ class StoryRendererTest extends TestCase
 
         $story = new Story(
             'story',
+            'story.html.twig',
             '',
             new Args()
         );

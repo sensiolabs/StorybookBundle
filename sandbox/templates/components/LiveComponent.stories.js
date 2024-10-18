@@ -1,11 +1,9 @@
 import LiveComponent from './LiveComponent.html.twig';
 import { userEvent, expect, fn, waitFor, within } from '@storybook/test';
+import {twig} from "@sensiolabs/storybook-symfony-webpack5";
 
 export default {
-    component: LiveComponent
-}
-
-export const Default = {
+    component: LiveComponent,
     args: {
         onClick: fn()
     },
@@ -21,4 +19,16 @@ export const Default = {
         await userEvent.click(button);
         await waitFor(() => expect(args.onClick).toHaveBeenCalledOnce());
     }
+}
+
+export const Default = {
+}
+
+export const EmbeddedRender = {
+    render: () => ({
+       components: {LiveComponent},
+       template: twig`
+        <twig:LiveComponent data-storybook-callbacks="{{ onClick }}">
+        </twig:LiveComponent>`
+    }),
 }
