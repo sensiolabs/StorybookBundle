@@ -17,7 +17,7 @@ class StoryRendererTest extends KernelTestCase
         self::bootKernel();
 
         $renderer = static::getContainer()->get('storybook.story_renderer');
-        $story = new Story('story', $template, new Args());
+        $story = new Story('story', 'story.html.twig', $template, new Args());
 
         $this->expectException(UnauthorizedStoryException::class);
 
@@ -80,7 +80,7 @@ class StoryRendererTest extends KernelTestCase
         self::bootKernel();
 
         $renderer = static::getContainer()->get('storybook.story_renderer');
-        $story = new Story('story', $template, new Args($args));
+        $story = new Story('story', 'story.html.twig', $template, new Args($args));
 
         $content = $renderer->render($story);
 
@@ -169,7 +169,7 @@ class StoryRendererTest extends KernelTestCase
 
         $renderer = static::getContainer()->get('storybook.story_renderer');
 
-        $story = new Story('story', '<twig:ComponentUsingTrait />', new Args());
+        $story = new Story('story', 'story.html.twig', '<twig:ComponentUsingTrait />', new Args());
 
         $content = $renderer->render($story);
 
@@ -187,8 +187,8 @@ class StoryRendererTest extends KernelTestCase
 
         $renderer = static::getContainer()->get('storybook.story_renderer');
 
-        $storyWithFunction = new Story('story', '<twig:AnonymousComponent :prop1="prop1"/>', new Args(['prop1' => 'foo']));
-        $storyWithTag = new Story('story', '<twig:AnonymousComponent :prop1="prop1"></twig:AnonymousComponent>', new Args(['prop1' => 'foo']));
+        $storyWithFunction = new Story('story', 'story.html.twig', '<twig:AnonymousComponent :prop1="prop1"/>', new Args(['prop1' => 'foo']));
+        $storyWithTag = new Story('story', 'story.html.twig', '<twig:AnonymousComponent :prop1="prop1"></twig:AnonymousComponent>', new Args(['prop1' => 'foo']));
 
         $this->assertEquals($renderer->render($storyWithFunction), $renderer->render($storyWithTag));
     }
@@ -199,7 +199,7 @@ class StoryRendererTest extends KernelTestCase
 
         $renderer = static::getContainer()->get('storybook.story_renderer');
 
-        $story = new Story('story', '<twig:AnonymousComponent foo="bar"></twig:AnonymousComponent>', new Args());
+        $story = new Story('story', 'story.html.twig', '<twig:AnonymousComponent foo="bar"></twig:AnonymousComponent>', new Args());
 
         $this->assertStringContainsString('foo="bar"', $renderer->render($story));
     }

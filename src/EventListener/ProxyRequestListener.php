@@ -31,6 +31,10 @@ final class ProxyRequestListener implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
+        if (!$event->isMainRequest() || 'storybook_render' === $request->attributes->get('_route')) {
+            return;
+        }
+
         if (!RequestAttributesHelper::isProxyRequest($request) || !$request->headers->has('referer')) {
             return;
         }

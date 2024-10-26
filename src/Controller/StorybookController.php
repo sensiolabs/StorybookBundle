@@ -23,17 +23,22 @@ final class StorybookController
 
     public function __invoke(Request $request, string $story): Response
     {
-        $request = RequestAttributesHelper::withStorybookAttributes($request, ['story' => $story]);
-
         $templateString = $request->getPayload()->get('template');
 
         if (null === $templateString) {
             throw new BadRequestHttpException('Missing "template" in request body.');
         }
 
+        $templateName = \sprintf('%s.html.twig', hash('xxh128', $templateString));
+
+        $request = RequestAttributesHelper::withStorybookAttributes($request, [
+            'story' => $story,
+            'template' => $templateName,
+        ]);
+
         $args = $this->argsProcessor->process($request);
 
-        $storyObj = new Story($story, $templateString, $args);
+        $storyObj = new Story($story, $templateName, $templateString, $args);
 
         $content = $this->storyRenderer->render($storyObj);
 

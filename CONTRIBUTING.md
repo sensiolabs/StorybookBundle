@@ -125,7 +125,7 @@ copy.
 Then run the tests with:
 
 ```shell
-./scripts/test-app.sh
+./scripts/test-sandbox.sh
 ```
 
 #### Updating template stories

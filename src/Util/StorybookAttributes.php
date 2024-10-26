@@ -4,8 +4,13 @@ namespace Storybook\Util;
 
 final class StorybookAttributes
 {
+    private const REQUIRED_ATTRIBUTES = [
+        'story',
+    ];
+
     public function __construct(
         public readonly string $story,
+        public readonly ?string $template = null,
     ) {
     }
 
@@ -14,10 +19,15 @@ final class StorybookAttributes
      */
     public static function from(array $attributes): self
     {
-        if (!isset($attributes['story'])) {
-            throw new \InvalidArgumentException('Missing key "story" in attributes.');
+        foreach (self::REQUIRED_ATTRIBUTES as $attribute) {
+            if (!isset($attributes[$attribute])) {
+                throw new \InvalidArgumentException(\sprintf('Missing key "%s" in attributes.', $attribute));
+            }
         }
 
-        return new self(story: $attributes['story']);
+        return new self(
+            story: $attributes['story'],
+            template: $attributes['template'] ?? null,
+        );
     }
 }
