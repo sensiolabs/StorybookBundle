@@ -9,11 +9,14 @@ class ComponentRenderSubscriberTest extends WebTestCase
 {
     use StoryTestTrait;
 
-    public function testRenderMockedComponent()
+    /**
+     * @dataProvider getStories
+     */
+    public function testRenderMockedComponent(string $story)
     {
         $client = static::createClient();
 
-        $crawler = $this->renderStory($client, 'story-with-mocked-component');
+        $crawler = $this->renderStory($client, $story);
 
         $this->assertResponseIsSuccessful();
 
@@ -25,5 +28,16 @@ class ComponentRenderSubscriberTest extends WebTestCase
         $this->assertStringContainsString('Prop4: mocked prop4', $text);
         $this->assertStringContainsString('Prop5: prop5', $text);
         $this->assertStringContainsString('ComputedProp: mocked computedProp', $text);
+    }
+
+    public static function getStories(): iterable
+    {
+        yield 'Function style' => [
+            'story' => 'story-with-mocked-component',
+        ];
+
+        yield 'Embedded style' => [
+            'story' => 'story-with-mocked-component-embedded',
+        ];
     }
 }

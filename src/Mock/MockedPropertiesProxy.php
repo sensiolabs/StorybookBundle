@@ -15,8 +15,11 @@ use Symfony\UX\TwigComponent\ComputedPropertiesProxy;
  */
 final class MockedPropertiesProxy
 {
-    public function __construct(private readonly object $component, private readonly object $provider, private readonly array $mockedMethods)
-    {
+    public function __construct(
+        private readonly object $component,
+        private readonly object $provider,
+        private readonly array $mockedMethods,
+    ) {
     }
 
     public function __call(string $name, array $args)

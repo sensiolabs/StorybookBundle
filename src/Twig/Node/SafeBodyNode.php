@@ -1,7 +1,8 @@
 <?php
 
-namespace Storybook\Twig\Sandbox\Node;
+namespace Storybook\Twig\Node;
 
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\BodyNode;
 
@@ -12,12 +13,12 @@ use Twig\Node\BodyNode;
  *
  * @internal
  */
-// #[YieldReady]
+#[YieldReady]
 class SafeBodyNode extends BodyNode
 {
     public function __construct(BodyNode $body)
     {
-        parent::__construct($body->nodes, $body->attributes, $body->lineno, $body->tag);
+        parent::__construct($body->nodes, $body->attributes, $body->lineno);
     }
 
     public function compile(Compiler $compiler): void

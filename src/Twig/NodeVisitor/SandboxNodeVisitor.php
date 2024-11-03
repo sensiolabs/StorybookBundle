@@ -1,9 +1,9 @@
 <?php
 
-namespace Storybook\Twig\Sandbox;
+namespace Storybook\Twig\NodeVisitor;
 
-use Storybook\Twig\Sandbox\Node\BypassCheckSecurityCallNode;
-use Storybook\Twig\Sandbox\Node\SafeBodyNode;
+use Storybook\Twig\Node\BypassCheckSecurityCallNode;
+use Storybook\Twig\Node\SafeBodyNode;
 use Twig\Environment;
 use Twig\Node\CheckSecurityCallNode;
 use Twig\Node\CheckSecurityNode;

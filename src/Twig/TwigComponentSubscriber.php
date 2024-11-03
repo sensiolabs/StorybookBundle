@@ -5,6 +5,8 @@ namespace Storybook\Twig;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Storybook\Event\ComponentRenderEvent;
 use Storybook\Util\RequestAttributesHelper;
+use Storybook\Util\StorybookContext;
+use Storybook\Util\StorybookContextHelper;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\UX\TwigComponent\Event\PreRenderEvent;
@@ -73,6 +75,12 @@ final class TwigComponentSubscriber implements EventSubscriberInterface
         $storybookAttributes = RequestAttributesHelper::getStorybookAttributes($request);
 
         $componentClass = $event->getMetadata()->get('class');
+
+        $variables = $event->getVariables();
+
+        StorybookContextHelper::addStorybookContext($variables, new StorybookContext($componentClass, $storybookAttributes->story));
+
+        $event->setVariables($variables);
 
         $renderEvent = new ComponentRenderEvent($storybookAttributes->story, $componentClass, $event->getVariables());
         $this->eventDispatcher->dispatch($renderEvent);

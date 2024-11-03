@@ -19,7 +19,7 @@
         "symfony/stimulus-bundle": "^2.17",
         "symfony/twig-bundle": "7.0.*",
         "symfony/ux-live-component": "^2.17",
-        "symfony/ux-twig-component": "2.16",
+        "symfony/ux-twig-component": "^2.16",
         "symfony/yaml": "7.0.*",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0"

@@ -15,7 +15,7 @@ class AuthorizedTagTokenParser extends AbstractTokenParser
         $this->parser->subparse($this->decideBlockEnd(...), true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new Node(tag: $this->getTag());
+        return new Node();
     }
 
     public function decideBlockEnd(Token $token): bool

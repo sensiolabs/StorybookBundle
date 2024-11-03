@@ -2,17 +2,22 @@
 
 namespace Storybook\Twig;
 
-use Symfony\UX\TwigComponent\ComponentAttributes;
 use Twig\Environment;
-use Twig\Extension\EscaperExtension;
-use Twig\Extension\SandboxExtension;
-use Twig\Sandbox\SecurityPolicyInterface;
+use Twig\Extension\ExtensionInterface;
 
-class StorybookEnvironmentConfigurator
+/**
+ * Configure Twig for story renderer.
+ *
+ * @internal
+ */
+final class StorybookEnvironmentConfigurator
 {
+    /**
+     * @param iterable<ExtensionInterface> $extensions
+     */
     public function __construct(
         private readonly object $inner,
-        private readonly SecurityPolicyInterface $securityPolicy,
+        private readonly iterable $extensions,
         private readonly string|bool $cacheDir,
     ) {
         if (!method_exists($this->inner, 'configure')) {
@@ -24,13 +29,10 @@ class StorybookEnvironmentConfigurator
     {
         $this->inner->configure($environment);
 
-        $environment->getExtension(EscaperExtension::class)->addSafeClass(ComponentAttributes::class, ['html']);
-
-        $environment->setExtensions([
-            new SandboxExtension($this->securityPolicy),
-            new StoryExtension(),
-        ]);
-
         $environment->setCache($this->cacheDir);
+
+        foreach ($this->extensions as $extension) {
+            $environment->addExtension($extension);
+        }
     }
 }
