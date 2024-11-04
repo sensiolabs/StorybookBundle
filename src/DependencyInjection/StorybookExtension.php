@@ -12,6 +12,7 @@ use Storybook\DependencyInjection\Compiler\ComponentMockPass;
 use Storybook\EventListener\ComponentMockSubscriber;
 use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Exception\UnauthorizedStoryException;
+use Storybook\Maker\MakeStory;
 use Storybook\Mock\ComponentProxyFactory;
 use Storybook\StoryRenderer;
 use Storybook\Twig\StorybookEnvironmentConfigurator;
@@ -139,6 +140,17 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
         $container->register('storybook.component_mock_subscriber', ComponentMockSubscriber::class)
             ->setArgument(0, new Reference('storybook.component_proxy_factory'))
             ->addTag('kernel.event_subscriber');
+
+        // Maker
+        $container->register('storybook.maker.story_renderer', \Storybook\Maker\StoryRenderer::class)
+            ->setArgument(0, new Reference('maker.generator'))
+            ->setArgument(1, new Reference('ux.twig_component.component_factory'))
+            ->setArgument(2, '%kernel.project_dir%/stories');
+
+        $container->register('storybook.maker.story_maker', MakeStory::class)
+            ->setArgument(0, new Reference('storybook.maker.story_renderer'))
+            ->addTag('maker.command')
+        ;
     }
 
     public function getConfigTreeBuilder(): TreeBuilder

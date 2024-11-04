@@ -36,7 +36,8 @@
         "symfony/ux-live-component": "^2.16",
         "symfony/ux-twig-component": "2.16",
         "symfonycasts/sass-bundle": "^0.5.1",
-        "symfonycasts/tailwind-bundle": "^0.5.0"
+        "symfonycasts/tailwind-bundle": "^0.5.0",
+        "symfony/maker-bundle": "^1.60"
     },
     "conflict": {
         "symfony/ux-twig-component": "2.17"
