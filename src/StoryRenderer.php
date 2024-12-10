@@ -21,13 +21,10 @@ final class StoryRenderer
     {
         $storyTemplateName = \sprintf('story_%s.html.twig', $story->getId());
 
-        // Name included template with a hash to avoid reusing an already loaded template class
-        $templateName = \sprintf('%s.html.twig', hash('xxh128', $story->getTemplate()));
-
         $loader = new ChainLoader([
             new ArrayLoader([
-                $templateName => $story->getTemplate(),
-                $storyTemplateName => \sprintf("{%% sandbox %%} {%%- include '%s' -%%} {%% endsandbox %%}", $templateName),
+                $story->getTemplateName() => $story->getTemplate(),
+                $storyTemplateName => \sprintf("{%% sandbox %%} {%%- include '%s' -%%} {%% endsandbox %%}", $story->getTemplateName()),
             ]),
             $originalLoader = $this->twig->getLoader(),
         ]);

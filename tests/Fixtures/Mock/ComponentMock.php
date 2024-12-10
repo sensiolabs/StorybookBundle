@@ -21,7 +21,10 @@ class ComponentMock
         return 'mocked prop3';
     }
 
-    #[PropertyMock(stories: 'story-with-mocked-component')]
+    #[PropertyMock(stories: [
+        'story-with-mocked-component',
+        'story-with-mocked-component-embedded',
+    ])]
     public function prop4(): string
     {
         return 'mocked prop4';

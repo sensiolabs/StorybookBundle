@@ -9,23 +9,26 @@ use Storybook\Command\GeneratePreviewCommand;
 use Storybook\Command\StorybookInitCommand;
 use Storybook\Controller\StorybookController;
 use Storybook\DependencyInjection\Compiler\ComponentMockPass;
-use Storybook\EventListener\ComponentMockSubscriber;
 use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Exception\UnauthorizedStoryException;
 use Storybook\Mock\ComponentProxyFactory;
 use Storybook\StoryRenderer;
+use Storybook\Twig\StorybookEnvironment;
 use Storybook\Twig\StorybookEnvironmentConfigurator;
+use Storybook\Twig\StoryExtension;
 use Storybook\Twig\TwigComponentSubscriber;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\Argument\AbstractArgument;
+use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Reference;
+use Twig\Extension\SandboxExtension;
 use Twig\Sandbox\SecurityPolicy;
 
 /**
@@ -97,14 +100,35 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
             ->setArgument(4, $sandboxConfig['allowedFunctions'])
         ;
 
+        // Storybook Twig extensions
+        $container->setDefinition('storybook.twig', new ChildDefinition('twig'))
+            ->setClass(StorybookEnvironment::class)
+            ->addMethodCall('setComponentRuntime', [new Reference('storybook.twig.component_runtime')])
+            ->setConfigurator([new Reference('storybook.twig.environment_configurator'), 'configure'])
+        ;
+
+        $container->register('storybook.twig.extension.sandbox', SandboxExtension::class)
+            ->setArgument(0, new Reference('storybook.twig.security_policy'))
+            ->addTag('storybook.twig.extension')
+        ;
+
+        $container->register('storybook.twig.extension.story', StoryExtension::class)
+            ->setArgument(0, new Reference('storybook.component_proxy_factory'))
+            ->addTag('storybook.twig.extension')
+        ;
+
         $container->register('storybook.twig.environment_configurator', StorybookEnvironmentConfigurator::class)
             ->setArgument(0, new Reference('twig.configurator.environment'))
-            ->setArgument(1, new Reference('storybook.twig.security_policy'))
+            ->setArgument(1, new TaggedIteratorArgument('storybook.twig.extension'))
             ->setArgument(2, $config['cache'] ?? false)
         ;
 
-        $container->setDefinition('storybook.twig', new ChildDefinition('twig'))
-            ->setConfigurator([new Reference('storybook.twig.environment_configurator'), 'configure'])
+        $container->setDefinition('storybook.twig.component_runtime', new ChildDefinition('.ux.twig_component.twig.component_runtime'))
+            ->replaceArgument(0, new Reference('storybook.twig.component_renderer'))
+        ;
+
+        $container->setDefinition('storybook.twig.component_renderer', new ChildDefinition('ux.twig_component.component_renderer'))
+            ->replaceArgument(0, new Reference('storybook.twig'))
         ;
 
         $container->register('storybook.story_renderer', StoryRenderer::class)
@@ -134,10 +158,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
         $container->register('storybook.twig.on_pre_render_listener', TwigComponentSubscriber::class)
             ->setArgument(0, new Reference('request_stack'))
             ->setArgument(1, new Reference('event_dispatcher'))
-            ->addTag('kernel.event_subscriber');
-
-        $container->register('storybook.component_mock_subscriber', ComponentMockSubscriber::class)
-            ->setArgument(0, new Reference('storybook.component_proxy_factory'))
             ->addTag('kernel.event_subscriber');
     }
 
