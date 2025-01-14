@@ -4,7 +4,9 @@ namespace Storybook;
 
 use Storybook\DependencyInjection\Compiler\ArgsProcessorPass;
 use Storybook\DependencyInjection\Compiler\ComponentMockPass;
+use Storybook\DependencyInjection\Compiler\StorybookRuntimeLoaderPass;
 use Storybook\DependencyInjection\StorybookExtension;
+use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -18,6 +20,9 @@ class StorybookBundle extends Bundle
     {
         $container->addCompilerPass(new ArgsProcessorPass());
         $container->addCompilerPass(new ComponentMockPass());
+
+        // Must be run AFTER ResolveChildDefinitionPass
+        $container->addCompilerPass(new StorybookRuntimeLoaderPass(), PassConfig::TYPE_BEFORE_REMOVING);
     }
 
     public function getContainerExtension(): ?ExtensionInterface

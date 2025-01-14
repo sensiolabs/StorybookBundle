@@ -13,8 +13,8 @@ use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Exception\UnauthorizedStoryException;
 use Storybook\Mock\ComponentProxyFactory;
 use Storybook\StoryRenderer;
-use Storybook\Twig\StorybookEnvironment;
 use Storybook\Twig\StorybookEnvironmentConfigurator;
+use Storybook\Twig\StorybookRuntimeLoader;
 use Storybook\Twig\StoryExtension;
 use Storybook\Twig\TwigComponentSubscriber;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -70,6 +70,8 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
 
         $config = (new Processor())->processConfiguration($this, $configs);
 
+        $this->configureStorybookTwigEnvironment($container, $config);
+
         // Proxy listener
         $container->register('storybook.listener.proxy_request', ProxyRequestListener::class)
             ->addTag('kernel.event_subscriber');
@@ -82,55 +84,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
         ;
 
         // Story renderer
-        $defaultSandboxConfig = [
-            'allowedTags' => ['component'],
-            'allowedFunctions' => ['component'],
-            'allowedFilters' => ['escape'],
-            'allowedMethods' => [],
-            'allowedProperties' => [],
-        ];
-
-        $sandboxConfig = array_merge_recursive($defaultSandboxConfig, $config['sandbox']);
-
-        $container->register('storybook.twig.security_policy', SecurityPolicy::class)
-            ->setArgument(0, $sandboxConfig['allowedTags'])
-            ->setArgument(1, $sandboxConfig['allowedFilters'])
-            ->setArgument(2, $sandboxConfig['allowedMethods'])
-            ->setArgument(3, $sandboxConfig['allowedProperties'])
-            ->setArgument(4, $sandboxConfig['allowedFunctions'])
-        ;
-
-        // Storybook Twig extensions
-        $container->setDefinition('storybook.twig', new ChildDefinition('twig'))
-            ->setClass(StorybookEnvironment::class)
-            ->addMethodCall('setComponentRuntime', [new Reference('storybook.twig.component_runtime')])
-            ->setConfigurator([new Reference('storybook.twig.environment_configurator'), 'configure'])
-        ;
-
-        $container->register('storybook.twig.extension.sandbox', SandboxExtension::class)
-            ->setArgument(0, new Reference('storybook.twig.security_policy'))
-            ->addTag('storybook.twig.extension')
-        ;
-
-        $container->register('storybook.twig.extension.story', StoryExtension::class)
-            ->setArgument(0, new Reference('storybook.component_proxy_factory'))
-            ->addTag('storybook.twig.extension')
-        ;
-
-        $container->register('storybook.twig.environment_configurator', StorybookEnvironmentConfigurator::class)
-            ->setArgument(0, new Reference('twig.configurator.environment'))
-            ->setArgument(1, new TaggedIteratorArgument('storybook.twig.extension'))
-            ->setArgument(2, $config['cache'] ?? false)
-        ;
-
-        $container->setDefinition('storybook.twig.component_runtime', new ChildDefinition('.ux.twig_component.twig.component_runtime'))
-            ->replaceArgument(0, new Reference('storybook.twig.component_renderer'))
-        ;
-
-        $container->setDefinition('storybook.twig.component_renderer', new ChildDefinition('ux.twig_component.component_renderer'))
-            ->replaceArgument(0, new Reference('storybook.twig'))
-        ;
-
         $container->register('storybook.story_renderer', StoryRenderer::class)
             ->setArgument(0, new Reference('storybook.twig'))
         ;
@@ -159,6 +112,61 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
             ->setArgument(0, new Reference('request_stack'))
             ->setArgument(1, new Reference('event_dispatcher'))
             ->addTag('kernel.event_subscriber');
+    }
+
+    private function configureStorybookTwigEnvironment(ContainerBuilder $container, array $config): void
+    {
+        // Sandbox
+        $defaultSandboxConfig = [
+            'allowedTags' => ['component'],
+            'allowedFunctions' => ['component'],
+            'allowedFilters' => ['escape'],
+            'allowedMethods' => [],
+            'allowedProperties' => [],
+        ];
+
+        $sandboxConfig = array_merge_recursive($defaultSandboxConfig, $config['sandbox']);
+
+        $container->register('storybook.twig.security_policy', SecurityPolicy::class)
+            ->setArgument(0, $sandboxConfig['allowedTags'])
+            ->setArgument(1, $sandboxConfig['allowedFilters'])
+            ->setArgument(2, $sandboxConfig['allowedMethods'])
+            ->setArgument(3, $sandboxConfig['allowedProperties'])
+            ->setArgument(4, $sandboxConfig['allowedFunctions'])
+        ;
+
+        // Storybook Twig environment
+        $container->setDefinition('storybook.twig', new ChildDefinition('twig'))
+            ->setConfigurator([new Reference('storybook.twig.environment_configurator'), 'configure'])
+        ;
+
+        $container->register('storybook.twig.runtime_loader', StorybookRuntimeLoader::class)
+            ->addMethodCall('addRuntime', [new Reference('storybook.twig.component_runtime')])
+        ;
+
+        $container->register('storybook.twig.extension.sandbox', SandboxExtension::class)
+            ->setArgument(0, new Reference('storybook.twig.security_policy'))
+            ->addTag('storybook.twig.extension')
+        ;
+
+        $container->register('storybook.twig.extension.story', StoryExtension::class)
+            ->setArgument(0, new Reference('storybook.component_proxy_factory'))
+            ->addTag('storybook.twig.extension')
+        ;
+
+        $container->register('storybook.twig.environment_configurator', StorybookEnvironmentConfigurator::class)
+            ->setArgument(0, new Reference('twig.configurator.environment'))
+            ->setArgument(1, new TaggedIteratorArgument('storybook.twig.extension'))
+            ->setArgument(2, $config['cache'] ?? false)
+        ;
+
+        $container->setDefinition('storybook.twig.component_runtime', new ChildDefinition('ux.twig_component.twig.component_runtime'))
+            ->replaceArgument(0, new Reference('storybook.twig.component_renderer'))
+        ;
+
+        $container->setDefinition('storybook.twig.component_renderer', new ChildDefinition('ux.twig_component.component_renderer'))
+            ->replaceArgument(0, new Reference('storybook.twig'))
+        ;
     }
 
     public function getConfigTreeBuilder(): TreeBuilder
