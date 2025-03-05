@@ -26,10 +26,13 @@ class StorybookEnvironmentConfigurator
 
         $environment->getExtension(EscaperExtension::class)->addSafeClass(ComponentAttributes::class, ['html']);
 
-        $environment->setExtensions([
-            new SandboxExtension($this->securityPolicy),
-            new StoryExtension(),
-        ]);
+        if (!$environment->hasExtension(SandboxExtension::class)) {
+            $environment->addExtension(new SandboxExtension($this->securityPolicy));
+        }
+
+        if (!$environment->hasExtension(StoryExtension::class)) {
+            $environment->addExtension(new StoryExtension());
+        }
 
         $environment->setCache($this->cacheDir);
     }
