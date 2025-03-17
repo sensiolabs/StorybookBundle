@@ -30,9 +30,13 @@ final class StorybookEnvironmentConfigurator
         $this->inner->configure($environment);
 
         $environment->setCache($this->cacheDir);
+        $registeredExtensions = $environment->getExtensions();
 
         foreach ($this->extensions as $extension) {
-            $environment->addExtension($extension);
+            $extensionClass = get_class($extension);
+            if (!isset($registeredExtensions[$extensionClass])) {
+                $environment->addExtension($extension);
+            }
         }
     }
 }
