@@ -1,0 +1,25 @@
+{
+  "twig_config": {
+    "paths": {
+      "\/var\/www\/templates": "Shared",
+      "\/var\/www\/apps\/foo\/templates": "Foo"
+    }
+  },
+  "twig_component_config": {
+    "defaults": {
+      "Front\\Twig\\Components\\": {
+        "template_directory": "components\/",
+        "name_prefix": "Shared"
+      },
+      "Front\\Foo\\Twig\\Components\\Bar\\Baz\\": {
+        "template_directory": "bar\/baz\/components\/",
+        "name_prefix": "Bar:Baz"
+      },
+      "Front\\Foo\\Twig\\Components\\": {
+        "template_directory": "components",
+        "name_prefix": ""
+      }
+    },
+    "anonymous_template_directory": "components\/"
+  }
+}

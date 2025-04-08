@@ -1,15 +1,19 @@
 import { TwigComponentResolver } from './TwigComponentResolver';
+import path from 'path';
 
+const projectDir = path.resolve();
 const fixturesDir = `${__dirname}/__fixtures__/templates`;
+const relativeFixturesDir = path.relative(projectDir, fixturesDir);
 
 const twigComponentConfig = {
-    anonymousTemplateDirectory: [`${fixturesDir}/anonymous`, `${fixturesDir}/twig_path/anonymous`],
+    anonymousTemplateDirectory: [`${relativeFixturesDir}/anonymous`, `${relativeFixturesDir}/twig_path/anonymous`],
     namespaces: {
-        '': [`${fixturesDir}/components`, `${fixturesDir}/twig_path`],
-        Custom: [`${fixturesDir}/custom`],
+        '': [`${relativeFixturesDir}/components`, `${relativeFixturesDir}/twig_path`],
+        Custom: [`${relativeFixturesDir}/custom`],
     },
 };
-const resolver = new TwigComponentResolver(twigComponentConfig);
+
+const resolver = new TwigComponentResolver(twigComponentConfig, projectDir);
 
 describe('resolveFileFromName', () => {
     it('resolves component path without namespace', () => {
@@ -56,44 +60,46 @@ describe('resolveFileFromName', () => {
 
 describe('resolveNameFromFile', () => {
     it('resolves in default namespace', () => {
-        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/components/Component.html.twig`);
+        const resolved = resolver.resolveNameFromFile(`${relativeFixturesDir}/components/Component.html.twig`);
 
         expect(resolved).toEqual('Component');
     });
     it('resolves in anonymous namespace', () => {
-        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/anonymous/Anonymous.html.twig`);
+        const resolved = resolver.resolveNameFromFile(`${relativeFixturesDir}/anonymous/Anonymous.html.twig`);
 
         expect(resolved).toEqual('Anonymous');
     });
     it('resolves in custom namespace', () => {
-        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/custom/CustomNamespace.html.twig`);
+        const resolved = resolver.resolveNameFromFile(`${relativeFixturesDir}/custom/CustomNamespace.html.twig`);
 
         expect(resolved).toEqual('Custom:CustomNamespace');
     });
     it('resolves in auto namespace', () => {
-        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/components/Namespace/AutoNamespace.html.twig`);
+        const resolved = resolver.resolveNameFromFile(
+            `${relativeFixturesDir}/components/Namespace/AutoNamespace.html.twig`
+        );
 
         expect(resolved).toEqual('Namespace:AutoNamespace');
     });
     it('fallbacks to default namespace', () => {
         const resolved = resolver.resolveNameFromFile(
-            `${fixturesDir}/components/Custom/NotInCustomNamespace.html.twig`
+            `${relativeFixturesDir}/components/Custom/NotInCustomNamespace.html.twig`
         );
 
         expect(resolved).toEqual('Custom:NotInCustomNamespace');
     });
     it('handle multiple nested levels of namespaces', () => {
-        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/anonymous/Foo/Bar/Baz.html.twig`);
+        const resolved = resolver.resolveNameFromFile(`${relativeFixturesDir}/anonymous/Foo/Bar/Baz.html.twig`);
 
         expect(resolved).toEqual('Foo:Bar:Baz');
     });
     it('fallbacks to next twig path', () => {
-        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/twig_path/TwigPath.html.twig`);
+        const resolved = resolver.resolveNameFromFile(`${relativeFixturesDir}/twig_path/TwigPath.html.twig`);
 
         expect(resolved).toEqual('TwigPath');
     });
     it('handle multiple nested levels when fallbacks to next twig path', () => {
-        const resolved = resolver.resolveNameFromFile(`${fixturesDir}/twig_path/Foo/Bar.html.twig`);
+        const resolved = resolver.resolveNameFromFile(`${relativeFixturesDir}/twig_path/Foo/Bar.html.twig`);
 
         expect(resolved).toEqual('Foo:Bar');
     });

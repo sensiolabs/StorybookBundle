@@ -5,9 +5,11 @@ namespace Storybook\DependencyInjection;
 use Storybook\ArgsProcessor\StorybookArgsProcessor;
 use Storybook\Attributes\AsArgsProcessor;
 use Storybook\Attributes\AsComponentMock;
-use Storybook\Command\GeneratePreviewCommand;
+use Storybook\CacheWarmer\StorybookCacheWarmer;
 use Storybook\Command\StorybookInitCommand;
 use Storybook\Controller\StorybookController;
+use Storybook\Controller\StorybookPreviewController;
+use Storybook\DependencyInjection\Compiler\CacheWarmerPass;
 use Storybook\DependencyInjection\Compiler\ComponentMockPass;
 use Storybook\EventListener\ProxyRequestListener;
 use Storybook\Exception\UnauthorizedStoryException;
@@ -81,6 +83,13 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
             ->addTag('controller.service_arguments')
         ;
 
+        // Preview controller
+        $container->register('storybook.controller.preview', StorybookPreviewController::class)
+            ->setArgument(0, new Reference('twig'))
+            ->setArgument(1, new Reference('event_dispatcher'))
+            ->addTag('controller.service_arguments')
+        ;
+
         // Story renderer
         $defaultSandboxConfig = [
             'allowedTags' => ['component'],
@@ -142,13 +151,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
         $container->register('storybook.component_proxy_factory', ComponentProxyFactory::class)
             ->setArgument(0, new AbstractArgument(\sprintf('Provided in "%s".', ComponentMockPass::class)));
 
-        // Internal commands
-        $container->register('storybook.generate_preview_command', GeneratePreviewCommand::class)
-            ->setArgument(0, new Reference('twig'))
-            ->setArgument(1, new Reference('event_dispatcher'))
-            ->addTag('console.command', ['name' => 'storybook:generate-preview'])
-        ;
-
         // Init command
         $container->register('storybook.init_command', StorybookInitCommand::class)
             ->setArgument(0, $container->getParameter('kernel.project_dir'))
@@ -159,6 +161,14 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
             ->setArgument(0, new Reference('request_stack'))
             ->setArgument(1, new Reference('event_dispatcher'))
             ->addTag('kernel.event_subscriber');
+
+        $container->register('storybook.cache_warmer', StorybookCacheWarmer::class)
+            ->setArgument(0, $container->getParameter('kernel.cache_dir').'/storybook')
+            ->setArgument(1, $container->getParameter('kernel.debug'))
+            ->setArgument(2, $container->getParameter('kernel.project_dir'))
+            ->setArgument(3, new AbstractArgument(\sprintf('Provided in "%s".', CacheWarmerPass::class)))
+            ->setArgument(4, new AbstractArgument(\sprintf('Provided in "%s".', CacheWarmerPass::class)))
+            ->addTag('kernel.cache_warmer');
     }
 
     public function getConfigTreeBuilder(): TreeBuilder

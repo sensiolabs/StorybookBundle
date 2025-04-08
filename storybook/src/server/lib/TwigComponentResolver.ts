@@ -3,24 +3,29 @@ import path from 'path';
 import dedent from 'ts-dedent';
 
 export class TwigComponentResolver {
-    constructor(private config: TwigComponentConfiguration) {}
+    constructor(
+        private config: TwigComponentConfiguration,
+        private projectDir: string
+    ) {}
 
     resolveNameFromFile(file: string) {
         const stripDirectory = (file: string, dir: string) => {
             return file.replace(dir, '').replace(/^\//, '').replaceAll('/', ':').replace('.html.twig', '');
         };
 
+        const resolvedFile = this.resolveRelativePath(file);
+
         for (const [namespace, twigDirectories] of Object.entries(this.config.namespaces)) {
-            const matchingDirectory = twigDirectories.find((dir) => file.startsWith(dir));
+            const matchingDirectory = twigDirectories.find((dir) => resolvedFile.startsWith(dir));
             if (matchingDirectory) {
-                const trimmedPath = stripDirectory(file, matchingDirectory);
+                const trimmedPath = stripDirectory(resolvedFile, matchingDirectory);
                 return namespace ? `${namespace}:${trimmedPath}` : trimmedPath;
             }
         }
 
         for (const anonymousDir of this.config.anonymousTemplateDirectory) {
-            if (file.startsWith(anonymousDir)) {
-                return stripDirectory(file, anonymousDir);
+            if (resolvedFile.startsWith(anonymousDir)) {
+                return stripDirectory(resolvedFile, anonymousDir);
             }
         }
 
@@ -39,20 +44,20 @@ export class TwigComponentResolver {
             const namespacePaths = this.config.namespaces[namespace];
             if (namespacePaths.length > 0) {
                 for (const namespacePath of this.config.namespaces[namespace]) {
-                    lookupPaths.push(path.join(namespacePath, dirParts.slice(1).join('/')));
+                    lookupPaths.push(path.join(this.resolveRelativePath(namespacePath), dirParts.slice(1).join('/')));
                 }
             }
         }
 
         if (this.config.namespaces[''] && this.config.namespaces[''].length > 0) {
             for (const namespacePath of this.config.namespaces['']) {
-                lookupPaths.push(path.join(namespacePath, dirParts.join('/')));
+                lookupPaths.push(path.join(this.resolveRelativePath(namespacePath), dirParts.join('/')));
             }
         }
 
         if (this.config.anonymousTemplateDirectory.length > 0) {
             for (const namespacePath of this.config.anonymousTemplateDirectory) {
-                lookupPaths.push(path.join(namespacePath, dirParts.join('/')));
+                lookupPaths.push(path.join(this.resolveRelativePath(namespacePath), dirParts.join('/')));
             }
         }
 
@@ -61,5 +66,13 @@ export class TwigComponentResolver {
         } catch (err) {
             throw new Error(dedent`Unable to find template file for component "${name}": ${err}`);
         }
+    }
+
+    /**
+     * Remove the project path from the file path.
+     * This is useful to have relative paths and not depend on host paths.
+     */
+    private resolveRelativePath(file: string) {
+        return file.replace(this.projectDir, '');
     }
 }

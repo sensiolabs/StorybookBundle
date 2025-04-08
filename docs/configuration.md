@@ -255,12 +255,17 @@ const config: StorybookConfig = {
             
             /**
              * Symfony framework options.
-             * 
-             * These options only applies to the dev environment.
              */
-            symfony: {
+            symfony: {                
                 /**
-                 * Mandatory, the URL of the Symfony development server.
+                 * Mandatory, the absolute path of the Storybook cache path.
+                 *
+                 * @var string
+                 */
+                storybookCachePath: path.resolve(__dirname, '../var/cache/dev/storybook'),
+                
+                /**
+                 * Mandatory, the URL of the Symfony application server.
                  * 
                  * @var string
                  */
@@ -287,9 +292,9 @@ const config: StorybookConfig = {
                  * @var string[]
                  */
                 additionalWatchPaths: [
-                    'assets',
-                    'var/tailwind/tailwind.built.css'
-                ]
+                    '/assets',
+                    '/var/tailwind/tailwind.built.css'
+                ],
             }
         },
     },

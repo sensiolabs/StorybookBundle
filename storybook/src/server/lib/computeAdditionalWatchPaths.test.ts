@@ -4,19 +4,19 @@ const fixturesDir = `${__dirname}/__fixtures__/assets`;
 
 describe('computeAdditionalWatchPaths', () => {
     it('resolves single files', () => {
-        const watchPaths = computeAdditionalWatchPaths(['foo.js', 'bar/bar.js'], fixturesDir);
+        const watchPaths = computeAdditionalWatchPaths(['foo.js', `${fixturesDir}/foo.css`, 'bar/bar.js'], fixturesDir);
 
         expect(watchPaths).toEqual({
             dirs: [],
-            files: [`${fixturesDir}/foo.js`, `${fixturesDir}/bar/bar.js`],
+            files: [`${fixturesDir}/foo.js`, `${fixturesDir}/foo.css`, `${fixturesDir}/bar/bar.js`],
         });
     });
 
     it('resolves directory', () => {
-        const watchPaths = computeAdditionalWatchPaths(['bar'], fixturesDir);
+        const watchPaths = computeAdditionalWatchPaths(['bar', `${fixturesDir}/bar/baz`], fixturesDir);
 
         expect(watchPaths).toEqual({
-            dirs: [`${fixturesDir}/bar`],
+            dirs: [`${fixturesDir}/bar`, `${fixturesDir}/bar/baz`],
             files: [],
         });
     });

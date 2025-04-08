@@ -1,13 +1,6 @@
-import {
-    getBundleConfig,
-    getKernelProjectDir,
-    getTwigComponentConfiguration,
-    getTwigConfiguration,
-    TwigComponentConfiguration,
-    TwigConfiguration,
-} from './lib/symfony';
+import { getSymfonyConfig, TwigComponentConfiguration, TwigConfiguration } from './lib/symfony';
 import { StorybookConfig, SymfonyOptions } from '../types';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { PreviewCompilerPlugin } from './lib/preview-compiler-plugin';
 import { DevPreviewCompilerPlugin } from './lib/dev-preview-compiler-plugin';
 import { TwigLoaderPlugin } from './lib/twig-loader-plugin';
@@ -17,35 +10,34 @@ import dedent from 'ts-dedent';
 type BuildOptions = {
     twigComponent: TwigComponentConfiguration;
     twig: TwigConfiguration;
-    runtimeDir: string;
-    projectDir: string;
     additionalWatchPaths: string[];
 };
 
 const getBuildOptions = async (symfonyOptions: SymfonyOptions) => {
-    const projectDir = await getKernelProjectDir();
-    const twigComponentsConfig = await getTwigComponentConfiguration();
-    const twigConfig = await getTwigConfiguration();
+    const { twig_config, twig_component_config } = await getSymfonyConfig(symfonyOptions.storybookCachePath);
 
     const componentNamespaces: { [p: string]: string[] } = {};
 
-    const twigPaths: string[] = Object.keys(twigConfig.paths).map((key) => `${projectDir}/${key}/`);
+    const twigPaths: string[] = Object.keys(twig_config.paths);
 
     if (twigPaths.length === 0) {
-        twigPaths.push(`${projectDir}/templates`);
+        twigPaths.push('templates');
     }
 
     for (const { name_prefix: namePrefix, template_directory: templateDirectory } of Object.values(
-        twigComponentsConfig.defaults
+        twig_component_config.defaults
     )) {
-        componentNamespaces[namePrefix] = twigPaths.map((twigPath) => join(twigPath, templateDirectory));
+        componentNamespaces[namePrefix] = [join(twig_config.default_path, templateDirectory)];
     }
 
-    const anonymousNamespace: string[] = twigPaths.map((twigPath) =>
-        join(twigPath, twigComponentsConfig['anonymous_template_directory'])
-    );
+    Object.entries(twig_config.paths).forEach(([path, alias]) => {
+        componentNamespaces[alias] = [join(path, twig_component_config.anonymous_template_directory)];
+    });
 
-    const runtimeDir = (await getBundleConfig()).runtime_dir;
+    // TODO Should be a regular string ?
+    const anonymousNamespace: string[] = [
+        join(twig_config.default_path, twig_component_config.anonymous_template_directory),
+    ];
 
     return {
         twigComponent: {
@@ -55,8 +47,6 @@ const getBuildOptions = async (symfonyOptions: SymfonyOptions) => {
         twig: {
             paths: twigPaths,
         },
-        runtimeDir,
-        projectDir,
         additionalWatchPaths: symfonyOptions.additionalWatchPaths || [],
     } as BuildOptions;
 };
@@ -75,12 +65,16 @@ export const webpack: StorybookConfig['webpack'] = async (config, options) => {
             ...(config.plugins || []),
             ...[
                 options.configType === 'PRODUCTION'
-                    ? PreviewCompilerPlugin.webpack()
+                    ? PreviewCompilerPlugin.webpack({
+                          server: frameworkOptions.symfony.server,
+                      })
                     : DevPreviewCompilerPlugin.webpack({
-                          projectDir: symfonyOptions.projectDir,
+                          projectDir: resolve(),
+                          server: frameworkOptions.symfony.server,
                           additionalWatchPaths: symfonyOptions.additionalWatchPaths,
                       }),
                 TwigLoaderPlugin.webpack({
+                    projectDir: resolve(),
                     twigComponentConfiguration: symfonyOptions.twigComponent,
                 }),
             ],

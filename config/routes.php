@@ -10,5 +10,8 @@ return function (RoutingConfigurator $routes) {
             ])
             ->methods(['POST'])
             ->controller('storybook.controller.render_story')
+        ->add('storybook_preview', '/_storybook/preview')
+            ->methods(['GET'])
+            ->controller('storybook.controller.preview')
     ;
 };

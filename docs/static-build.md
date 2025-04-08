@@ -2,6 +2,9 @@
 
 Storybook can be built in a static application, to be deployed on a simple web server. The build will contain all stories metadata and the JavaScript used to render the Storybook UI.
 
+> ⚠️ In order to build Storybook, you need to have a running Symfony server.
+> The Symfony server is used to generate "preview.html.twig" iframe.
+
 ## Build Storybook
 
 To build Storybook, use:

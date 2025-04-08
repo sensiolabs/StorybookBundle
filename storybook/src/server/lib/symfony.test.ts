@@ -1,78 +1,61 @@
 'use strict';
 
-import { exec, ChildProcess, ExecException } from 'child_process';
-import { runSymfonyCommand, runSymfonyCommandJson } from './symfony';
+import { generateSymfonyPreview, getSymfonyConfig } from './symfony';
 import { vi } from 'vitest';
-
-vi.mock('child_process');
-
-function mockExec(error: ExecException | null = null, stdout = '', stderr = '') {
-    // Vitest mock types don't support signature overload?
-    // @ts-ignore
-    vi.mocked(exec).mockImplementation((command: string, callback: (...args) => void) => {
-        callback(error, stdout, stderr);
-        return new ChildProcess();
-    });
-}
+import fs from 'node:fs';
+import dedent from 'ts-dedent';
 
 describe('Symfony utils', () => {
     beforeEach(() => {
-        vi.mocked(exec).mockReset();
+        vi.clearAllMocks();
     });
-    describe('runSymfonyCommand', () => {
-        it('uses default options', async () => {
-            mockExec();
 
-            await runSymfonyCommand('command');
+    describe('generateSymfonyPreview', () => {
+        it('returns a HTML page for preview', async () => {
+            const html = dedent`<!DOCTYPE html>
+            <html>
+            <head>
+            <title>Storybook Preview</title></head>
+            <body>
+            </body>
+            </html>`;
 
-            expect(exec).toHaveBeenCalledWith("'php' 'bin/console' 'command' '-v'", expect.any(Function));
+            global.fetch = vi.fn(() => Promise.resolve(new Response(html)));
+
+            const preview = await generateSymfonyPreview('http://localhost:8000');
+
+            expect(preview).toEqual(html);
+            expect(fetch).toHaveBeenCalledWith(new URL('http://localhost:8000/_storybook/preview'), {
+                method: 'GET',
+                headers: {
+                    Accept: 'text/html',
+                },
+            });
         });
 
-        it('with custom options', async () => {
-            mockExec();
+        it('throws on fetch failure', async () => {
+            global.fetch = vi.fn(() => Promise.resolve(new Response('', { status: 500 })));
 
-            const options = {
-                php: '/usr/bin/php',
-                script: 'custom/bin/console',
-            };
+            await expect(generateSymfonyPreview('http://localhost:8000')).rejects.toThrow('Unable to render preview.');
 
-            await expect(runSymfonyCommand('command', [], options)).resolves.toBe('');
-
-            expect(exec).toHaveBeenCalledWith(
-                "'/usr/bin/php' 'custom/bin/console' 'command' '-v'",
-                expect.any(Function)
-            );
-        });
-
-        it('rejects on exec failure', async () => {
-            mockExec({ code: 1, cmd: "'php' 'bin/console' 'command'" } as ExecException, '');
-
-            await expect(runSymfonyCommand('command')).rejects.toThrow();
-
-            expect(exec).toHaveBeenCalledWith("'php' 'bin/console' 'command' '-v'", expect.any(Function));
-        });
-
-        it('accepts input arguments and options', async () => {
-            mockExec();
-
-            await runSymfonyCommand('command', ['arg1', '-o', '--option=foo']);
-
-            expect(exec).toHaveBeenCalledWith(
-                "'php' 'bin/console' 'command' 'arg1' '-o' '--option=foo' '-v'",
-                expect.any(Function)
-            );
+            expect(fetch).toHaveBeenCalledWith(new URL('http://localhost:8000/_storybook/preview'), {
+                method: 'GET',
+                headers: {
+                    Accept: 'text/html',
+                },
+            });
         });
     });
 
-    describe('runSymfonyCommandJSON', () => {
+    describe('getSymfonyConfig', () => {
         it('returns a JS object', async () => {
-            mockExec(null, '{ "prop": "value" }');
+            const storybookCachePath = `${__dirname}/__fixtures__/var/cache/dev/storybook`;
 
-            const expected = {
-                prop: 'value',
-            };
+            const symfonyParameters = JSON.parse(
+                fs.readFileSync(`${storybookCachePath}/symfony_parameters.json`, 'utf8')
+            );
 
-            await expect(runSymfonyCommandJson('command')).resolves.toEqual(expected);
+            await expect(getSymfonyConfig(storybookCachePath)).resolves.toEqual(symfonyParameters);
         });
     });
 });

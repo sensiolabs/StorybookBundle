@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
 
 const config: StorybookConfig = {
@@ -57,18 +58,17 @@ const config: StorybookConfig = {
         options: {
             // 👇 Here configure the framework
             symfony:
-                process.env.NODE_ENV === 'development'
-                    ? {
-                        server: 'http://localhost:8000',
-                        proxyPaths: [
-                            '/assets',
-                            '/_components',
-                        ],
-                        additionalWatchPaths: [
-                            'assets',
-                        ]
-                    }
-                    : {}
+                {
+                    storybookCachePath: `var/cache/${process.env.APP_ENV}/storybook`,
+                    server: 'http://localhost:8000',
+                    proxyPaths: [
+                        '/assets',
+                        '/_components',
+                    ],
+                    additionalWatchPaths: [
+                        '/assets',
+                    ]
+                }
         },
     },
     previewAnnotations: ['./templates/components/Storybook', './template-stories/lib/preview-api/preview.ts', './template-stories/addons/toolbars/preview.ts'],

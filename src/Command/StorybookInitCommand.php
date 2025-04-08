@@ -146,6 +146,7 @@ const config: StorybookConfig = {
         options: {
             // 👇 Here configure the framework
             symfony: {
+                storybookCachePath: path.resolve(__dirname, `../var/cache/\${process.env.APP_ENV}/storybook`),
                 server: 'https://localhost',
                 proxyPaths: [
                     '/assets',
@@ -160,12 +161,12 @@ TS;
         $mainFile .= <<<TS
                 ],
                 additionalWatchPaths: [
-                    'assets',
+                    '/assets',
 
 TS;
         if ($this->isTailwindInstalled()) {
             $mainFile .= <<<TS
-                    'var/tailwind/tailwind.built.css',
+                    '/var/tailwind/tailwind.built.css',
 
 TS;
         }

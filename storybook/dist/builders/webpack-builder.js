@@ -27,17 +27,17 @@ function h(o){for(var u=[],t=1;t<arguments.length;t++)u[t-1]=arguments[t];var r=
 [	 ]{`+Math.min.apply(Math,s)+"}","g");r=r.map(function(n){return n.replace(g,`
 `)});}r[0]=r[0].replace(/^\r?\n/,"");var c=r[0];return u.forEach(function(n,d){var p=c.match(/(?:^|\n)( *)$/),f=p?p[1]:"",a=n;typeof n=="string"&&n.includes(`
 `)&&(a=String(n).split(`
-`).map(function(i,y){return y===0?i:""+f+i}).join(`
-`)),c+=a+r[d+1];}),c}var l=h;var P=e__namespace.getConfig,B=e__namespace.bail,w=async o=>{let u=o.options.configType==="PRODUCTION",{symfony:t}=await o.options.presets.apply("frameworkOptions");if(!t.server)throw new Error(l`
+`).map(function(i,l){return l===0?i:""+f+i}).join(`
+`)),c+=a+r[d+1];}),c}var y=h;var P=e__namespace.getConfig,B=e__namespace.bail,w=async o=>{let u=o.options.configType==="PRODUCTION",{symfony:t}=await o.options.presets.apply("frameworkOptions");if(!t.server)throw new Error(y`
         Cannot configure dev server.
         
         "server" option in "framework.options.symfony" is required for Storybook dev server to run.
         Update your main.ts|js file accordingly.
-        `);let r=["/_storybook/render"];if(t.proxyPaths){let s=Array.isArray(t.proxyPaths)?t.proxyPaths:[t.proxyPaths];r.push(...s);}for(let s of r)o.router.use(s,httpProxyMiddleware.createProxyMiddleware({target:t.server,changeOrigin:!0,secure:u,headers:{"X-Storybook-Proxy":"true"}}));return e__namespace.start(o)},O=e__namespace.build,k=e__namespace.corePresets,C=e__namespace.overridePresets;
+        `);let r=["/_storybook/render","/_storybook/preview"];if(t.proxyPaths){let s=Array.isArray(t.proxyPaths)?t.proxyPaths:[t.proxyPaths];r.push(...s);}for(let s of r)o.router.use(s,httpProxyMiddleware.createProxyMiddleware({target:t.server,changeOrigin:!0,secure:u,headers:{"X-Storybook-Proxy":"true"}}));return e__namespace.start(o)},k=e__namespace.build,O=e__namespace.corePresets,C=e__namespace.overridePresets;
 
 exports.bail = B;
-exports.build = O;
-exports.corePresets = k;
+exports.build = k;
+exports.corePresets = O;
 exports.getConfig = P;
 exports.overridePresets = C;
 exports.start = w;

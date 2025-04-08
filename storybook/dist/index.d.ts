@@ -35,6 +35,10 @@ type BuilderName = '@storybook/builder-webpack5';
 type ProxyPaths = string[] | string;
 type SymfonyOptions = {
     /**
+     * Storybook cache directory.
+     */
+    storybookCachePath: string;
+    /**
      * Symfony server URL.
      */
     server?: string;
