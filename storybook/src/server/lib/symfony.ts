@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import dedent from 'ts-dedent';
 
 type CommandOptions = {
@@ -30,21 +30,33 @@ const prepareSymfonyCommand = (command: string, inputs: string[] = [], options: 
         .join(' ');
 };
 
-const execSymfonyCommand = async (finalCommand: string) => {
-    return new Promise<string>((resolve, reject) => {
-        exec(finalCommand, (error, stdout, stderr) => {
-            if (error) {
-                reject(
-                    new Error(dedent`
-                    Symfony console failed with exit status ${error.code}:
-                    CMD: ${error.cmd}
-                    Output: ${stdout}
-                    Error output: ${stderr}
-                `)
-                );
-            }
+const execSymfonyCommand = async (
+    command: string,
+    args: string[]
+): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const proc = spawn(command, args, { shell: true });
+        let stdout = '';
+        let stderr = '';
 
-            resolve(stdout);
+        proc.stdout.on('data', d => (stdout += d.toString()));
+        proc.stderr.on('data', d => (stderr += d.toString()));
+
+        proc.on('close', code => {
+            if (code !== 0) {
+                reject(
+                    new Error(
+                        dedent`
+            Symfony console failed with exit status ${code}:
+            CMD: ${command} ${args.join(' ')}
+            Output: ${stdout}
+            Error output: ${stderr}
+          `
+                    )
+                );
+            } else {
+                resolve(stdout);
+            }
         });
     });
 };
@@ -66,19 +78,28 @@ export const runSymfonyCommandJson = async <T = any>(
     inputs: string[] = [],
     options: CommandOptions = {}
 ): Promise<T> => {
-    const finalCommand = prepareSymfonyCommand(command, [...inputs, '--format=json'], options);
-    const result = await execSymfonyCommand(finalCommand);
+    const args = [
+        'bin/console',
+        command,
+        ...inputs,
+        '--format=json',
+    ];
+
+    const output = await execSymfonyCommand('php', args);
 
     try {
-        return JSON.parse(result);
+        return JSON.parse(output) as T;
     } catch (err) {
-        throw new Error(dedent`
-        Failed to process JSON output for Symfony command.
-        CMD: ${finalCommand}
-        Raw output: ${result}
-        `);
+        throw new Error(
+            dedent`
+      Failed to process JSON output for Symfony command.
+      CMD: php ${args.join(' ')}
+      Raw output: ${output}
+    `
+        );
     }
 };
+
 
 export const getKernelProjectDir = async () => {
     return (
