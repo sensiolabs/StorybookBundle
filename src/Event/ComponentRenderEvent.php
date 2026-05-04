@@ -7,6 +7,9 @@ namespace Storybook\Event;
  */
 final class ComponentRenderEvent
 {
+    /**
+     * @param array<string, mixed> $variables
+     */
     public function __construct(
         private readonly string $story,
         private readonly ?string $componentClass,
@@ -24,11 +27,17 @@ final class ComponentRenderEvent
         return $this->componentClass;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getVariables(): array
     {
         return $this->variables;
     }
 
+    /**
+     * @param array<string, mixed> $variables
+     */
     public function setVariables(array $variables): void
     {
         $this->variables = $variables;

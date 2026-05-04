@@ -30,7 +30,7 @@ curl -L -o "${TEMP_DIR}/storybook.zip"  "${ARCHIVE_ZIP_URL}"
 # Extract preview-api stories
 unzip "${TEMP_DIR}/storybook.zip" "storybook-${STORYBOOK_VERSION}/code/lib/preview-api/template/stories/*" -d "${TEMP_DIR}"
 rm -rf "${TEMPLATE_STORES_DIR}/lib/preview-api"
-cp "${TEMP_DIR}/storybook-${STORYBOOK_VERSION}/code/lib/preview-api/template/stories"/* "${TEMPLATE_STORES_DIR}/lib/preview-api"
+cp -r "${TEMP_DIR}/storybook-${STORYBOOK_VERSION}/code/lib/preview-api/template/stories"/* "${TEMPLATE_STORES_DIR}/lib/preview-api"
 
 # Extract essentials addons stories
 ESSENTIALS_ADDONS=(actions backgrounds controls docs interactions links toolbars viewport)

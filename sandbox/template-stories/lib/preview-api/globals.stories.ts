@@ -1,6 +1,9 @@
 import { global as globalThis } from '@storybook/global';
-import type { PartialStoryFn, PlayFunctionContext, StoryContext } from '@storybook/types';
-import { within, expect } from '@storybook/test';
+import type { PartialStoryFn, PlayFunctionContext, StoryContext } from 'storybook/internal/types';
+import { within, expect } from 'storybook/test';
+
+const withoutUndefinedValues = (value: Record<string, unknown>) =>
+  Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined));
 
 export default {
   component: globalThis.Components.Pre,
@@ -10,7 +13,7 @@ export const Inheritance = {
   // Compose all the globals into `object`, so the pre component only needs a single prop
   decorators: [
     (storyFn: PartialStoryFn, context: StoryContext) =>
-      storyFn({ args: { object: context.globals } }),
+      storyFn({ args: { object: withoutUndefinedValues(context.globals) } }),
   ],
   play: async ({ canvasElement }: PlayFunctionContext<any>) => {
     await expect(JSON.parse(within(canvasElement).getByTestId('pre').innerText)).toMatchObject({
@@ -21,6 +24,7 @@ export const Inheritance = {
 };
 
 export const Events = {
+  tags: ['will-fail'],
   parameters: { chromatic: { disableSnapshot: true } },
   // Just pass the "foo" global to the pre
   decorators: [

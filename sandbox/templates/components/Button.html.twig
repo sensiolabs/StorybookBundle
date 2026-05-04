@@ -5,23 +5,24 @@
     backgroundColor = null,
 %}
 
-{% set button = cva({
-    base: 'btn',
-    variants: {
-        variant: {
-            primary: 'btn--primary',
-            secondary: 'btn--secondary'
-        },
-        size: {
-            sm: 'btn--small',
-            md: 'btn--medium',
-            lg: 'btn--large',
-        }
-    }
-}) %}
+{% set variant_classes = {
+    primary: 'btn--primary',
+    secondary: 'btn--secondary'
+} %}
+
+{% set size_classes = {
+    sm: 'btn--small',
+    md: 'btn--medium',
+    lg: 'btn--large',
+} %}
 
 <button
-        class="{{ button.apply({variant, size}, attributes.render('class')|default('')) }}"
+        class="{{ [
+            'btn',
+            variant_classes[variant]|default(variant_classes.primary),
+            size_classes[size]|default(size_classes.md),
+            attributes.render('class')|default('')
+        ]|filter(v => v is not empty)|join(' ') }}"
         style="{{ attributes.render('style') }} {{ backgroundColor ? ';background-color:' ~ backgroundColor : '' }}"
         {{ attributes.defaults({
             ...stimulus_controller('button'),

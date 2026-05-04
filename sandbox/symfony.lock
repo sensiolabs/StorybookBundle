@@ -3,11 +3,11 @@
         "version": "dev-main"
     },
     "symfony/asset-mapper": {
-        "version": "7.0",
+        "version": "8.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "6.4",
+            "version": "8.0",
             "ref": "6c28c471640cc2c6e60812ebcb961c526ef8997f"
         },
         "files": [
@@ -18,7 +18,7 @@
         ]
     },
     "symfony/console": {
-        "version": "7.0",
+        "version": "8.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -42,7 +42,7 @@
         ]
     },
     "symfony/framework-bundle": {
-        "version": "7.0",
+        "version": "8.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -61,7 +61,7 @@
         ]
     },
     "symfony/routing": {
-        "version": "7.0",
+        "version": "8.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -74,7 +74,7 @@
         ]
     },
     "symfony/stimulus-bundle": {
-        "version": "2.17",
+        "version": "3.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -88,11 +88,11 @@
         ]
     },
     "symfony/twig-bundle": {
-        "version": "7.0",
+        "version": "8.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "6.4",
+            "version": "8.0",
             "ref": "cab5fd2a13a45c266d45a7d9337e28dee6272877"
         },
         "files": [
@@ -101,7 +101,7 @@
         ]
     },
     "symfony/ux-live-component": {
-        "version": "2.17",
+        "version": "3.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -113,7 +113,7 @@
         ]
     },
     "symfony/ux-twig-component": {
-        "version": "2.16",
+        "version": "3.0",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -125,6 +125,6 @@
         ]
     },
     "twig/extra-bundle": {
-        "version": "v3.10.0"
+        "version": "v3.24.0"
     }
 }

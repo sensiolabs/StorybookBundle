@@ -9,14 +9,19 @@ class StorybookAttributesTest extends TestCase
 {
     /**
      * @dataProvider getValidArguments
+     *
+     * @param array<string, string> $array
      */
-    public function testCreateFromArray(array $array, StorybookAttributes $expected)
+    public function testCreateFromArray(array $array, StorybookAttributes $expected): void
     {
         $attributes = StorybookAttributes::from($array);
 
         $this->assertEquals($expected, $attributes);
     }
 
+    /**
+     * @return \Generator<string, array{array: array<string, string>, expected: StorybookAttributes}>
+     */
     public static function getValidArguments(): iterable
     {
         yield 'only story' => [
@@ -41,7 +46,7 @@ class StorybookAttributesTest extends TestCase
         ];
     }
 
-    public function testCreateFromInvalidArrayThrowsException()
+    public function testCreateFromInvalidArrayThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Missing key "story" in attributes.');

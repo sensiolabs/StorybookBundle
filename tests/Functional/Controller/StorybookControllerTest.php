@@ -9,7 +9,7 @@ class StorybookControllerTest extends WebTestCase
 {
     use StoryTestTrait;
 
-    public function testRenderStory()
+    public function testRenderStory(): void
     {
         $client = static::createClient();
         $crawler = $this->renderStory($client, 'story', [
@@ -21,7 +21,7 @@ class StorybookControllerTest extends WebTestCase
         $this->assertStringContainsString('Prop1: Prop1 value', $crawler->text());
     }
 
-    public function testRenderInvalidStoryThrowsBadRequest()
+    public function testRenderInvalidStoryThrowsBadRequest(): void
     {
         $client = static::createClient();
         $this->renderStory($client, 'invalid-story', [

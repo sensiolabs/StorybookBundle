@@ -24,6 +24,9 @@ final class ComponentProxyFactory
     {
     }
 
+    /**
+     * @param array<string,mixed> $config
+     */
     public function addMockConfiguration(string $componentClass, string $service, array $config): void
     {
         if (isset($this->config[$componentClass])) {

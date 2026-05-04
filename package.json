@@ -1,0 +1,31 @@
+{
+    "private": true,
+    "workspaces": [
+        "packages/shared",
+        "packages/vite",
+        "packages/webpack"
+    ],
+    "scripts": {
+        "build": "node scripts/workspace-run.mjs build",
+        "test": "node scripts/workspace-run.mjs test",
+        "lint": "node scripts/workspace-run.mjs check-lint",
+        "format:check": "node scripts/workspace-run.mjs check-format",
+        "lock:update:npm": "npm install --package-lock-only",
+        "lock:update:pnpm": "pnpm install --lockfile-only",
+        "lock:update:yarn": "yarn install --ignore-scripts",
+        "lock:update:bun": "bun install",
+        "lock:update": "npm run lock:update:npm && npm run lock:update:pnpm && npm run lock:update:yarn && npm run lock:update:bun"
+    },
+    "devDependencies": {
+        "@testing-library/dom": "10.4.1",
+        "react": "19.2.5",
+        "react-dom": "19.2.5",
+        "storybook": "10.3.5",
+        "typescript": "5.9.3",
+        "vite": "8.0.10",
+        "webpack": "5.106.2"
+    },
+    "engines": {
+        "node": ">=20.19.0"
+    }
+}

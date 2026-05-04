@@ -1,28 +1,27 @@
 # Storybook Features
 
-## Builders Compatibility
+## Builder Compatibility
 
 | Feature   | Status | Comment |
-|-----------|--------|---------|
+| --------- | ------ | ------- |
 | Webpack 5 | ✅️     |         |
-| Vite      | ❌️     |         |
+| Vite      | ✅️     | Default |
 
-
-## Main Features Integrations
+## Main Feature Integrations
 
 | Feature                                    | Status | Comment                           |
-|--------------------------------------------|--------|-----------------------------------|
+| ------------------------------------------ | ------ | --------------------------------- |
 | [CSF Stories](features/csf-stories.md)     | ✅️     | Needs specific syntax for Symfony |
-| CSF Stories TypeScript                     | ❌️     | TODO                              |
+| CSF Stories TypeScript                     | ✅️     | `.stories.ts` files are supported |
 | [Play function](features/play-function.md) | ✅️     |                                   |
 | Loaders                                    | ✅️     |                                   |
 | [Docs](features/docs.md)                   | ✅️     |                                   |
-| Testing                                    | ✅️     | Test runner for interactions      |
+| Testing                                    | ✅️     | Storybook/Vitest                  |
 
-## Essentials Addons integrations
+## Essentials Addon Integrations
 
 | Addon                                  | Status | Comment    |
-|----------------------------------------|--------|------------|
+| -------------------------------------- | ------ | ---------- |
 | [Actions](addons/actions.md)           | ✅️     |            |
 | Backgrounds                            | ✅️     |            |
 | Controls                               | ✅️     |            |
@@ -31,4 +30,3 @@
 | Measure & Outline                      | ✅️     |            |
 | Toolbar & Globals                      | ⚠️     | Not tested |
 | Viewport                               | ✅️     |            |
-

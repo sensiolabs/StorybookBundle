@@ -51,6 +51,6 @@ final class ProxyRequestListener implements EventSubscriberInterface
             return;
         }
 
-        RequestAttributesHelper::withStorybookAttributes($request, ['story' => $query['id']]);
+        $request = RequestAttributesHelper::withStorybookAttributes($request, ['story' => $query['id']]);
     }
 }

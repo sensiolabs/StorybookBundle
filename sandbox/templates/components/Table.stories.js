@@ -1,5 +1,5 @@
 import Table from './Table.html.twig';
-import { twig } from '@sensiolabs/storybook-symfony-webpack5';
+import { twig } from '@sensiolabs/storybook-symfony-vite';
 
 const dataset = {
     'some': {

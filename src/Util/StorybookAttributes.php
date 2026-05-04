@@ -15,6 +15,8 @@ final class StorybookAttributes
     }
 
     /**
+     * @param array<string,mixed> $attributes
+     *
      * @throws \InvalidArgumentException if $attributes miss required keys
      */
     public static function from(array $attributes): self

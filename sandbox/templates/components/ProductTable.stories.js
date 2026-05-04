@@ -1,5 +1,5 @@
 import ProductTable from './ProductTable.html.twig';
-import {twig} from "@sensiolabs/storybook-symfony-webpack5";
+import {twig} from "@sensiolabs/storybook-symfony-vite";
 
 export default {
     component: ProductTable,

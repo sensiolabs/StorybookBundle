@@ -1,4 +1,4 @@
-import { Preview } from '@sensiolabs/storybook-symfony-webpack5';
+import { Preview } from '@sensiolabs/storybook-symfony-vite';
 
 const preview: Preview = {
     parameters: {

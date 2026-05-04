@@ -12,7 +12,7 @@ use Twig\Environment;
 
 class GeneratePreviewCommandTest extends KernelTestCase
 {
-    public function testGeneratePreviewEventIsDispatched()
+    public function testGeneratePreviewEventIsDispatched(): void
     {
         $twig = $this->createMock(Environment::class);
         $eventDispatcher = $this->createMock(EventDispatcherInterface::class);

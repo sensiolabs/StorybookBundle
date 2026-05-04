@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
  */
-class StorybookBundle extends Bundle
+final class StorybookBundle extends Bundle
 {
     public function build(ContainerBuilder $container): void
     {
@@ -20,7 +20,7 @@ class StorybookBundle extends Bundle
         $container->addCompilerPass(new ComponentMockPass());
     }
 
-    public function getContainerExtension(): ?ExtensionInterface
+    public function getContainerExtension(): ExtensionInterface
     {
         return new StorybookExtension();
     }

@@ -9,6 +9,9 @@ use Storybook\Attributes\PropertyMock;
 #[AsComponentMock(ProductTable::class)]
 class ProductTableMock
 {
+    /**
+     * @return array<int,array<string,string>>
+     */
     #[PropertyMock]
     public function products(): array
     {

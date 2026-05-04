@@ -1,6 +1,6 @@
 import { global as globalThis } from '@storybook/global';
-import type { PartialStoryFn, PlayFunctionContext, StoryContext } from '@storybook/types';
-import { within, expect } from '@storybook/test';
+import type { PartialStoryFn, PlayFunctionContext, StoryContext } from 'storybook/internal/types';
+import { within, expect } from 'storybook/test';
 
 const arrows = {
   ArrowUp: { name: 'ArrowUp' },

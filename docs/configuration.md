@@ -4,11 +4,9 @@
 
 ### How It Works
 
-Because Storybook controls the component rendering dynamically from the web application, templates are generated **at runtime** depending on the args, loaders, decorators, etc. Then the template is sent in an HTTP POST request, with a JSON body containing the story template and its args.
+Storybook controls component rendering from the browser. Templates are generated **at runtime** from args, loaders, decorators, and story configuration. The generated template is sent to Symfony in an HTTP POST request with a JSON body containing the story template and args.
 
-To render stories, the bundle configures Twig to use a **dedicated loader and cache**. This way, the main Twig environment is kept unchanged and the bundle features don't interfere with the original application functionalities.
-
-
+To render stories, the bundle configures Twig with a **dedicated loader and cache**. The main Twig environment stays unchanged, so Storybook rendering does not interfere with the application templates.
 
 ```mermaid
 sequenceDiagram
@@ -22,15 +20,15 @@ sequenceDiagram
     Symfony App-->>Storybook Preview: HTML for "my-story"
     deactivate Symfony App
     Storybook Preview->>Storybook Preview: Merge rendered HTML in viewport
-    Storybook Preview-->>Storybook Manager: Simulate page load 
+    Storybook Preview-->>Storybook Manager: Simulate page load
     deactivate Storybook Preview
 ```
 
 ### Twig Sandboxing
 
-Story templates are rendered in a **sandboxed environment**. Because the bundle turns the Symfony application into a remote Twig renderer, it also takes care of what is being asked to render.
+Story templates are rendered in a **sandboxed environment**. Because the bundle turns the Symfony application into a remote Twig renderer, it controls what story templates are allowed to render.
 
-The sandbox works exactly like the [built-in Twig sandbox](https://twig.symfony.com/doc/3.x/tags/sandbox.html), except it only applies to the code sent by Storybook, and not to the code owned by the Symfony application.  The latter is considered **trusted**.
+The sandbox works like the [built-in Twig sandbox](https://twig.symfony.com/doc/3.x/tags/sandbox.html), but only applies to code sent by Storybook. Templates owned by the Symfony application are considered **trusted**.
 
 By default, the following Twig elements are allowed in stories:
 
@@ -46,7 +44,7 @@ storybook:
   sandbox:
     allowedTags:
       - if
-    allowedFilters: 
+    allowedFilters:
       - length
 
 when@dev:
@@ -56,10 +54,9 @@ when@dev:
         - dump
 ```
 
-
 ### The Preview Iframe
 
-When Storybook compiles your stories, it also prepares an HTML document where stories will be rendered. This document is displayed in the Storybook UI with an iframe, and contains all needed materials for Storybook to run its features.
+When Storybook compiles stories, it also prepares the HTML document used by the preview iframe. This document contains the scripts and styles required by Storybook features.
 
 To customize the iframe, you can override the preview template provided by the bundle:
 
@@ -77,14 +74,13 @@ To customize the iframe, you can override the preview template provided by the b
 {% endblock %}
 ```
 
-The rendered content of these blocks will be injected in the preview iframe, similarly to the [previewHead](https://storybook.js.org/docs/configure/story-rendering#adding-to-head) and [previewBody](https://storybook.js.org/docs/configure/story-rendering#adding-to-body) configurations.
+The rendered content of these blocks is injected into the preview iframe, similar to Storybook's [previewHead](https://storybook.js.org/docs/configure/story-rendering#adding-to-head) and [previewBody](https://storybook.js.org/docs/configure/story-rendering#adding-to-body) configuration.
 
 ## Symfony UX packages
 
 ### Live Components
 
-To make [Live Components](https://symfony.com/bundles/ux-live-component/current/index.html) work in Storybook, you have to enable proxy for live component requests in the
-Storybook `main.ts|js` configuration:
+To use [Live Components](https://symfony.com/bundles/ux-live-component/current/index.html) in Storybook, enable proxying for Live Component requests in the Storybook `main.ts` or `main.js` configuration:
 
 ```ts
 // .storybook/main.ts
@@ -92,24 +88,23 @@ Storybook `main.ts|js` configuration:
 // ...
 
 const config: StorybookConfig = {
-    framework: {
-        name: "@sensiolabs/storybook-symfony-webpack5",
-        options: {
-            // ...
-            symfony: {
-                proxyPaths: [
-                    // ...
-                    // 👇 This is the live component route prefix usually set in config/routes/ux_live_component.yaml
-                    '/_components',
-                ],
-            },
-        },
+  framework: {
+    name: "@sensiolabs/storybook-symfony-vite",
+    options: {
+      // ...
+      symfony: {
+        proxyPaths: [
+          // ...
+          // This is the Live Component route prefix usually set in config/routes/ux_live_component.yaml.
+          "/_components",
+        ],
+      },
     },
+  },
 };
 ```
 
-Thanks to this configuration, all requests made by live components to re-render themselves will be sent to the
-Symfony application.
+With this configuration, Live Component re-render requests are sent to the Symfony application.
 
 ### AssetMapper
 
@@ -125,7 +120,7 @@ To use Storybook with a project that uses the [AssetMapper component](https://sy
 {% endblock %}
 ```
 
-Though, standard HMR will not work properly with AssetMapper. To register additional paths to watch and re-trigger the iframe compilation on change, update your `main.ts|js` configuration:
+Standard HMR does not cover AssetMapper files. To register additional paths and re-trigger iframe compilation on change, update your `main.ts` or `main.js` configuration:
 
 ```ts
 // .storybook/main.ts
@@ -133,20 +128,20 @@ Though, standard HMR will not work properly with AssetMapper. To register additi
 // ...
 
 const config: StorybookConfig = {
-    framework: {
-        name: "@sensiolabs/storybook-symfony-webpack5",
-        options: {
-            // ...
-            symfony: {
-                // 👇 Add more paths to watch
-                additionalWatchPaths: [
-                    'assets', // Directories
-                    'assets/app.js', // Files
-                    'assets/**/*.js' // Glob patterns
-                ],
-            },
-        },
+  framework: {
+    name: "@sensiolabs/storybook-symfony-vite",
+    options: {
+      // ...
+      symfony: {
+        // Add more paths to watch.
+        additionalWatchPaths: [
+          "assets", // Directories
+          "assets/app.js", // Files
+          "assets/**/*.js", // Glob patterns
+        ],
+      },
     },
+  },
 };
 ```
 
@@ -158,8 +153,7 @@ To enable HMR for Stimulus controllers, ensure they are watched in your `additio
 
 ### TailwindBundle
 
-If you use [TailwindBundle](https://symfony.com/bundles/TailwindBundle/current/index.html) to manage your CSS, you need to tell Storybook to watch the built CSS file, so the
-preview is refreshed with HMR on change:
+If you use [TailwindBundle](https://symfony.com/bundles/TailwindBundle/current/index.html) to manage CSS, configure Storybook to watch the built CSS file so the preview refreshes when it changes:
 
 ```ts
 // .storybook/main.ts
@@ -167,18 +161,18 @@ preview is refreshed with HMR on change:
 // ...
 
 const config: StorybookConfig = {
-    framework: {
-        name: "@sensiolabs/storybook-symfony-webpack5",
-        options: {
-            // ...
-            symfony: {
-                additionalWatchPaths: [
-                    // ...
-                    'var/tailwind/tailwind.built.css'
-                ],
-            },
-        },
+  framework: {
+    name: "@sensiolabs/storybook-symfony-vite",
+    options: {
+      // ...
+      symfony: {
+        additionalWatchPaths: [
+          // ...
+          "var/tailwind/tailwind.built.css",
+        ],
+      },
     },
+  },
 };
 ```
 
@@ -190,110 +184,126 @@ const config: StorybookConfig = {
 # config/packages/storybook.yaml
 
 storybook:
-    # Cache base directory for story rendering.
-    # Set false to disable caching. 
-    cache: '%kernel.cache_dir%/storybook/twig'
+  # Cache base directory for story rendering.
+  # Set false to disable caching.
+  cache: "%kernel.cache_dir%/storybook/twig"
 
-    # Configure the sandbox for Twig rendering.
-    sandbox:
+  # Configure the sandbox for Twig rendering.
+  sandbox:
+    # Functions that are allowed in stories.
+    allowedFunctions: []
 
-        # Functions that are allowed in stories.
-        allowedFunctions:     []
+    # Tags that are allowed in stories.
+    allowedTags: []
 
-        # Tags that are allowed in stories.
-        allowedTags:          []
+    # Filters that are allowed in stories.
+    allowedFilters: []
 
-        # Filters that are allowed in stories.
-        allowedFilters:       []
+  # Properties that are allowed in stories.
+  allowedProperties:
+    App\MyVariable: ["foo", "bar"]
 
-        # Properties that are allowed in stories.
-        allowedProperties: {}
-            # Example:
-            # App\MyVariable: ['foo', 'bar'] 
-        # Methods that are allowed in stories.
-        allowedMethods: {}
-          # Example:
-          # App\MyVariable: ['someMethod', 'getBaz'] 
+  # Methods that are allowed in stories.
+  allowedMethods:
+    App\MyVariable: ["someMethod", "getBaz"]
 ```
 
 ### Storybook Framework
 
+The examples below use Vite because it is the default generated builder. Webpack accepts the same `symfony` options; only the imported type and `framework.name` change.
+
 ```ts
 // .storybook/main.ts
-import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
+import type { StorybookConfig } from "@sensiolabs/storybook-symfony-vite";
 
 /**
  * Main Storybook configuration.
  */
 const config: StorybookConfig = {
+  /**
+   * Stories specifier.
+   *
+   * @see https://storybook.js.org/docs/configure#configure-your-storybook-project
+   */
+  stories: [
+    "../templates/components/**/*.mdx",
+    "../templates/components/**/*.stories.[tj]s",
+  ],
 
-    /**
-     * Stories specifier.
-     * 
-     * @see https://storybook.js.org/docs/configure#configure-your-storybook-project
-     */
-    stories: [
-        "../templates/components/**/*.mdx",
-        "../templates/components/**/*.stories.[tj]s",
-    ],
+  /**
+   * Addons configuration.
+   *
+   * @see https://storybook.js.org/docs/configure#configure-your-storybook-project
+   */
+  addons: ["@storybook/addon-docs", "@storybook/addon-vitest"],
 
-    /**
-     * Addons configuration.
-     * 
-     * @see https://storybook.js.org/docs/configure#configure-your-storybook-project
-     */
-    addons: [
-        // 👇 This is required for TypeScript config files
-        "@storybook/addon-webpack5-compiler-swc",
-        // Other addons...
-    ],
-    
-    framework: {
-        // 👇 Tell Storybook to use the Symfony framework
-        name: "@sensiolabs/storybook-symfony-webpack5",
-        options: {
-            
-            /**
-             * Symfony framework options.
-             * 
-             * These options only applies to the dev environment.
-             */
-            symfony: {
-                /**
-                 * Mandatory, the URL of the Symfony development server.
-                 * 
-                 * @var string
-                 */
-                server: 'http://localhost',
-                
-                /**
-                 * URLs that should be proxied to the Symfony server.
-                 * 
-                 * Useful to resolve assets and re-render LiveComponents.
-                 * 
-                 * @var string[]
-                 */
-                proxyPaths: [
-                    '/assets',
-                    '/_components'
-                ],
+  framework: {
+    // Tell Storybook to use the Symfony framework.
+    name: "@sensiolabs/storybook-symfony-vite",
+    options: {
+      /**
+       * Symfony framework options.
+       *
+       * These options only apply to the dev environment.
+       */
+      symfony: {
+        /**
+         * Mandatory, the URL of the Symfony development server.
+         *
+         * @var string
+         */
+        server: "http://localhost:8000",
 
-                /**
-                 * Additional paths where changes should re-trigger compilation.
-                 * 
-                 * Use this if your stories depends on modules that are not part 
-                 * of the JavaScript compilation (e.g. with AssetMapper and TailwindBundle).
-                 * 
-                 * @var string[]
-                 */
-                additionalWatchPaths: [
-                    'assets',
-                    'var/tailwind/tailwind.built.css'
-                ]
-            }
-        },
+        /**
+         * URLs that should be proxied to the Symfony server.
+         *
+         * Useful to resolve assets and re-render LiveComponents.
+         *
+         * @var string[]
+         */
+        proxyPaths: ["/assets", "/_components"],
+
+        /**
+         * Additional paths where changes should re-trigger compilation.
+         *
+         * Use this if your stories depend on modules that are not part
+         * of the JavaScript compilation (e.g. with AssetMapper and TailwindBundle).
+         *
+         * @var string[]
+         */
+        additionalWatchPaths: ["assets", "var/tailwind/tailwind.built.css"],
+      },
     },
+  },
 };
 
 export default config;
 ```
+
+For Webpack:
+
+```ts
+// .storybook/main.ts
+import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack";
+
+const config: StorybookConfig = {
+  stories: ["../templates/components/**/*.stories.[tj]s"],
+  addons: ["@storybook/addon-docs"],
+  framework: {
+    name: "@sensiolabs/storybook-symfony-webpack",
+    options: {
+      symfony: {
+        server: "http://localhost:8000",
+        proxyPaths: ["/assets", "/_components"],
+        additionalWatchPaths: ["assets", "var/tailwind/tailwind.built.css"],
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+The Vite and Webpack packages export matching `StorybookConfig` and `Preview` types. Import them from the package selected by `framework.name`.
+
+See [Vite and Webpack Builders](builders.md) for builder choice guidance and production-build notes.

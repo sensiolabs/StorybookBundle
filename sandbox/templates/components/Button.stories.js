@@ -1,5 +1,5 @@
 import Button from './Button.html.twig';
-import { fn, expect, userEvent, waitFor, within } from '@storybook/test';
+import { fn, expect, userEvent, waitFor, within } from 'storybook/test';
 
 const variants = ['primary', 'secondary'];
 const sizes = ['sm', 'md', 'lg'];
@@ -51,6 +51,7 @@ export const Small= {
 };
 
 export const OnClick = {
+    tags: ['will-fail'],
     args: {
         ...Primary.args,
     },

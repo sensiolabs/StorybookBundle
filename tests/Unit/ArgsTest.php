@@ -7,14 +7,14 @@ use Storybook\Args;
 
 class ArgsTest extends TestCase
 {
-    public function testArgsCreation()
+    public function testArgsCreation(): void
     {
         $args = new Args(['foo' => 'bar']);
 
         $this->assertEquals('bar', $args['foo']);
     }
 
-    public function testGet()
+    public function testGet(): void
     {
         $args = new Args([
             'foo' => 'bar',
@@ -31,7 +31,7 @@ class ArgsTest extends TestCase
         $this->assertNull($args->get('baz', 'default'));
     }
 
-    public function testSet()
+    public function testSet(): void
     {
         $args = new Args();
 
@@ -44,7 +44,7 @@ class ArgsTest extends TestCase
         $this->assertEquals('baz', $args->get('foo'));
     }
 
-    public function testHas()
+    public function testHas(): void
     {
         $args = new Args([
             'foo' => 'bar',
@@ -56,7 +56,7 @@ class ArgsTest extends TestCase
         $this->assertFalse($args->has('unknown'));
     }
 
-    public function testMerge()
+    public function testMerge(): void
     {
         // Merge with Args
         $args = new Args(['foo' => 'bar']);
@@ -85,7 +85,7 @@ class ArgsTest extends TestCase
         $this->assertEquals('qux', $args->get('foo'));
     }
 
-    public function testOffsetGet()
+    public function testOffsetGet(): void
     {
         $args = new Args([
             'foo' => 'bar',
@@ -98,7 +98,7 @@ class ArgsTest extends TestCase
         $this->assertNull($args['baz']);
     }
 
-    public function testOffsetSet()
+    public function testOffsetSet(): void
     {
         $args = new Args();
 
@@ -107,7 +107,7 @@ class ArgsTest extends TestCase
         $this->assertEquals('bar', $args->get('foo'));
     }
 
-    public function testOffsetExists()
+    public function testOffsetExists(): void
     {
         $args = new Args([
             'foo' => 'bar',
@@ -118,7 +118,7 @@ class ArgsTest extends TestCase
         $this->assertTrue(isset($args['baz']));
     }
 
-    public function testOffsetUnset()
+    public function testOffsetUnset(): void
     {
         $args = new Args(['foo' => 'bar']);
 
@@ -127,7 +127,7 @@ class ArgsTest extends TestCase
         $this->assertFalse(isset($args['foo']));
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $args = new Args(['foo' => 'bar']);
 
@@ -136,14 +136,19 @@ class ArgsTest extends TestCase
 
     /**
      * @dataProvider getInvalidMethodCalls
+     *
+     * @param callable(): void $test
      */
-    public function testArrayMethodsThrowExceptionWhenKeyIsNotString(callable $test)
+    public function testArrayMethodsThrowExceptionWhenKeyIsNotString(callable $test): void
     {
         $this->expectException(\InvalidArgumentException::class);
 
         $test();
     }
 
+    /**
+     * @return \Generator<string, array{callable(): void}>
+     */
     public static function getInvalidMethodCalls(): iterable
     {
         yield 'get' => [static function () {
@@ -154,7 +159,7 @@ class ArgsTest extends TestCase
 
         yield 'set' => [static function () {
             $args = new Args();
-            $args[0] = 'foo';
+            $args->offsetSet(0, 'foo');
         }];
 
         yield 'exists' => [static function () {
@@ -165,7 +170,7 @@ class ArgsTest extends TestCase
 
         yield 'unset' => [static function () {
             $args = new Args();
-            unset($args[0]);
+            $args->offsetUnset(0);
         }];
 
         yield 'constructor' => [static function () {
@@ -173,7 +178,7 @@ class ArgsTest extends TestCase
         }];
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $args = new Args([
             'foo' => 'bar',
@@ -183,7 +188,7 @@ class ArgsTest extends TestCase
         $this->assertCount(2, $args);
     }
 
-    public function testIterator()
+    public function testIterator(): void
     {
         $args = new Args([
             'foo' => 'bar',

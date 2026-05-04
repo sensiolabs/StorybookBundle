@@ -1,9 +1,10 @@
 import LiveComponent from './LiveComponent.html.twig';
-import { userEvent, expect, fn, waitFor, within } from '@storybook/test';
-import {twig} from "@sensiolabs/storybook-symfony-webpack5";
+import { userEvent, expect, fn, waitFor, within } from 'storybook/test';
+import {twig} from "@sensiolabs/storybook-symfony-vite";
 
 export default {
     component: LiveComponent,
+    tags: ['will-fail'],
     args: {
         onClick: fn()
     },

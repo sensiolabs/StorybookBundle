@@ -9,7 +9,7 @@ class ArgsProcessorTest extends WebTestCase
 {
     use StoryTestTrait;
 
-    public function testCustomArgsProcessorIsCalled()
+    public function testCustomArgsProcessorIsCalled(): void
     {
         $client = static::createClient();
 

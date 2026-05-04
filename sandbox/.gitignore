@@ -7,6 +7,7 @@
 /public/bundles/
 /var/
 /vendor/
+/config/reference.php
 ###< symfony/framework-bundle ###
 
 ###> symfony/asset-mapper ###
@@ -14,9 +15,11 @@
 /assets/vendor/
 ###< symfony/asset-mapper ###
 
+# Standalone sandbox output and generated dependency state.
 /node_modules
 /storybook-static
 /.bundle
 /composer.lock
 /package-lock.json
 /composer-standalone.json
+/symfony-standalone.lock

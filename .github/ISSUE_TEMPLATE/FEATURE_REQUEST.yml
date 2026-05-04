@@ -1,0 +1,67 @@
+name: Feature request
+description: Suggest a new capability or an improvement to existing behaviour.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for new features, workflow improvements, or compatibility requests.
+        If something is broken, use the bug report form instead.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      multiple: true
+      options:
+        - Symfony bundle
+        - Vite framework package
+        - Webpack framework package
+        - Shared JavaScript runtime
+        - Storybook rendering
+        - Storybook/Vitest tests
+        - Sandbox
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behaviour, API, configuration, or documentation you would like.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds or other approaches have you tried?
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Breaking change?
+      options:
+        - "No"
+        - "Yes"
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add examples, links, screenshots, or references that explain the request.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked existing issues for similar requests.
+          required: true

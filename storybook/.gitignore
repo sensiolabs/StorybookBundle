@@ -1,7 +1,0 @@
-node_modules/
-storybook-static/
-build-storybook.log
-.DS_Store
-.env
-yarn-error.log
-.yarn

@@ -1,4 +1,4 @@
-import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
+import type { StorybookConfig } from "@sensiolabs/storybook-symfony-vite";
 
 const config: StorybookConfig = {
     stories: [
@@ -13,10 +13,6 @@ const config: StorybookConfig = {
             files: '**/*.@(mdx|stories.@(js|jsx|ts|tsx))',
         },
         {
-            directory: '../template-stories/addons/links',
-            titlePrefix: 'addons/links',
-            files: '**/*.@(mdx|stories.@(js|jsx|ts|tsx))'
-        }, {
             directory: '../template-stories/addons/actions',
             titlePrefix: 'addons/actions',
             files: '**/*.@(mdx|stories.@(js|jsx|ts|tsx))'
@@ -47,17 +43,14 @@ const config: StorybookConfig = {
         }
     ],
     addons: [
-        "@storybook/addon-webpack5-compiler-swc",
-        "@storybook/addon-links",
-        "@storybook/addon-essentials",
-        "@storybook/addon-interactions",
+        "@storybook/addon-docs",
+        "@storybook/addon-vitest",
     ],
     framework: {
-        name: "@sensiolabs/storybook-symfony-webpack5",
+        name: "@sensiolabs/storybook-symfony-vite",
         options: {
-            // 👇 Here configure the framework
             symfony:
-                process.env.NODE_ENV === 'development'
+                process.env.NODE_ENV !== 'production'
                     ? {
                         server: 'http://localhost:8000',
                         proxyPaths: [
@@ -72,42 +65,6 @@ const config: StorybookConfig = {
         },
     },
     previewAnnotations: ['./templates/components/Storybook', './template-stories/lib/preview-api/preview.ts', './template-stories/addons/toolbars/preview.ts'],
-
-    webpackFinal: (config) => ({
-        ...config,
-        module: {
-            ...config.module,
-            rules: [
-                // Ensure esbuild-loader applies to all files in ./template-stories
-                {
-                    test: [/\/template-stories\//],
-                    exclude: [/\.mdx$/],
-                    loader: require.resolve('esbuild-loader'),
-                    options: {
-                        loader: 'tsx',
-                        target: 'es2015',
-                    },
-                },
-                // Handle MDX files per the addon-docs presets (ish)
-                {
-                    test: /template-stories\/.*\.mdx$/,
-                    exclude: /\.stories\.mdx$/,
-                    use: [
-                        {
-                            loader: require.resolve('@storybook/addon-docs/mdx-loader'),
-                        },
-                    ],
-                },
-                // Ensure no other loaders from the framework apply
-                ...config.module.rules.map(rule => ({
-                    // @ts-ignore
-                    ...(rule),
-                    // @ts-ignore
-                    exclude: [/\/template-stories\//].concat(rule.exclude || []),
-                })),
-            ],
-        },
-    }),
 };
 
 export default config;

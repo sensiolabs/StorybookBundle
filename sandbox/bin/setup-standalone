@@ -4,6 +4,15 @@
 $APP_DIR = realpath(__DIR__.'/..');
 $ROOT_DIR = $APP_DIR.'/..';
 
+function run(string $command): void
+{
+    passthru($command, $code);
+
+    if (0 !== $code) {
+        exit($code);
+    }
+}
+
 chdir($APP_DIR);
 
 /*
@@ -22,6 +31,8 @@ $packages = json_decode(file_get_contents($composerJsonPath), associative: true)
 $standalonePackages = $packages;
 
 $standalonePackages['config'] += ['lock' => false];
+$branchOrRev = exec('git branch --show-current') ?: exec('git rev-parse HEAD');
+$standalonePackages['require']['sensiolabs/storybook-bundle'] = \sprintf('dev-%s', $branchOrRev);
 $standalonePackages['repositories'] = [
     [
         'type' => 'path',
@@ -40,11 +51,14 @@ file_put_contents($composerJsonStandalonePath, json_encode($standalonePackages, 
 
 $BUNDLE_DIR = $APP_DIR.'/.bundle';
 
-exec(sprintf('rm -rf "%s"', $BUNDLE_DIR));
+run(sprintf('rm -rf "%s"', $BUNDLE_DIR));
 mkdir($BUNDLE_DIR);
 
-chdir($ROOT_DIR);
-exec(sprintf('(git archive --format=tar HEAD | tar -xC "%s")', $BUNDLE_DIR));
+run(sprintf(
+    'rsync -a --delete --exclude .git --exclude vendor --exclude node_modules --exclude sandbox/vendor --exclude sandbox/node_modules --exclude sandbox/.bundle "%s/" "%s"',
+    $ROOT_DIR,
+    $BUNDLE_DIR
+));
 chdir($APP_DIR);
 
 
@@ -52,12 +66,9 @@ chdir($APP_DIR);
  * 3/ Install dependencies with standalone bundle
  */
 
-$branchOrRev = exec('git branch --show-current') ?: exec('git rev-parse HEAD');
-
-exec(sprintf('rm -rf %1$s/vendor %1$s/node_modules', $APP_DIR));
+run(sprintf('rm -rf %1$s/vendor %1$s/node_modules', $APP_DIR));
 putenv('COMPOSER=composer-standalone.json');
-exec(sprintf('composer require --no-update sensiolabs/storybook-bundle:dev-%s', $branchOrRev));
-exec('composer install -n');
-exec('npm install --no-package-lock');
+run('composer update -n --no-audit');
+run('npm install --silent --no-package-lock --no-audit --fund=false');
 
 exit(0);

@@ -2,6 +2,7 @@
 
 namespace Storybook\Tests\Unit;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Storybook\Args;
 use Storybook\Exception\RenderException;
@@ -10,13 +11,16 @@ use Storybook\Story;
 use Storybook\StoryRenderer;
 use Twig\Environment;
 use Twig\Error\Error;
+use Twig\Extension\SandboxExtension;
+use Twig\Loader\ArrayLoader;
 use Twig\Sandbox\SecurityError;
+use Twig\Sandbox\SecurityPolicy;
 
 class StoryRendererTest extends TestCase
 {
-    public function testRender()
+    public function testRender(): void
     {
-        $twig = $this->createMock(Environment::class);
+        $twig = $this->createTwig();
         $renderer = new StoryRenderer($twig);
 
         $twig
@@ -42,9 +46,9 @@ class StoryRendererTest extends TestCase
      *
      * @param class-string $expectedException
      */
-    public function testExceptions(Error $twigError, string $expectedException)
+    public function testExceptions(Error $twigError, string $expectedException): void
     {
-        $twig = $this->createMock(Environment::class);
+        $twig = $this->createTwig();
         $renderer = new StoryRenderer($twig);
 
         $twig->expects($this->once())->method('render')
@@ -61,6 +65,9 @@ class StoryRendererTest extends TestCase
         $renderer->render($story);
     }
 
+    /**
+     * @return \Generator<string, array{Error, class-string<RenderException>|class-string<UnauthorizedStoryException>}>
+     */
     public static function twigErrorProvider(): iterable
     {
         yield 'sandbox error' => [
@@ -72,5 +79,17 @@ class StoryRendererTest extends TestCase
             new Error(''),
             RenderException::class,
         ];
+    }
+
+    /**
+     * @return Environment&MockObject
+     */
+    private function createTwig(): Environment
+    {
+        $twig = $this->createMock(Environment::class);
+        $twig->method('getLoader')->willReturn(new ArrayLoader());
+        $twig->method('getExtension')->with(SandboxExtension::class)->willReturn(new SandboxExtension(new SecurityPolicy()));
+
+        return $twig;
     }
 }

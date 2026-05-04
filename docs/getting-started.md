@@ -1,37 +1,36 @@
 # Getting Started
 
-Once you installed the bundle and its dependencies as described in the [Installation](../README.md#installation) page,
-you can start writing your first stories.
+After installing the bundle and its dependencies as described in [Installation](../README.md#installation), you can start writing stories.
 
-We assume you are using Symfony UX packages with the LAST stack architecture and Tailwind.
+This guide assumes a Symfony UX setup using the [LAST stack](https://symfony.com/doc/current/frontend.html) architecture (Live Components, AssetMapper, Stimulus, Twig Components) and Tailwind.
 
-## Choose stories locations
+## Choose Story Locations
 
-The first step is to choose where you will write your stories. There are two approaches for this:
-1. Put all stories in a dedicated location, like a `stories` directory at the root of your project
-2. Put each story next to the component it describes in the `templates/components` directory
+First choose where stories should live. Common approaches are:
 
-It's a matter of choice, regarding if you prefer to keep your template directories dry or not. We'll take the second approach 
-here. 
+1. Put all stories in a dedicated location, such as a root-level `stories` directory.
+2. Put each story next to the component it describes, for example in `templates/components`.
+
+This guide uses the second approach.
 
 Update your `.storybook/main.ts` configuration file accordingly:
 
 ```ts
 // .storybook/main.ts
 
-import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
+import type { StorybookConfig } from "@sensiolabs/storybook-symfony-vite";
 
 const config: StorybookConfig = {
-    stories: [
-        // 👇 Configure stories specifier here
-        "../templates/components/**/*.stories.[tj]s",
-    ],
-    // ...
+  stories: [
+    // Configure the stories specifier here.
+    "../templates/components/**/*.stories.[tj]s",
+  ],
+  // ...
 };
 export default config;
 ```
 
-## Create your first story
+## Create Your First Story
 
 Create an anonymous `Button` component with the following template:
 
@@ -75,88 +74,65 @@ Then create a story for this component:
 ```js
 // templates/components/Button.stories.js
 
-import Button from './Button.html.twig';
+import Button from "./Button.html.twig";
 
 export default {
-    component: Button,
-}
+  component: Button,
+};
 
-export const Default = {}
+export const Default = {};
 ```
 
 Run Storybook:
+
 ```shell
 npm run storybook
 ```
 
-And visit http://localhost:6006, then you should see your component:
+Open <http://localhost:6006> to view the component:
 
 ![img.png](img/getting-started/button.png)
 
-Great! Let's improve things a little...
-
-Update your story to add some control over your component props: 
+Next, add controls for the component props:
 
 ```js
 // templates/components/Button.stories.js
 
-import Button from './Button.html.twig';
+import Button from "./Button.html.twig";
 
 export default {
-    component: Button,
-}
+  component: Button,
+};
 
 export const Default = {
-    args: {
-        variant: 'primary',
-        size: 'md',
+  args: {
+    variant: "primary",
+    size: "md",
+  },
+  argTypes: {
+    variant: {
+      options: ["primary", "alternative"],
+      control: { type: "radio" },
     },
-    argTypes: {
-        variant: {
-            options: ['primary', 'alternative'],
-            control: {type: 'radio'},
-        },
-        size: {
-            options: ['lg', 'md'],
-            control: {type: 'radio'},
-        },
-    }
-}
-```
-
-Now you can control your component's props from the Storybook UI!
-
-![button_controls.gif](img/getting-started/button_controls.gif)
-
-## Interactions and play function
-
-Let's reuse our Button component to create a Counter that increases a value when clicked.
-
-First, install some new packages:
-
-```shell
-npm install -D @storybook/test @storybook/addon-interactions 
-```
-
-Enable the Interactions addon in the main configuration:
-```ts
-// .storybook/main.ts
-
-const config: StorybookConfig = {
-    addons: [
-        "@storybook/addon-webpack5-compiler-swc",
-        "@storybook/addon-links",
-        "@storybook/addon-essentials",
-        // 👇 Register the addon here
-        "@storybook/addon-interactions",
-    ],
-    // ...
+    size: {
+      options: ["lg", "md"],
+      control: { type: "radio" },
+    },
+  },
 };
 ```
 
-Then restart Storybook.
+You can now control the component props from the Storybook UI.
 
-Now add the Counter template and its Stimulus controller: 
+![button_controls.gif](img/getting-started/button_controls.gif)
+
+## Interactions and Play Functions
+
+Reuse the Button component to create a Counter that increases a value when clicked.
+
+Storybook 10 exposes testing helpers from the `storybook/test` entrypoint. No separate interactions addon is required.
+
+Add the Counter template and its Stimulus controller:
 
 ```twig
 {# templates/components/Counter.html.twig #}
@@ -174,159 +150,152 @@ Now add the Counter template and its Stimulus controller:
 ```js
 // assets/controllers/counter_controller.js
 
-import {Controller} from '@hotwired/stimulus';
+import { Controller } from "@hotwired/stimulus";
 
-export default class extends Controller
-{
-    static targets = ['count'];
+export default class extends Controller {
+  static targets = ["count"];
 
-    initialize() {
-        this.count = 0;
-    }
+  initialize() {
+    this.count = 0;
+  }
 
-    countTargetConnected()
-    {
-        this.countTarget.innerHTML = this.count;
-    }
+  countTargetConnected() {
+    this.countTarget.innerHTML = this.count;
+  }
 
-    increment() {
-        this.count++;
-    }
+  increment() {
+    this.count++;
+  }
 }
 ```
 
-Now create a story for this new component and add a play function:
+Create a story for this component and add a play function:
 
 ```js
 // templates/components/Counter.stories.js
 
-import Counter from './Counter.html.twig';
-import { userEvent, within } from '@storybook/test';
+import Counter from "./Counter.html.twig";
+import { userEvent, within } from "storybook/test";
 
 export default {
-    component: Counter,
-}
+  component: Counter,
+};
 
 export const Default = {
-    play: async ({ canvasElement}) => {
-        const canvas = within(canvasElement);
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-        const button = canvas.getByRole('button');
+    const button = canvas.getByRole("button");
 
-        await userEvent.click(button);
-    }
-}
+    await userEvent.click(button);
+  },
+};
 ```
 
-Navigate to the new story in the Storybook UI, and... 
+Open the new story in the Storybook UI.
 
 ![counter_play_function.png](img/getting-started/counter_play_function.png)
 
-The play function simulated a click on the button. But... The counter still shows 0. That's because our controller didn't update the HTML. It's a bug we could have detected if we had made an assertion about  it:
+The play function simulates a click on the button, but the counter still shows `0` because the controller does not update the HTML. An assertion makes that regression visible:
 
 ```js
-import {userEvent, waitFor, within, expect} from '@storybook/test';
+import { userEvent, waitFor, within, expect } from "storybook/test";
 
 // ...
 
 export const Default = {
-    play: async ({ canvasElement}) => {
-        const canvas = within(canvasElement);
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
 
-        const button = canvas.getByRole('button');
+    const button = canvas.getByRole("button");
 
-        await userEvent.click(button);
-        
-        // 👇 Make an assertion about the text in the component
-        await waitFor(() => expect(canvasElement).toHaveTextContent('Counter: 1'));
-    }
-}
+    await userEvent.click(button);
 
-
+    // Assert against the text rendered by the component.
+    await waitFor(() => expect(canvasElement).toHaveTextContent("Counter: 1"));
+  },
+};
 ```
 
-And, yep, it fails:
+The assertion fails:
 
 ![counter_play_function_assert.png](img/getting-started/counter_play_function_assert.png)
 
-Let's fix the bug in `counter_controller.js`:
+Fix the bug in `counter_controller.js`:
 
 ```js
 // assets/controllers/counter_controller.js
 
-export default class extends Controller
-{
-    // ...
+export default class extends Controller {
+  // ...
 
-    increment() {
-        this.count++;
-        // 👇 Update count HTML
-        this.countTarget.innerHTML = this.count;
-    }
+  increment() {
+    this.count++;
+    // Update the count HTML.
+    this.countTarget.innerHTML = this.count;
+  }
 }
 ```
 
-And go back to Storybook... 
+Return to Storybook:
 
 ![counter_play_function_assert_fixed.png](img/getting-started/counter_play_function_assert_fixed.png)
 
-Now the test passes!
+The test now passes.
 
-## Listen to component events
+## Listen to Component Events
 
-Now our Counter component works well, but we want other components to be able to react to the increase action.
+The Counter component now updates correctly. To let other components react to the increment action, dispatch an event from the controller.
 
 Update the controller to dispatch an event:
 
 ```js
 // assets/controllers/counter_controller.js
 
-export default class extends Controller
-{
-    // ...
+export default class extends Controller {
+  // ...
 
-    increment() {
-        this.count++;
-        this.countTarget.innerHTML = this.count;
-        // 👇 Dispatch an increment event with count value in payload
-        this.dispatch('increment', {detail: {count: this.count}});
-    }
+  increment() {
+    this.count++;
+    this.countTarget.innerHTML = this.count;
+    // Dispatch an increment event with the count value in the payload.
+    this.dispatch("increment", { detail: { count: this.count } });
+  }
 }
 ```
 
-And update the story to add a spy on the `counter:increment` event:
+Update the story to add a spy for the `counter:increment` event:
 
 ```js
 // templates/components/Counter.stories.js
 
-import {userEvent, waitFor, within, expect, fn} from '@storybook/test';
+import { userEvent, waitFor, within, expect, fn } from "storybook/test";
 
 // ...
 
 export const Default = {
-    args: {
-        'counter:increment': fn() // 👈 Create a spy listener for the event
-    },
-    play: async ({ args, canvasElement }) => {
-        const canvas = within(canvasElement);
+  args: {
+    "counter:increment": fn(), // Create a spy listener for the event.
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
 
-        const button = canvas.getByRole('button');
+    const button = canvas.getByRole("button");
 
-        await userEvent.click(button);
+    await userEvent.click(button);
 
-        await waitFor(() => expect(canvasElement).toHaveTextContent('Counter: 1'));
-        
-        // 👇 Assert that the event has been fired, by asserting the listener has been called 
-        await waitFor(() => expect(args['counter:increment']).toHaveBeenCalled());
-    }
-}
+    await waitFor(() => expect(canvasElement).toHaveTextContent("Counter: 1"));
+
+    // Assert that the event listener was called.
+    await waitFor(() => expect(args["counter:increment"]).toHaveBeenCalled());
+  },
+};
 ```
 
-Now your play function ensures the event has been dispatched:
+The play function now verifies that the event was dispatched:
 
 ![counter_action_play_function.png](img/getting-started/counter_action_play_function.png)
 
-And you can grab some details about the event in the Actions panel:
+The Actions panel shows the event payload:
 
 ![counter_action_event_details.png](img/getting-started/counter_action_event_details.png)
-

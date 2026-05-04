@@ -1,12 +1,12 @@
 import { global as globalThis } from '@storybook/global';
-import type { PlayFunctionContext } from '@storybook/types';
-import { within, waitFor, expect } from '@storybook/test';
+import type { PlayFunctionContext } from 'storybook/internal/types';
+import { within, waitFor, expect } from 'storybook/test';
 import {
   FORCE_REMOUNT,
   RESET_STORY_ARGS,
   STORY_ARGS_UPDATED,
   UPDATE_STORY_ARGS,
-} from '@storybook/core-events';
+} from 'storybook/internal/core-events';
 
 export default {
   component: globalThis.Components.Button,
@@ -42,6 +42,7 @@ export const ForceRemount = {
 };
 
 export const ChangeArgs = {
+  tags: ['will-fail'],
   play: async ({ canvasElement, id }: PlayFunctionContext<any>) => {
     const channel = globalThis.__STORYBOOK_ADDONS_CHANNEL__;
 

@@ -1,5 +1,5 @@
 import { global as globalThis } from '@storybook/global';
-import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
+import { MINIMAL_VIEWPORTS } from 'storybook/viewport';
 
 export default {
   component: globalThis.Components.Button,

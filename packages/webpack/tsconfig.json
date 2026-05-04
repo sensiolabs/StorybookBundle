@@ -1,0 +1,31 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "ignoreDeprecations": "5.0",
+        "incremental": false,
+        "isolatedModules": true,
+        "jsx": "react",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "strictBindCallApply": true,
+        "target": "esnext"
+    },
+    "exclude": ["dist", "**/dist", "node_modules", "**/node_modules"],
+    "include": ["src/**/*", "tsup.config.ts"],
+    "ts-node": {
+        "compilerOptions": {
+            "types": ["node"]
+        },
+        "files": true,
+        "transpileOnly": true
+    }
+}

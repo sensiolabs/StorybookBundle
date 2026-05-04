@@ -1,0 +1,37 @@
+name: Question
+description: Ask a usage or contribution question.
+title: "[Question]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for focused questions about using or contributing to this bundle.
+        If you found a bug, please use the bug report form.
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Installation
+        - Configuration
+        - Vite builder
+        - Webpack builder
+        - Twig components
+        - Live components
+        - Storybook/Vitest
+        - Sandbox or contributor workflow
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to understand or accomplish?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Include relevant configuration, commands, versions, or links.

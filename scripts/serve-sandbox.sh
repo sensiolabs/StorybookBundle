@@ -10,4 +10,4 @@ cd "${APP_DIR}";
 
 echo "Starting Symfony server"
 
-php -S localhost:8000 public/index.php 2> >(grep -v -P "(Accepted|Closing)$" 1>&2)
+php -S localhost:8000 public/index.php 2> >(grep -v -E "(Accepted|Closing)$" 1>&2)

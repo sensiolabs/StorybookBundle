@@ -1,0 +1,7 @@
+{
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "phpactor/phpactor": "^2025.12"
+    }
+}

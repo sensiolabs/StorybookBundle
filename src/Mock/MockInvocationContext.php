@@ -10,6 +10,9 @@ namespace Storybook\Mock;
  */
 final class MockInvocationContext
 {
+    /**
+     * @param array<int, mixed> $originalArgs
+     */
     public function __construct(
         public readonly object $component,
         public readonly array $originalArgs,

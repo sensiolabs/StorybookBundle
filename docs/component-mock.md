@@ -1,6 +1,8 @@
+# Component Mocks
+
 ## Mocking Twig components
 
-One of the powerful features of Twig components is to use dependency injection to inject services (like Doctrine repositories) and consume them in property getters and other methods. Let's take the [`FeaturedProducts`](https://symfony.com/bundles/ux-twig-component/current/index.html#fetching-services) component from the official documentation:
+Twig components can use dependency injection to consume services, such as Doctrine repositories, in property getters and other methods. This example uses the [`FeaturedProducts`](https://symfony.com/bundles/ux-twig-component/current/index.html#fetching-services) component from the official documentation:
 
 ```php
 // src/Twig/Components/FeaturedProducts.php
@@ -38,7 +40,7 @@ class FeaturedProducts
 </div>
 ```
 
-That's pretty cool, but in your Storybook you probably don't want to use the _real_ `getProducts` implementation, which relies on `ProductRepository`. To bypass the original property resolution, you can create a Component Mock:
+In Storybook, you often do not want to call the real `getProducts` implementation because it relies on `ProductRepository`. Create a component mock to bypass the original property resolution:
 
 ```php
 // src/Storybook/Mock/FeaturedProductsMock.php
@@ -52,28 +54,28 @@ use Storybook\Attributes\PropertyMock;
 #[AsComponentMock(component: FeaturedProducts::class)]
 class FeaturedProductsMock
 {
-    // Mock 'products' property for all stories:
-    
+    // Mock the "products" property for all stories.
+
     #[PropertyMock] // property argument is optional and defaults to the annotated method name
     public function products()
     {
         return [
             ['id' => 0, 'name' => 'Product 1', 'color' => 'Red'],
             ['id' => 1, 'name' => 'Product 2', 'color' => 'Green'],
-        ];   
+        ];
     }
-    
+
     // Or use different implementations for specific stories:
-    
+
     #[PropertyMock(property: 'products', stories: ['featured-products--story1', 'featured-products--story2'])]
     public function getFewProducts()
     {
         return [
             ['id' => 0, 'name' => 'Product 1', 'color' => 'Red'],
             ['id' => 1, 'name' => 'Product 2', 'color' => 'Green'],
-        ];   
+        ];
     }
-    
+
     #[PropertyMock(property: 'products', stories: 'featured-products--story3')]
     public function getALotOfProducts()
     {
@@ -82,12 +84,12 @@ class FeaturedProductsMock
             ['id' => 1, 'name' => 'Product 2', 'color' => 'Green'],
             // ...
             ['id' => 99, 'name' => 'Product 99', 'color' => 'Blue'],
-        ];   
-    }    
+        ];
+    }
 }
 ```
 
-As Component Mocks are regular services, you can inject whatever you need, for example to delegate your fixtures management to an external service:
+Component mocks are regular services, so they can receive dependencies. For example, fixture management can be delegated to another service:
 
 ```php
 // src/Storybook/Mock/FeaturedProductsMock.php
@@ -97,15 +99,15 @@ As Component Mocks are regular services, you can inject whatever you need, for e
 #[AsComponentMock(component: FeaturedProducts::class)]
 class FeaturedProductsMock
 {
-    public function __construct(private readonly ProductFixturesProvider $fixturesProvider) 
+    public function __construct(private readonly ProductFixturesProvider $fixturesProvider)
     {
     }
-    
+
     #[PropertyMock]
     public function products()
     {
         return $this->fixturesProvider->getSomeProducts();
-    }    
+    }
 }
 ```
 
@@ -121,16 +123,15 @@ use Storybook\Mock\MockInvocationContext;
 
 #[AsComponentMock(component: FeaturedProducts::class)]
 class FeaturedProductsMock
-{    
+{
     #[PropertyMock]
     public function products(MockInvocationContext $context)
     {
-        $context->component->prop; // Access to the component prop
-        $context->originalArgs[0]; // Access to the first argument passed to the method
-    }    
+        $context->component->prop; // Access the component prop.
+        $context->originalArgs[0]; // Access the first argument passed to the method.
+    }
 }
 ```
-
 
 > Note: \
 > Mocks will also bypass resolution of [computed properties](https://symfony.com/bundles/ux-twig-component/current/index.html#computed-properties), but be aware that the result will not be cached.

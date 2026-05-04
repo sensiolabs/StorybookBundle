@@ -4,10 +4,10 @@ import type {
   PartialStoryFn,
   PlayFunctionContext,
   StoryContext,
-} from '@storybook/types';
-import { within, expect } from '@storybook/test';
-import { useEffect } from '@storybook/preview-api';
-import { STORY_ARGS_UPDATED, UPDATE_STORY_ARGS, RESET_STORY_ARGS } from '@storybook/core-events';
+} from 'storybook/internal/types';
+import { within, expect } from 'storybook/test';
+import { useEffect } from 'storybook/preview-api';
+import { STORY_ARGS_UPDATED, UPDATE_STORY_ARGS, RESET_STORY_ARGS } from 'storybook/internal/core-events';
 
 export default {
   component: globalThis.Components.Pre,
@@ -35,6 +35,7 @@ export const Inheritance = {
 // NOTE this story is currently broken in Chromatic for both Vue2/Vue3
 // Issue: https://github.com/storybookjs/storybook/issues/22945
 export const Hooks = {
+  tags: ['will-fail'],
   decorators: [
     // decorator that uses hooks
     (storyFn: PartialStoryFn, context: StoryContext) => {

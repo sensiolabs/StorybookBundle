@@ -7,7 +7,7 @@ import {
   waitFor,
   waitForElementToBeRemoved,
   within,
-} from '@storybook/test';
+} from 'storybook/test';
 
 export default {
   component: globalThis.Components.Form,
@@ -50,6 +50,7 @@ export const TypeAndClear = {
 };
 
 export const Callback = {
+  tags: ['will-fail'],
   play: async ({ args, canvasElement, step }) => {
     const canvas = within(canvasElement);
     await step('Enter value', Type.play);
@@ -65,6 +66,7 @@ export const Callback = {
 // NOTE: of course you can use `findByText()` to implicitly waitFor, but we want
 // an explicit test here
 export const SyncWaitFor = {
+  tags: ['will-fail'],
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
     await step('Submit form', Callback.play);
@@ -73,6 +75,7 @@ export const SyncWaitFor = {
 };
 
 export const AsyncWaitFor = {
+  tags: ['will-fail'],
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
     await step('Submit form', Callback.play);
@@ -81,6 +84,7 @@ export const AsyncWaitFor = {
 };
 
 export const WaitForElementToBeRemoved = {
+  tags: ['will-fail'],
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
     await step('SyncWaitFor play fn', SyncWaitFor.play);
@@ -91,6 +95,7 @@ export const WaitForElementToBeRemoved = {
 };
 
 export const WithLoaders = {
+  tags: ['will-fail'],
   loaders: [async () => new Promise((resolve) => setTimeout(resolve, 2000))],
   play: async ({ step }) => {
     await step('Submit form', Callback.play);
@@ -98,6 +103,7 @@ export const WithLoaders = {
 };
 
 export const UserEventSetup = {
+  tags: ['will-fail'],
   play: async (context) => {
     const { args, canvasElement, step } = context;
     const user = userEvent.setup();

@@ -10,10 +10,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Twig\Environment;
+use Twig\Extension\SandboxExtension;
+use Twig\Loader\ArrayLoader;
+use Twig\Sandbox\SecurityPolicy;
 
 class StorybookControllerTest extends TestCase
 {
-    public function testControllerReturnsResponse()
+    public function testControllerReturnsResponse(): void
     {
         $renderer = $this->createRenderer();
         $argsProcessor = new StorybookArgsProcessor();
@@ -31,7 +34,7 @@ class StorybookControllerTest extends TestCase
         $this->assertInstanceOf(Response::class, $response);
     }
 
-    public function testBadRequestIsThrownWhenNoTemplateIsProvided()
+    public function testBadRequestIsThrownWhenNoTemplateIsProvided(): void
     {
         $renderer = $this->createRenderer();
         $argsProcessor = new StorybookArgsProcessor();
@@ -49,6 +52,10 @@ class StorybookControllerTest extends TestCase
 
     private function createRenderer(): StoryRenderer
     {
-        return new StoryRenderer($this->createMock(Environment::class));
+        $twig = $this->createMock(Environment::class);
+        $twig->method('getLoader')->willReturn(new ArrayLoader());
+        $twig->method('getExtension')->with(SandboxExtension::class)->willReturn(new SandboxExtension(new SecurityPolicy()));
+
+        return new StoryRenderer($twig);
     }
 }

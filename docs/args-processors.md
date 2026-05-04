@@ -1,14 +1,14 @@
 # Processing Story Args
 
-Story's args are sent as a JSON object in the render request body. They are decoded and transformed into a `Args` object that is injected in the story template context on rendering. You can customize these args before they are injected in the context with Args Processors.
+Story args are sent as a JSON object in the render request body. They are decoded into an `Args` object and injected into the story template context during rendering. Args processors let you customize those values before the template receives them.
 
 ## The Args Object
 
-The `Args` object implements `ArrayAccess`, `Countable` and `IteratorAggregate`. Its entries are indexed by string, and can also be managed using object accessors (`get`, `set`, `has` and `merge`).
+The `Args` object implements `ArrayAccess`, `Countable`, and `IteratorAggregate`. Entries are indexed by string and can also be managed with object accessors: `get`, `set`, `has`, and `merge`.
 
 ## Args Processors
 
-Args Processors are services used to alter the args extracted from the request:
+Args processors are services that alter the args extracted from the request:
 
 ```php
 // src/Storybook/ArgsProcessor/MyArgsProcessor.php
@@ -27,10 +27,10 @@ class MyArgsProcessor implements ArgsProcessorInterface
 {
     public function __invoke(Args $args): void
     {
-        // Using array access syntax:  
+        // Use array access syntax.
         $args['foo'] = 'bar';
-        
-        // Or using accessors:
+
+        // Or use accessors.
         $args->set('foo', 'bar');
     }
 }
@@ -58,7 +58,7 @@ class MyArgsProcessor implements ArgsProcessorInterface
     {
         foreach ($args['users'] as $key => $user) {
             $args['users'][$key] = new User($user['id'], $user['name']);
-        } 
+        }
     }
 }
 ```
@@ -79,10 +79,10 @@ class MyArgsProcessor implements ArgsProcessorInterface
 
     public function __invoke(Args $args): void
     {
-        // Merge defaults values without override
+        // Merge default values without overriding existing values.
         $args->merge(self::DEFAULTS);
-        
-        // Merge and override existing values
+
+        // Merge and override existing values.
         $args->merge(self::DEFAULTS, override: true);
     }
 }

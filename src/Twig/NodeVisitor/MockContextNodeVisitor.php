@@ -6,6 +6,7 @@ use Storybook\Twig\Node\MockContextNode;
 use Twig\Environment;
 use Twig\Node\ModuleNode;
 use Twig\Node\Node;
+use Twig\Node\Nodes;
 use Twig\NodeVisitor\NodeVisitorInterface;
 
 /**
@@ -22,10 +23,10 @@ final class MockContextNodeVisitor implements NodeVisitorInterface
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): ?Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         if ($node instanceof ModuleNode && '' !== $node->getSourceContext()->getPath()) {
-            $node->setNode('display_start', new Node([new MockContextNode(), $node->getNode('display_start')]));
+            $node->setNode('display_start', new Nodes([new MockContextNode(), $node->getNode('display_start')]));
         }
 
         return $node;

@@ -21,6 +21,8 @@ final class RequestAttributesHelper
     }
 
     /**
+     * @param array<string,mixed> $attributes
+     *
      * @throws \InvalidArgumentException if attributes could not be created
      */
     public static function withStorybookAttributes(Request $request, array $attributes): Request

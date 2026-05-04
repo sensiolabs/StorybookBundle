@@ -6,32 +6,33 @@
 
 > [Storybook Documentation](https://storybook.js.org/docs/writing-docs/autodocs)
 
-Autodocs generates a complete documentation for all the stories of a component.
+Autodocs generates documentation for a component's stories.
 
-The feature must be enabled in `.storybook/main.ts`: 
+Enable it in `.storybook/main.ts`:
+
 ```ts
 // .storybook/main.ts
 
-import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
+import type { StorybookConfig } from "@sensiolabs/storybook-symfony-vite";
 
 const config: StorybookConfig = {
-    // ...
-    docs: {
-        autodocs: "tag", // 👈 Enable autodocs
-    },
+  // ...
+  docs: {
+    autodocs: "tag", // Enable autodocs.
+  },
 };
 export default config;
 ```
 
-Then in stories, use the `autodocs` tag to generate the docs page automatically:
+Then use the `autodocs` tag in stories to generate the docs page automatically:
 
 ```js
 // stories/Button.stories.js
 
 export default {
-    // ...
-    tags: ['autodocs'], // 👈 Use autodocs
-}
+  // ...
+  tags: ["autodocs"], // Use autodocs.
+};
 ```
 
 ## MDX
@@ -40,12 +41,12 @@ export default {
 
 > [Storybook Documentation](https://storybook.js.org/docs/writing-docs/mdx)
 
-MDX is a mixed syntax between Markdown and JavaScript/JSX. In opposition to autodocs, they are used to write custom docs pages for stories: 
+MDX combines Markdown with JavaScript/JSX and is useful for custom documentation pages:
 
 ```mdxjs
 // stories/Table.mdx
 
-import {Meta, Primary, Controls, Story, Source, Canvas} from "@storybook/blocks";
+import {Meta, Primary, Controls, Story, Source, Canvas} from "@storybook/addon-docs/blocks";
 import * as TableStories from './Table.stories';
 
 <Meta of={TableStories} />
@@ -72,15 +73,15 @@ Be sure to include `.mdx` files in the story specifier of your `.storybook/main.
 ```ts
 // .storybook/main.ts
 
-import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
+import type { StorybookConfig } from "@sensiolabs/storybook-symfony-vite";
 
 const config: StorybookConfig = {
-    stories: [
-        "../stories/**/*.mdx", // 👈 Include MDX files 
-        "../stories/**/*.stories.[tj]s",
-    ],
-    
-    // ...
+  stories: [
+    "../stories/**/*.mdx", // Include MDX files.
+    "../stories/**/*.stories.[tj]s",
+  ],
+
+  // ...
 };
 
 export default config;
@@ -88,9 +89,9 @@ export default config;
 
 ## Rendering Source Snippets
 
-A powerful feature of docs pages is to display the source code used to render the component in a given story. 
+Docs pages can display the source code used to render a component in a story.
 
-Those source snippets are rendered with Twig `set` tags to configures template variables:
+Source snippets are rendered with Twig `set` tags to configure template variables:
 
 ```twig
 {# Example snippet #}

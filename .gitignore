@@ -1,13 +1,22 @@
+# PHP dependencies and local runtime state.
 /vendor/
+/vendor-bin/*/vendor/
 /var/
 /composer.lock
 /symfony.lock
 
+# JavaScript installs are intentionally not committed; lockfiles are committed.
 /node_modules
-/yarn.lock
+/packages/*/node_modules
 
+# JavaScript build output and test artefacts.
+/storybook-static
+/coverage
+
+# Local test/tool output.
 /.phpunit.result.cache
 /phpunit.xml
+/tests/Fixtures/config/reference.php
 
 .php-cs-fixer.cache
-
+/.phpactor.json

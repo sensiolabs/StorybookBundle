@@ -8,7 +8,7 @@ use Storybook\Mock\MockInvocationContext;
 
 class MockedPropertiesProxyTest extends TestCase
 {
-    public function testMockedMethodIsCalledInsteadOfOriginalMethod()
+    public function testMockedMethodIsCalledInsteadOfOriginalMethod(): void
     {
         $component = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['foo'])
@@ -32,7 +32,7 @@ class MockedPropertiesProxyTest extends TestCase
         $this->assertEquals('mocked', $result);
     }
 
-    public function testMockInvocationContextReferencesOriginalComponentAndArguments()
+    public function testMockInvocationContextReferencesOriginalComponentAndArguments(): void
     {
         $component = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['foo'])
@@ -61,7 +61,7 @@ class MockedPropertiesProxyTest extends TestCase
         $proxy->__call('foo', ['bar', 'baz']);
     }
 
-    public function testMockedMethodWithAnotherNameIsCalled()
+    public function testMockedMethodWithAnotherNameIsCalled(): void
     {
         $component = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['foo'])
@@ -81,7 +81,7 @@ class MockedPropertiesProxyTest extends TestCase
         $this->assertEquals('mocked', $result);
     }
 
-    public function testNotMockedMethodIsCalledFromOriginal()
+    public function testNotMockedMethodIsCalledFromOriginal(): void
     {
         $component = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['bar'])
@@ -104,7 +104,7 @@ class MockedPropertiesProxyTest extends TestCase
     /**
      * @dataProvider getMethods
      */
-    public function testNormalizedMethodIsCalled(string $method, string $normalizedMethod)
+    public function testNormalizedMethodIsCalled(string $method, string $normalizedMethod): void
     {
         $component = $this->getMockBuilder(\stdClass::class)
             ->addMethods([$normalizedMethod])
@@ -120,6 +120,9 @@ class MockedPropertiesProxyTest extends TestCase
         $this->assertEquals('foo', $result);
     }
 
+    /**
+     * @return \Generator<string, array{string, string}>
+     */
     public static function getMethods(): iterable
     {
         yield 'hasser' => [
@@ -136,7 +139,7 @@ class MockedPropertiesProxyTest extends TestCase
         ];
     }
 
-    public function testInvalidArgumentExceptionIsThrownWhenNoMethodExists()
+    public function testInvalidArgumentExceptionIsThrownWhenNoMethodExists(): void
     {
         $component = new \stdClass();
         $provider = new \stdClass();
@@ -144,6 +147,24 @@ class MockedPropertiesProxyTest extends TestCase
         $proxy = new MockedPropertiesProxy($component, $provider, []);
 
         $this->expectException(\InvalidArgumentException::class);
+
+        $proxy->__call('foo', []);
+    }
+
+    public function testOriginalInvalidArgumentExceptionIsNotMasked(): void
+    {
+        $component = new class {
+            public function foo(): void
+            {
+                throw new \InvalidArgumentException('Original exception');
+            }
+        };
+        $provider = new \stdClass();
+
+        $proxy = new MockedPropertiesProxy($component, $provider, []);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Original exception');
 
         $proxy->__call('foo', []);
     }

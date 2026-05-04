@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class RequestAttributesHelperTest extends TestCase
 {
-    public function testIsStorybookRequest()
+    public function testIsStorybookRequest(): void
     {
         $request = new Request();
         $request->attributes->set('_storybook', new StorybookAttributes('story'));
@@ -18,14 +18,14 @@ class RequestAttributesHelperTest extends TestCase
         $this->assertFalse(RequestAttributesHelper::isStorybookRequest(new Request()));
     }
 
-    public function testIsProxyRequest()
+    public function testIsProxyRequest(): void
     {
         $request = new Request();
         $request->headers->set('X-Storybook-Proxy', 'true');
         $this->assertTrue(RequestAttributesHelper::isProxyRequest($request));
     }
 
-    public function testWithStorybookAttributesAddsAttributesToRequest()
+    public function testWithStorybookAttributesAddsAttributesToRequest(): void
     {
         $request = RequestAttributesHelper::withStorybookAttributes(new Request(), ['story' => 'story']);
         $attributes = $request->attributes->get('_storybook');
@@ -34,13 +34,13 @@ class RequestAttributesHelperTest extends TestCase
         $this->assertEquals('story', $attributes->story);
     }
 
-    public function testWithStorybookAttributesWithInvalidAttributesArrayThrowsException()
+    public function testWithStorybookAttributesWithInvalidAttributesArrayThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         RequestAttributesHelper::withStorybookAttributes(new Request(), []);
     }
 
-    public function testGetStorybookAttributesReturnsStorybookAttributes()
+    public function testGetStorybookAttributesReturnsStorybookAttributes(): void
     {
         $request = new Request();
         $attributes = new StorybookAttributes('story');
@@ -49,14 +49,14 @@ class RequestAttributesHelperTest extends TestCase
         $this->assertEquals($attributes, RequestAttributesHelper::getStorybookAttributes($request));
     }
 
-    public function testGetStorybookAttributesOnNonStorybookRequestThrowsException()
+    public function testGetStorybookAttributesOnNonStorybookRequestThrowsException(): void
     {
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Request is missing a "_storybook" attribute.');
         RequestAttributesHelper::getStorybookAttributes(new Request());
     }
 
-    public function testGetStorybookAttributesThrowsExceptionIfAttributeIsNotStorybookAttributes()
+    public function testGetStorybookAttributesThrowsExceptionIfAttributeIsNotStorybookAttributes(): void
     {
         $request = new Request();
         $request->attributes->set('_storybook', ['foo' => 'bar']);

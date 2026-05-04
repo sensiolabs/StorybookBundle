@@ -1,0 +1,31 @@
+name: Documentation issue
+description: Report missing, stale, confusing, or incorrect documentation.
+title: "[Docs]: "
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Documentation location
+      description: Link to the page or name the file, section, or example.
+      placeholder: docs/configuration.md, README.md, packages/vite/README.md, ...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is missing, stale, confusing, or incorrect?
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: If you know the correct wording or example, include it here.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked existing issues for duplicates.
+          required: true

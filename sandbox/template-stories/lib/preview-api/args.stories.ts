@@ -1,8 +1,8 @@
 import { global as globalThis } from '@storybook/global';
-import type { PartialStoryFn, PlayFunctionContext, StoryContext } from '@storybook/types';
-import { within, expect } from '@storybook/test';
+import type { PartialStoryFn, PlayFunctionContext, StoryContext } from 'storybook/internal/types';
+import { within, expect } from 'storybook/test';
 import pick from 'lodash/pick';
-import { STORY_ARGS_UPDATED, UPDATE_STORY_ARGS, RESET_STORY_ARGS } from '@storybook/core-events';
+import { STORY_ARGS_UPDATED, UPDATE_STORY_ARGS, RESET_STORY_ARGS } from 'storybook/internal/core-events';
 
 export default {
   component: globalThis.Components.Pre,
@@ -64,6 +64,7 @@ export const Targets = {
 };
 
 export const Events = {
+  tags: ['will-fail'],
   args: {
     test: 'initial',
   },

@@ -14,8 +14,11 @@ class ProxyRequestListenerTest extends TestCase
 {
     /**
      * @dataProvider requestsProvider
+     *
+     * @param array<string, mixed>       $headers
+     * @param array<string, string>|null $attributeValues
      */
-    public function testProxyRequestStorybookAttributes(array $headers, ?array $attributeValues)
+    public function testProxyRequestStorybookAttributes(array $headers, ?array $attributeValues): void
     {
         $request = new Request();
         $request->headers->add($headers);
@@ -38,6 +41,9 @@ class ProxyRequestListenerTest extends TestCase
         }
     }
 
+    /**
+     * @return \Generator<string, array{array<string, mixed>, array<string, string>|null}>
+     */
     public static function requestsProvider(): iterable
     {
         yield 'Proxy request with viewMode=story and id in referer' => [

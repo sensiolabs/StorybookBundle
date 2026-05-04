@@ -12,7 +12,7 @@ class ComponentRenderSubscriberTest extends WebTestCase
     /**
      * @dataProvider getStories
      */
-    public function testRenderMockedComponent(string $story)
+    public function testRenderMockedComponent(string $story): void
     {
         $client = static::createClient();
 
@@ -30,6 +30,9 @@ class ComponentRenderSubscriberTest extends WebTestCase
         $this->assertStringContainsString('ComputedProp: mocked computedProp', $text);
     }
 
+    /**
+     * @return \Generator<string, array{story: string}>
+     */
     public static function getStories(): iterable
     {
         yield 'Function style' => [

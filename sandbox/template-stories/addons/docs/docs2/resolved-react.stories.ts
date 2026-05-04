@@ -1,4 +1,4 @@
-import { within, expect } from '@storybook/test';
+import { within, expect } from 'storybook/test';
 import * as ReactExport from 'react';
 import * as ReactDom from 'react-dom';
 import * as ReactDomServer from 'react-dom/server';

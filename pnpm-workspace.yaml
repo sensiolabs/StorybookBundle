@@ -1,0 +1,4 @@
+packages:
+    - packages/shared
+    - packages/vite
+    - packages/webpack

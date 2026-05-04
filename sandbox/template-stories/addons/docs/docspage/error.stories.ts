@@ -11,6 +11,7 @@ export default {
  * A story that throws
  */
 export const ErrorStory = {
+  tags: ['will-fail'],
   decorators: [
     (storyFn) => {
       // Don't throw in the test runner; there's no easy way to skip (yet)

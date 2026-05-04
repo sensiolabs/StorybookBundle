@@ -4,26 +4,26 @@
 
 > [Storybook Documentation](https://storybook.js.org/docs/writing-stories/play-function)
 
-The play function allows to execute code after a story renders. It is used to simulate user interactions with your component.
+The play function executes code after a story renders. It is commonly used to simulate user interactions with a component.
 
-It is recommended to set up the Storybook's [Interactions](../addons/interactions.md) addon to get visual components in your Storybook preview.
+Use Storybook's [Interactions](../addons/interactions.md) tooling when you want visual debugging for play functions in the Storybook preview.
 
-Here is an example of play function:
+Example:
 
 ```js
-import Button from './Button.html.twig';
-import {userEvent, within} from '@storybook/test';
+import Button from "./Button.html.twig";
+import { userEvent, within } from "storybook/test";
 
 export default {
-    component: Button
-}
+  component: Button,
+};
 
-export default ClickedButton = {
-    play: async (canvasElement) => {
-        const canvas = within(canvasElement);
-        const button = canvas.getByRole('button');
+export const ClickedButton = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole("button");
 
-        await userEvent.click(button);
-    }
-}
+    await userEvent.click(button);
+  },
+};
 ```

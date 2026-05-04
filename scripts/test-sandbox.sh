@@ -9,27 +9,18 @@ APP_DIR="${SCRIPTS_DIR}/../sandbox"
 
 cd "${APP_DIR}";
 
-declare -rA SYMFONY_SERVER=(
-  ["color"]="magenta"
-  ["name"]="Symfony"
-  ["command"]="${SCRIPTS_DIR}/serve-sandbox.sh"
-);
+SYMFONY_SERVER_NAME="Symfony"
+SYMFONY_SERVER_COLOR="magenta"
+SYMFONY_SERVER_COMMAND="${SCRIPTS_DIR}/serve-sandbox.sh"
 
-declare -rA STORYBOOK=(
-  ["color"]="blue"
-  ["name"]="Storybook"
-  ["command"]="npm run build-storybook -- --quiet && npx http-server storybook-static --proxy http://localhost:8000 --port 6006 --silent"
-)
+TEST_RUNNER_NAME="Storybook Vitest"
+TEST_RUNNER_COLOR="green"
+TEST_RUNNER_COMMAND="npx wait-on --timeout 180000 tcp:localhost:8000 && npm run test-storybook"
 
-declare -rA TEST_RUNNER=(
-  ["color"]="green"
-  ["name"]="Test Runner"
-  ["command"]="npx wait-on --timeout 60000 tcp:localhost:8000 tcp:127.0.0.1:6006 && npm run test-storybook -- --stories-json --excludeTags will-fail"
-)
+npm run build-storybook -- --quiet
 
 npx concurrently -k -s first \
-  -n "${SYMFONY_SERVER["name"]},${STORYBOOK["name"]},${TEST_RUNNER["name"]}" \
-  -c "${SYMFONY_SERVER["color"]},${STORYBOOK["color"]},${TEST_RUNNER["color"]}" \
-  "${SYMFONY_SERVER["command"]}" \
-  "${STORYBOOK["command"]}" \
-  "${TEST_RUNNER["command"]}"
+  -n "${SYMFONY_SERVER_NAME},${TEST_RUNNER_NAME}" \
+  -c "${SYMFONY_SERVER_COLOR},${TEST_RUNNER_COLOR}" \
+  "${SYMFONY_SERVER_COMMAND}" \
+  "${TEST_RUNNER_COMMAND}"

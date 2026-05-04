@@ -17,7 +17,7 @@ use Twig\Error\RuntimeError;
  */
 class StorybookEnvironment extends Environment
 {
-    private ComponentRuntime $componentRuntime;
+    private ?ComponentRuntime $componentRuntime = null;
 
     public function setComponentRuntime(ComponentRuntime $componentRuntime): void
     {
@@ -29,13 +29,17 @@ class StorybookEnvironment extends Environment
      *
      * @param class-string<TRuntime> $class
      *
-     * @return TRuntime
+     * @return ComponentRuntime|object
      *
      * @throws RuntimeError
      */
     public function getRuntime(string $class)
     {
         if (ComponentRuntime::class === $class) {
+            if (!$this->componentRuntime instanceof ComponentRuntime) {
+                throw new RuntimeError(\sprintf('The "%s" runtime has not been configured.', ComponentRuntime::class));
+            }
+
             return $this->componentRuntime;
         }
 

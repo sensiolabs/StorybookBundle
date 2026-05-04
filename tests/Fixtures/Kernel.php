@@ -83,6 +83,7 @@ class Kernel extends BaseKernel
             ->autowire()
             ->autoconfigure()
             ->load(__NAMESPACE__.'\\', __DIR__)
+            ->exclude(__DIR__.'/config')
             // Disable logging errors in the console
             ->set('logger', NullLogger::class)
         ;

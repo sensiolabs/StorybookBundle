@@ -12,7 +12,7 @@ class StoryRendererTest extends KernelTestCase
     /**
      * @dataProvider getInvalidTemplates
      */
-    public function testRenderStoryWithRestrictedContentThrowsException(string $template)
+    public function testRenderStoryWithRestrictedContentThrowsException(string $template): void
     {
         self::bootKernel();
 
@@ -24,6 +24,9 @@ class StoryRendererTest extends KernelTestCase
         $renderer->render($story);
     }
 
+    /**
+     * @return \Generator<string, array{string}>
+     */
     public static function getInvalidTemplates(): iterable
     {
         yield 'function' => ['
@@ -74,8 +77,10 @@ class StoryRendererTest extends KernelTestCase
 
     /**
      * @dataProvider getValidTemplates
+     *
+     * @param array<string, mixed> $args
      */
-    public function testRenderStoryWithAllowedContent(string $template, array $args = [])
+    public function testRenderStoryWithAllowedContent(string $template, array $args = []): void
     {
         self::bootKernel();
 
@@ -87,6 +92,9 @@ class StoryRendererTest extends KernelTestCase
         $this->assertIsString($content);
     }
 
+    /**
+     * @return \Generator<string, array{string}|array{string, array<string, mixed>}>
+     */
     public static function getValidTemplates(): iterable
     {
         yield 'access story args' => ['
@@ -115,6 +123,15 @@ class StoryRendererTest extends KernelTestCase
 
         yield 'authorized tag' => ['
             {% authorized %}{% endauthorized %}
+        '];
+
+        yield 'include tag' => ['
+            {% include "components/_included.html.twig" %}
+        '];
+
+        yield 'extends tag' => ['
+            {% extends "components/_layout.html.twig" %}
+            {% block body %}Extended story{% endblock %}
         '];
 
         yield 'unauthorized function in function-style component' => ['
@@ -161,9 +178,17 @@ class StoryRendererTest extends KernelTestCase
             {% component "UnauthorizedMethod" %}
             {% endcomponent %}
         '];
+
+        yield 'component using include tag' => ['
+            {{ component("Composed") }}
+        '];
+
+        yield 'component using extends tag' => ['
+            {{ component("Extended") }}
+        '];
     }
 
-    public function testComponentUsingTrait()
+    public function testComponentUsingTrait(): void
     {
         self::bootKernel();
 
@@ -181,7 +206,7 @@ class StoryRendererTest extends KernelTestCase
      *
      * @see https://github.com/symfony/ux/pull/1820
      */
-    public function testPassingPropsFromContextVariableWithSameName()
+    public function testPassingPropsFromContextVariableWithSameName(): void
     {
         self::bootKernel();
 
@@ -193,7 +218,7 @@ class StoryRendererTest extends KernelTestCase
         $this->assertEquals($renderer->render($storyWithFunction), $renderer->render($storyWithTag));
     }
 
-    public function testComponentAttributeRendering()
+    public function testComponentAttributeRendering(): void
     {
         self::bootKernel();
 

@@ -17,7 +17,6 @@ use Storybook\Twig\StorybookEnvironment;
 use Storybook\Twig\StorybookEnvironmentConfigurator;
 use Storybook\Twig\StoryExtension;
 use Storybook\Twig\TwigComponentSubscriber;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
@@ -78,12 +77,13 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
         $container->register('storybook.controller.render_story', StorybookController::class)
             ->setArgument(0, new Reference('storybook.story_renderer'))
             ->setArgument(1, new Reference('storybook.args_processor'))
+            ->setArgument(2, $container->getParameter('kernel.environment'))
             ->addTag('controller.service_arguments')
         ;
 
         // Story renderer
         $defaultSandboxConfig = [
-            'allowedTags' => ['component'],
+            'allowedTags' => ['component', 'extends', 'include'],
             'allowedFunctions' => ['component'],
             'allowedFilters' => ['escape'],
             'allowedMethods' => [],
@@ -123,7 +123,7 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
             ->setArgument(2, $config['cache'] ?? false)
         ;
 
-        $container->setDefinition('storybook.twig.component_runtime', new ChildDefinition('.ux.twig_component.twig.component_runtime'))
+        $container->setDefinition('storybook.twig.component_runtime', new ChildDefinition('ux.twig_component.twig.component_runtime'))
             ->replaceArgument(0, new Reference('storybook.twig.component_renderer'))
         ;
 
@@ -165,7 +165,6 @@ class StorybookExtension extends Extension implements ConfigurationInterface, Pr
     {
         $treeBuilder = new TreeBuilder('storybook');
         $rootNode = $treeBuilder->getRootNode();
-        \assert($rootNode instanceof ArrayNodeDefinition);
 
         $rootNode
             ->children()

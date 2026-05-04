@@ -10,7 +10,7 @@ use Storybook\Mock\MockedPropertiesProxy;
 
 class ComponentProxyFactoryTest extends TestCase
 {
-    public function testCreateProxyFactory()
+    public function testCreateProxyFactory(): void
     {
         $locator = $this->createMock(ContainerInterface::class);
         $proxyFactory = new ComponentProxyFactory($locator);
@@ -23,8 +23,10 @@ class ComponentProxyFactoryTest extends TestCase
 
     /**
      * @dataProvider getConfigurations
+     *
+     * @param array<int, array{componentClass: string, service: string, config: array<string, mixed>}> $configurations
      */
-    public function testComponentHasMock(array $configurations, string $componentClass, bool $expected)
+    public function testComponentHasMock(array $configurations, string $componentClass, bool $expected): void
     {
         $proxyFactory = new ComponentProxyFactory($this->createMock(ContainerInterface::class));
 
@@ -35,6 +37,9 @@ class ComponentProxyFactoryTest extends TestCase
         $this->assertEquals($expected, $proxyFactory->componentHasMock($componentClass));
     }
 
+    /**
+     * @return \Generator<string, array{array<int, array{componentClass: string, service: string, config: array<string, mixed>}>, string, bool}>
+     */
     public static function getConfigurations(): iterable
     {
         yield 'No configuration' => [
@@ -68,7 +73,7 @@ class ComponentProxyFactoryTest extends TestCase
         ];
     }
 
-    public function testMockingTheSameComponentMultipleTimesThrowsException()
+    public function testMockingTheSameComponentMultipleTimesThrowsException(): void
     {
         $proxyFactory = new ComponentProxyFactory($this->createMock(ContainerInterface::class));
         $proxyFactory->addMockConfiguration('Component', 'service', []);
@@ -77,7 +82,7 @@ class ComponentProxyFactoryTest extends TestCase
         $proxyFactory->addMockConfiguration('Component', 'service', []);
     }
 
-    public function testMissingMockProviderThrowsLogicException()
+    public function testMissingMockProviderThrowsLogicException(): void
     {
         $locator = $this->createMock(ContainerInterface::class);
         $proxyFactory = new ComponentProxyFactory($locator);

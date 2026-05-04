@@ -6,9 +6,17 @@ $ROOT_DIR = $APP_DIR.'/..';
 
 chdir($APP_DIR);
 
-exec(sprintf('rm -rf %1$s/vendor %1$s/node_modules', $APP_DIR));
+function run(string $command): void
+{
+    passthru($command, $exitCode);
 
-exec('composer update -n');
-exec('npm install');
+    if (0 !== $exitCode) {
+        exit($exitCode);
+    }
+}
+
+run(sprintf('rm -rf %1$s/vendor %1$s/node_modules', $APP_DIR));
+run('composer update -n');
+run('npm install');
 
 exit(0);

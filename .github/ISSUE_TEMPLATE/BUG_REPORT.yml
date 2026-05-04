@@ -1,0 +1,97 @@
+name: Bug report
+description: Report something that is broken or behaving unexpectedly.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please include enough detail for maintainers to reproduce it.
+
+        Do not use this form for security vulnerabilities. Use the security reporting instructions instead.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Which part of the project is affected?
+      multiple: true
+      options:
+        - Symfony bundle
+        - Vite framework package
+        - Webpack framework package
+        - Shared JavaScript runtime
+        - Storybook rendering
+        - Storybook/Vitest tests
+        - Sandbox
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: builder
+    attributes:
+      label: Storybook builder
+      description: Which builder are you using?
+      options:
+        - Vite
+        - Webpack
+        - Both
+        - Not sure
+  - type: dropdown
+    id: package-manager
+    attributes:
+      label: Package manager
+      options:
+        - npm
+        - pnpm
+        - Yarn
+        - Bun
+        - Not applicable
+        - Not sure
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: Include every version that is relevant to the failure.
+      value: |
+        - sensiolabs/storybook-bundle:
+        - @sensiolabs/storybook-symfony-vite:
+        - @sensiolabs/storybook-symfony-webpack:
+        - Symfony:
+        - PHP:
+        - Node.js:
+        - Storybook:
+        - Browser:
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the actual behaviour and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide a minimal reproduction repository or exact steps. Include commands when relevant.
+      placeholder: |
+        1. Run ...
+        2. Open ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste terminal output, browser console errors, Symfony logs, screenshots, or Storybook errors.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked existing issues for duplicates.
+          required: true
+        - label: I can reproduce this with the latest available version or current main branch.

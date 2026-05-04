@@ -1,5 +1,5 @@
 import { global as globalThis } from '@storybook/global';
-import type { PartialStoryFn, StoryContext } from '@storybook/types';
+import type { PartialStoryFn, StoryContext } from 'storybook/internal/types';
 
 const greetingForLocale = (locale: string) => {
   switch (locale) {
@@ -21,9 +21,11 @@ export default {
   component: globalThis.Components.Pre,
   decorators: [
     (storyFn: PartialStoryFn, { globals }: StoryContext) => {
+      const locale = (globals.locale ?? 'en') as string;
       const object = {
-        ...globals,
-        caption: `Locale is '${globals.locale}', so I say: ${greetingForLocale(globals.locale)}`,
+        ...Object.fromEntries(Object.entries(globals).filter(([, value]) => value !== undefined)),
+        locale,
+        caption: `Locale is '${locale}', so I say: ${greetingForLocale(locale)}`,
       };
       return storyFn({ args: { object } });
     },

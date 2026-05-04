@@ -6,6 +6,7 @@ use Storybook\Attributes\PropertyMock;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\Compiler\ServiceLocatorTagPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
@@ -20,21 +21,27 @@ final class ComponentMockPass implements CompilerPassInterface
         $proxyFactoryDefinition = $container->getDefinition('storybook.component_proxy_factory');
 
         $providerMap = [];
+        $mockedComponents = [];
         foreach ($providers as $id => $tags) {
             $providerDefinition = $container->getDefinition($id);
 
             foreach ($tags as $attributes) {
                 $componentClass = $attributes['component'];
-                $componentDefinition = $container->getDefinition($componentClass);
+                try {
+                    $componentDefinition = $container->getDefinition($componentClass);
+                } catch (ServiceNotFoundException $e) {
+                    throw new \LogicException(\sprintf('The given class "%s" does not seem to be a Twig Component. Did you forget to use the #AsTwigComponent attribute?', $componentClass), previous: $e);
+                }
 
                 if (!$componentDefinition->hasTag('twig.component')) {
                     throw new \LogicException(\sprintf('The given class "%s" does not seem to be a Twig Component. Did you forget to use the #AsTwigComponent attribute?', $componentClass));
                 }
 
-                if (isset($providerMap[$componentClass])) {
-                    throw new \LogicException(\sprintf('Component "%s" is already mocked by "%s" (trying to configure "%s").', $componentClass, $providerMap[$componentClass], $id));
+                if (isset($mockedComponents[$componentClass])) {
+                    throw new \LogicException(\sprintf('Component "%s" is already mocked by "%s" (trying to configure "%s").', $componentClass, $mockedComponents[$componentClass], $id));
                 }
 
+                $mockedComponents[$componentClass] = $id;
                 $providerMap[$id] = new Reference($id);
 
                 $mocks = $this->extractMethodMocks($providerDefinition->getClass(), $componentClass);
@@ -46,6 +53,9 @@ final class ComponentMockPass implements CompilerPassInterface
         $proxyFactoryDefinition->setArgument(0, ServiceLocatorTagPass::register($container, $providerMap));
     }
 
+    /**
+     * @return array{globalMocks: array<string, string>, storiesMocks: array<string, array<string, string>>}
+     */
     private function extractMethodMocks(string $loaderClass, string $componentClass): array
     {
         $globalMocks = [];

@@ -9,10 +9,11 @@ use Twig\Node\CheckSecurityCallNode;
 use Twig\Node\CheckSecurityNode;
 use Twig\Node\ModuleNode;
 use Twig\Node\Node;
+use Twig\Node\Nodes;
 use Twig\NodeVisitor\NodeVisitorInterface;
 
 /**
- * Node visitor to disable sandbox in trusted templates, i.e. the ones having a path the server.
+ * Node visitor to disable sandbox in trusted templates, i.e. the ones having a path on the server filesystem.
  *
  * @author Nicolas Rigaud <squrious@protonmail.com>
  *
@@ -25,7 +26,7 @@ final class SandboxNodeVisitor implements NodeVisitorInterface
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): ?Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         if ($node instanceof ModuleNode && '' !== $node->getSourceContext()->getPath()) {
             // Wraps module body in a safe node to disable sandbox before it is displayed and re-enable it after
@@ -39,21 +40,33 @@ final class SandboxNodeVisitor implements NodeVisitorInterface
     private function bypassSecurity(ModuleNode $node): void
     {
         $constructorEnd = $node->getNode('constructor_end');
+        $removedCheckSecurityCall = false;
         foreach ($constructorEnd as $index => $child) {
             if ($child instanceof CheckSecurityCallNode) {
                 $constructorEnd->removeNode($index);
+                $removedCheckSecurityCall = true;
                 break;
             }
         }
 
-        $node->setNode('constructor_end', new Node([new BypassCheckSecurityCallNode(), $constructorEnd]));
+        if (!$removedCheckSecurityCall) {
+            throw new \LogicException('Unable to bypass Twig sandbox: the security check call node was not found.');
+        }
+
+        $node->setNode('constructor_end', new Nodes([new BypassCheckSecurityCallNode(), $constructorEnd]));
 
         $classEnd = $node->getNode('class_end');
+        $removedCheckSecurity = false;
         foreach ($classEnd as $index => $child) {
             if ($child instanceof CheckSecurityNode) {
                 $classEnd->removeNode($index);
+                $removedCheckSecurity = true;
                 break;
             }
+        }
+
+        if (!$removedCheckSecurity) {
+            throw new \LogicException('Unable to bypass Twig sandbox: the security check method node was not found.');
         }
     }
 

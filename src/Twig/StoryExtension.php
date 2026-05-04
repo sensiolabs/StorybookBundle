@@ -29,6 +29,9 @@ final class StoryExtension extends AbstractExtension
         ];
     }
 
+    /**
+     * @param array<string,mixed> $context
+     */
     public function prepareContext(array &$context): void
     {
         if (false === StorybookContextHelper::hasStorybookContext($context)) {

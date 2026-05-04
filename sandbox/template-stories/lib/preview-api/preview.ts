@@ -1,4 +1,4 @@
-import type { PartialStoryFn, StoryContext } from '@storybook/types';
+import type { PartialStoryFn, StoryContext } from 'storybook/internal/types';
 
 export const parameters = {
   projectParameter: 'projectParameter',
@@ -19,7 +19,7 @@ export const decorators = [
   },
 ];
 
-export const globals = {
+export const initialGlobals = {
   foo: 'fooValue',
 };
 

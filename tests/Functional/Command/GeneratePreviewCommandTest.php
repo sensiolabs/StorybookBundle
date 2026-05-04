@@ -8,7 +8,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class GeneratePreviewCommandTest extends KernelTestCase
 {
-    public function testGeneratePreview()
+    public function testGeneratePreview(): void
     {
         self::bootKernel();
 

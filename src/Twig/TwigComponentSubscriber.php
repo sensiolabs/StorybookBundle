@@ -4,13 +4,13 @@ namespace Storybook\Twig;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Storybook\Event\ComponentRenderEvent;
+use Storybook\Util\MountedComponentMetadata;
 use Storybook\Util\RequestAttributesHelper;
 use Storybook\Util\StorybookContext;
 use Storybook\Util\StorybookContextHelper;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\UX\TwigComponent\Event\PreRenderEvent;
-use Symfony\UX\TwigComponent\MountedComponent;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
@@ -56,11 +56,7 @@ final class TwigComponentSubscriber implements EventSubscriberInterface
             // Dirty hack here: we are rendering a Live Component in the main story template with the embedded strategy.
             // The host template actually doesn't exist, which will cause errors because Live Component will try to use
             // it when re-rendering itself. As this is only useful for blocks resolution, we can safely remove this.
-            // Using reflection because no extension point is available here.
-            $refl = new \ReflectionProperty(MountedComponent::class, 'extraMetadata');
-            $extraMetadata = $refl->getValue($mounted);
-            unset($extraMetadata['hostTemplate'], $extraMetadata['embeddedTemplateIndex']);
-            $refl->setValue($mounted, $extraMetadata);
+            MountedComponentMetadata::remove($mounted, 'hostTemplate', 'embeddedTemplateIndex');
         }
     }
 

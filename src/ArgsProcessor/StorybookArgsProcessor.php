@@ -6,9 +6,12 @@ use Storybook\Args;
 use Storybook\Util\RequestAttributesHelper;
 use Storybook\Util\StorybookAttributes;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * @author Nicolas Rigaud <squrious@protonmail.com>
+ *
+ * @internal
  */
 final class StorybookArgsProcessor
 {
@@ -33,10 +36,6 @@ final class StorybookArgsProcessor
 
         foreach ($this->processors as ['story' => $story, 'processor' => $processor]) {
             if ($this->match($story, $storybookAttributes)) {
-                if (!$processor instanceof ArgsProcessorInterface) {
-                    throw new \LogicException(\sprintf('Args processor "%s" must implement "%s".', get_debug_type($processor), ArgsProcessorInterface::class));
-                }
-
                 $processor($args);
             }
         }
@@ -46,7 +45,12 @@ final class StorybookArgsProcessor
 
     private function getArgsFromRequest(Request $request): Args
     {
-        $args = $request->getPayload()->all()['args'] ?? [];
+        $payload = $request->getPayload()->all();
+        $args = $payload['args'] ?? [];
+
+        if (!\is_array($args)) {
+            throw new BadRequestHttpException('The "args" request body field must be an object.');
+        }
 
         return new Args($args);
     }

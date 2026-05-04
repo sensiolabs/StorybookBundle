@@ -6,6 +6,7 @@ use Symfony\Component\AssetMapper\AssetMapperInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Path;
@@ -16,9 +17,9 @@ use Symfonycasts\TailwindBundle\SymfonycastsTailwindBundle;
  * @author Nicolas Rigaud <squrious@protonmail.com>
  */
 #[AsCommand(name: 'storybook:init', description: 'Initialize Storybook with basic configuration files.')]
-class StorybookInitCommand extends Command
+final class StorybookInitCommand extends Command
 {
-    public const STORYBOOK_VERSION = '^8.1.3';
+    public const STORYBOOK_VERSION = '10.3.5';
     private SymfonyStyle $io;
 
     public function __construct(private readonly string $projectDir)
@@ -43,18 +44,36 @@ These files should be reviewed after creation and committed to your repository.
 
 HELP
         );
+        $this->addOption('builder', null, InputOption::VALUE_REQUIRED, 'Storybook builder to generate config for: vite or webpack.', 'vite');
+        $this->addOption('package-manager', null, InputOption::VALUE_REQUIRED, 'Package manager to use in generated instructions: npm, pnpm, yarn, or bun.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io->title('Initializing Storybook for Symfony');
 
-        $this->setupPackageJson();
-        $this->setupStorybookConfig();
+        $builder = $input->getOption('builder');
+        if (!\in_array($builder, ['vite', 'webpack'], true)) {
+            $this->io->error('The --builder option must be either "vite" or "webpack".');
+
+            return self::INVALID;
+        }
+
+        $packageManager = $input->getOption('package-manager') ?: $this->detectPackageManager();
+        if (!\in_array($packageManager, ['npm', 'pnpm', 'yarn', 'bun'], true)) {
+            $this->io->error('The --package-manager option must be one of "npm", "pnpm", "yarn", or "bun".');
+
+            return self::INVALID;
+        }
+
+        $legacyWebpack = 'webpack' === $builder;
+
+        $this->setupPackageJson($legacyWebpack);
+        $this->setupStorybookConfig($legacyWebpack, $packageManager);
         $this->setupBundleConfig();
         $this->setupRoutes();
         $this->setupPreview();
-        $this->addDefaultStory();
+        $this->addDefaultStory($legacyWebpack);
 
         $this->io->success('Storybook initialized!');
 
@@ -63,14 +82,21 @@ HELP
             'Here is a list of actions you may need to perform now:',
         ]);
 
-        $this->io->listing([
-            'Review your <info>package.json</info> and install new dependencies with <info>npm install</info>',
+        $nextSteps = [
+            \sprintf('Review your <info>package.json</info> and install new dependencies with <info>%s</info>', $this->getInstallCommand($packageManager)),
             'Review your <info>templates/bundles/StorybookBundle/preview.html.twig</info> and adjust your importmap call',
             'Review your <info>.storybook/main.ts</info> configuration and adjust your Symfony server host',
-            'Run your Symfony server',
-            'Run <info>npm run storybook</info> to start the Storybook development server',
-            'Visit <info>http://localhost:6006</info>',
-        ]);
+        ];
+
+        if (!$legacyWebpack) {
+            $nextSteps[] = 'Review your <info>vitest.config.ts</info> proxy targets if your Symfony server does not run on http://localhost:8000';
+        }
+
+        $nextSteps[] = 'Run your Symfony server';
+        $nextSteps[] = \sprintf('Run <info>%s</info> to start the Storybook development server', $this->getRunCommand($packageManager, 'storybook'));
+        $nextSteps[] = 'Visit <info>http://localhost:6006</info>';
+
+        $this->io->listing($nextSteps);
 
         return self::SUCCESS;
     }
@@ -78,45 +104,80 @@ HELP
     /**
      * @throws \JsonException
      */
-    private function setupPackageJson(): void
+    private function setupPackageJson(bool $legacyWebpack): void
     {
         $this->io->note('Updating package.json');
 
         $packageJsonFile = Path::join($this->projectDir, 'package.json');
         $packageJsonData = [];
         if (file_exists($packageJsonFile)) {
-            $packageJsonData = json_decode(file_get_contents($packageJsonFile), true);
+            $packageJsonContent = file_get_contents($packageJsonFile);
+            if (false === $packageJsonContent) {
+                throw new \RuntimeException(\sprintf('Unable to read "%s".', $packageJsonFile));
+            }
+
+            $packageJsonData = json_decode($packageJsonContent, true, flags: \JSON_THROW_ON_ERROR);
+            if (!\is_array($packageJsonData)) {
+                throw new \RuntimeException(\sprintf('The "%s" file must contain a JSON object.', $packageJsonFile));
+            }
         }
 
         $packageJsonData['devDependencies'] ??= [];
-        $packageJsonData['devDependencies'] += [
-            '@sensiolabs/storybook-symfony-webpack5' => 'file:vendor/sensiolabs/storybook-bundle/storybook',
-            '@storybook/addon-essentials' => self::STORYBOOK_VERSION,
-            '@storybook/addon-links' => self::STORYBOOK_VERSION,
-            '@storybook/addon-webpack5-compiler-swc' => '^1.0.2',
-            '@storybook/blocks' => self::STORYBOOK_VERSION,
-            '@storybook/cli' => self::STORYBOOK_VERSION,
-            'typescript' => '^5.4.2',
-            'webpack' => '^5.90.3',
-        ];
+        if ($legacyWebpack) {
+            $packageJsonData['devDependencies'] += [
+                '@sensiolabs/storybook-symfony-webpack' => 'file:vendor/sensiolabs/storybook-bundle/packages/webpack',
+                '@storybook/addon-docs' => self::STORYBOOK_VERSION,
+                '@storybook/addon-webpack5-compiler-swc' => '4.0.3',
+                'storybook' => self::STORYBOOK_VERSION,
+                'typescript' => '5.9.3',
+                'webpack' => '5.106.2',
+            ];
+        } else {
+            $packageJsonData['devDependencies'] += [
+                '@sensiolabs/storybook-symfony-vite' => 'file:vendor/sensiolabs/storybook-bundle/packages/vite',
+                '@storybook/addon-docs' => self::STORYBOOK_VERSION,
+                '@storybook/addon-vitest' => self::STORYBOOK_VERSION,
+                '@vitest/browser' => '4.1.5',
+                '@vitest/browser-playwright' => '4.1.5',
+                'playwright' => '1.59.1',
+                'storybook' => self::STORYBOOK_VERSION,
+                'typescript' => '5.9.3',
+                'vite' => '8.0.10',
+                'vitest' => '4.1.5',
+            ];
+        }
 
         $packageJsonData['scripts'] ??= [];
         $packageJsonData['scripts'] += [
-            'storybook' => 'sb dev -p 6006 --no-open --disable-telemetry',
-            'build-storybook' => 'sb build',
+            'storybook' => 'storybook dev -p 6006 --no-open --disable-telemetry',
+            'build-storybook' => 'storybook build',
         ];
+        if (!$legacyWebpack) {
+            $packageJsonData['scripts'] += [
+                'test-storybook' => 'vitest --project=storybook',
+            ];
+        }
 
         $packageJsonContent = json_encode($packageJsonData, \JSON_PRETTY_PRINT | \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES);
 
         $this->writeFileWithConfirmation($packageJsonFile, $packageJsonContent);
     }
 
-    private function setupStorybookConfig(): void
+    private function setupStorybookConfig(bool $legacyWebpack, string $packageManager): void
     {
         $this->io->note('Generating Storybook configuration files');
 
+        $packageName = $legacyWebpack ? '@sensiolabs/storybook-symfony-webpack' : '@sensiolabs/storybook-symfony-vite';
+        $addons = $legacyWebpack ? <<<TS
+        "@storybook/addon-webpack5-compiler-swc",
+        "@storybook/addon-docs",
+TS : <<<TS
+        "@storybook/addon-docs",
+        "@storybook/addon-vitest",
+TS;
+
         $previewFile = <<<TS
-import { Preview } from '@sensiolabs/storybook-symfony-webpack5';
+import { Preview } from '$packageName';
 
 const preview: Preview = {
     parameters: {
@@ -132,21 +193,19 @@ const preview: Preview = {
 export default preview;
 TS;
         $mainFile = <<<TS
-import type { StorybookConfig } from "@sensiolabs/storybook-symfony-webpack5";
+import type { StorybookConfig } from "$packageName";
 
 const config: StorybookConfig = {
     stories: ["../stories/**/*.stories.[tj]s", "../stories/**/*.mdx"],
     addons: [
-        "@storybook/addon-webpack5-compiler-swc",
-        "@storybook/addon-links",
-        "@storybook/addon-essentials",
+$addons
     ],
     framework: {
-        name: "@sensiolabs/storybook-symfony-webpack5",
+        name: "$packageName",
         options: {
             // 👇 Here configure the framework
             symfony: {
-                server: 'https://localhost',
+                server: 'http://localhost:8000',
                 proxyPaths: [
                     '/assets',
 
@@ -183,6 +242,80 @@ TS;
         $storybookConfigDir = Path::join($this->projectDir, '.storybook');
         $this->writeFileWithConfirmation(Path::join($storybookConfigDir, 'preview.ts'), $previewFile);
         $this->writeFileWithConfirmation(Path::join($storybookConfigDir, 'main.ts'), $mainFile);
+        if (!$legacyWebpack) {
+            $this->writeFileWithConfirmation(Path::join($this->projectDir, 'vitest.config.ts'), $this->getVitestConfig($packageManager));
+        }
+    }
+
+    private function getVitestConfig(string $packageManager): string
+    {
+        $storybookScript = $this->getRunCommand($packageManager, 'storybook');
+
+        $config = <<<TS
+import { defineConfig } from 'vitest/config';
+import { playwright } from '@vitest/browser-playwright';
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
+
+export default defineConfig({
+    test: {
+        projects: [
+            {
+                extends: true,
+                plugins: [
+                    storybookTest({
+                        configDir: '.storybook',
+                        storybookScript: '$storybookScript',
+                        tags: {
+                            exclude: ['will-fail'],
+                        },
+                    }),
+                ],
+                server: {
+                    proxy: {
+                        '/_storybook/render': {
+                            target: 'http://localhost:8000',
+                            changeOrigin: true,
+                            headers: {
+                                'X-Storybook-Proxy': 'true',
+                            },
+                        },
+                        '/assets': {
+                            target: 'http://localhost:8000',
+                            changeOrigin: true,
+                            headers: {
+                                'X-Storybook-Proxy': 'true',
+                            },
+                        },
+TS;
+        if ($this->isLiveComponentsInstalled()) {
+            $config .= <<<TS
+                        '/_components': {
+                            target: 'http://localhost:8000',
+                            changeOrigin: true,
+                            headers: {
+                                'X-Storybook-Proxy': 'true',
+                            },
+                        },
+TS;
+        }
+        $config .= <<<TS
+                    },
+                },
+                test: {
+                    name: 'storybook',
+                    browser: {
+                        enabled: true,
+                        provider: playwright(),
+                        instances: [{ browser: 'chromium' }],
+                    },
+                },
+            },
+        ],
+    },
+});
+TS;
+
+        return $config;
     }
 
     private function setupBundleConfig(): void
@@ -238,14 +371,16 @@ TWIG;
         $this->writeFileWithConfirmation($previewPath, $content);
     }
 
-    private function addDefaultStory(): void
+    private function addDefaultStory(bool $legacyWebpack): void
     {
         $this->io->note('Creating sample stories');
 
         $storyFile = Path::join($this->projectDir, 'stories', 'Component.stories.js');
 
+        $packageName = $legacyWebpack ? '@sensiolabs/storybook-symfony-webpack' : '@sensiolabs/storybook-symfony-vite';
+
         $content = <<<JS
-import {twig} from "@sensiolabs/storybook-symfony-webpack5";
+import {twig} from "$packageName";
 
 export default {
     component: twig`
@@ -288,6 +423,46 @@ JS;
     private function isTailwindInstalled(): bool
     {
         return class_exists(SymfonycastsTailwindBundle::class);
+    }
+
+    private function detectPackageManager(): string
+    {
+        // Prefer strict/workspace-aware managers when multiple lockfiles are present.
+        $lockFiles = [
+            'pnpm-lock.yaml' => 'pnpm',
+            'package-lock.json' => 'npm',
+            'yarn.lock' => 'yarn',
+            'bun.lock' => 'bun',
+            'bun.lockb' => 'bun',
+        ];
+
+        foreach ($lockFiles as $lockFile => $packageManager) {
+            if (file_exists(Path::join($this->projectDir, $lockFile))) {
+                return $packageManager;
+            }
+        }
+
+        return 'npm';
+    }
+
+    private function getInstallCommand(string $packageManager): string
+    {
+        return match ($packageManager) {
+            'pnpm' => 'pnpm install',
+            'yarn' => 'yarn install',
+            'bun' => 'bun install',
+            default => 'npm install',
+        };
+    }
+
+    private function getRunCommand(string $packageManager, string $script): string
+    {
+        return match ($packageManager) {
+            'pnpm' => \sprintf('pnpm %s', $script),
+            'yarn' => \sprintf('yarn %s', $script),
+            'bun' => \sprintf('bun run %s', $script),
+            default => \sprintf('npm run %s', $script),
+        };
     }
 
     private function writeFileWithConfirmation(string $filePath, string $content): void

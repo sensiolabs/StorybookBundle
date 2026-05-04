@@ -1,3 +1,8 @@
+export const initialGlobals = {
+  theme: 'light',
+  locale: 'en',
+};
+
 export const globalTypes = {
   theme: {
     name: 'Theme',

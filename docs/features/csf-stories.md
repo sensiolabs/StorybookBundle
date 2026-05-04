@@ -2,109 +2,107 @@
 
 > ⚠️ This feature uses framework-specific configurations
 
-
 > [Storybook Documentation](https://storybook.js.org/docs/writing-stories)
 
 Stories are written using the Storybook recommended [Component Story Format](https://storybook.js.org/docs/api/csf) (CSF).
 
-> Currently, only JavaScript is supported.
+JavaScript and TypeScript story files are supported through `.stories.js` and `.stories.ts`.
 
-## Twig templates in CSF 
+## Twig Templates in CSF
 
-To make your stories work with Twig, you have to provide a twig template in the `component` member of the story. There are multiple ways to achieve this.
+To render Twig from CSF, provide a Twig template through the story `component` or `render` configuration. There are several supported patterns.
 
 ### Using a component with automatic args binding
 
-If you just want to render a single component, you can use automatic binding: 
+Use automatic binding when a story only needs to render one component:
 
 ```js
 // stories/Button.stories.js
-import Button from '../templates/components/Button.html.twig';
+import Button from "../templates/components/Button.html.twig";
 
 export default {
-    component: Button
-}
+  component: Button,
+};
 
 export const Primary = {
-    args: {
-        btnType: 'primary',
-    }
-}
+  args: {
+    btnType: "primary",
+  },
+};
 
 export const Secondary = {
-    args: {
-        btnType: 'secondary'
-    }
-}
+  args: {
+    btnType: "secondary",
+  },
+};
 ```
 
-This way, all members of the `args` object will be inlined and passed to your component. The story above will generate a template like: 
+All members of the `args` object are inlined and passed to the component. The story above generates a template like:
 
 ```twig
 <twig:Button :btnType="btnType" />
 ```
 
-### Using a component in custom template
+### Using a Component in a Custom Template
 
-If you have to customize the way story args are used to render your component, you can define a Twig template for your story: 
+Use a custom Twig template when a story needs more control over how args are rendered:
 
 ```js
 // stories/Button.stories.js
-import Button from '../templates/components/Button.html.twig';
-import { twig } from '@sensiolabs/storybook-symfony-webpack5';
+import Button from "../templates/components/Button.html.twig";
+import { twig } from "@sensiolabs/storybook-symfony-vite";
 
 export default {
-    render: (args) => ({
-        components: {Button}, // This is recommended so your component can be hot reloaded
-        template: twig`
+  render: (args) => ({
+    components: { Button }, // This is recommended so your component can be hot reloaded
+    template: twig`
             <twig:Button :btnType="primary ? 'primary' : 'secondary'">
                 {{ label }}
             </twig:Button>
-        `
-    })
+        `,
+  }),
 };
 
 export const Primary = {
-    args: {
-        primary: true,
-        label: 'Button',
-    },
+  args: {
+    primary: true,
+    label: "Button",
+  },
 };
 
 export const Secondary = {
-    args: {
-        ...Primary.args,
-        primary: false
-    },
+  args: {
+    ...Primary.args,
+    primary: false,
+  },
 };
 
 export const SearchButton = {
-    // 👇 Template can be overriden at story level 
-    component: twig`
+  // Template can be overridden at story level.
+  component: twig`
         <twig:Button>
             <twig:ux:icon name="flowbite:search-outline" />
         </twig:Button>
-    `
-}
-
+    `,
+};
 ```
 
 ### Using a raw template
 
-Finally, you can also provide a raw Twig template as a component, for example if you don't want to render a Twig component:
+You can also provide a raw Twig template as a component when the story does not render a Twig component:
 
 ```js
 // stories/Button.stories.js
-import { twig } from '@sensiolabs/storybook-symfony-webpack5';
+import { twig } from "@sensiolabs/storybook-symfony-vite";
 
 export default {
-    component: twig`<button type="button">{{ label }}</button>`
+  component: twig`<button type="button">{{ label }}</button>`,
 };
 
 export const Default = {
-    args: {
-        label: 'Button',
-    },
+  args: {
+    label: "Button",
+  },
 };
 ```
 
@@ -112,50 +110,50 @@ export const Default = {
 
 Args are passed in the root context of the story when the template is rendered. That means you can use them with their original name in your story template.
 
-However, you can name args the way you want, with some characters that are not allowed in a Twig variable name. 
+Args can use JavaScript object keys that are not valid Twig variable names.
 
-Consider the following story: 
+Consider the following story:
 
 ```js
-import Button from '../templates/components/Button.html.twig';
-import { twig } from '@sensiolabs/storybook-symfony-webpack5';
+import Button from "../templates/components/Button.html.twig";
+import { twig } from "@sensiolabs/storybook-symfony-vite";
 
 export default {
-    render: (args) => ({
-        components: {Button},
-        template: twig`
+  render: (args) => ({
+    components: { Button },
+    template: twig`
             <twig:Button :btnType="is-primary ? 'primary' : 'secondary'">
                 {{ button:label }}
             </twig:Button>
-        `
-    })
+        `,
+  }),
 };
 
 export const Default = {
-    args: {
-        'is-primary': true,
-        'button:label': 'Button',
-    },
+  args: {
+    "is-primary": true,
+    "button:label": "Button",
+  },
 };
 ```
 
-The template provided in the `render` function is invalid, because Twig can not parse variable names like `is-primary` or `button:label`.
+The template provided in the `render` function is invalid because Twig cannot parse variable names like `is-primary` or `button:label`.
 
-You could instead use the `_context` variable to access those parameters: 
+Use the `_context` variable to access those parameters:
 
 ```js
 export default {
-    render: (args) => ({
-        components: {Button},
-        template: twig`
+  render: (args) => ({
+    components: { Button },
+    template: twig`
             <twig:Button :btnType="_context['is-primary'] ? 'primary' : 'secondary'">
                 {{ _context['button:label'] }}
             </twig:Button>
-        `
-    })
+        `,
+  }),
 };
 ```
 
-But in a general way, it is **not recommended** to use a such naming in your stories, even if the JavaScript object declaration permits it, because code snippets generated in [Docs](./docs.md#rendering-source-snippets) pages will dump wrong variable names.
+Avoid this naming style in stories when possible. JavaScript allows these object keys, but generated source snippets in [Docs](./docs.md#rendering-source-snippets) can contain invalid Twig variable names.
 
-The only place you would legally use this method is in the [action attributes](../addons/actions.md#actions).
+The common exception is [action attributes](../addons/actions.md#actions), where event names often include `:`.

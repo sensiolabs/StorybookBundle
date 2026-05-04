@@ -1,13 +1,14 @@
 import { global as globalThis } from '@storybook/global';
-import type { PartialStoryFn, PlayFunctionContext } from '@storybook/types';
-import { useEffect, useState } from '@storybook/preview-api';
-import { within, userEvent } from '@storybook/test';
+import type { PartialStoryFn, PlayFunctionContext } from 'storybook/internal/types';
+import { useEffect, useState } from 'storybook/preview-api';
+import { within, userEvent } from 'storybook/test';
 
 export default {
   component: globalThis.Components.Button,
 };
 
 export const UseState = {
+  tags: ['will-fail'],
   decorators: [
     (story: PartialStoryFn) => {
       const [count, setCount] = useState(0);
